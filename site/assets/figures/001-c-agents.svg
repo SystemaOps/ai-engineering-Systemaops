@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120" role="img" aria-label="FIG_001.C — agent loop returning to itself">
   <defs>
     <style>
-      .bp { stroke: #3553ff; fill: none; stroke-linejoin: miter; stroke-linecap: square; }
-      .bp-fill { fill: #3553ff; }
-      .face { fill: rgba(53, 83, 255, 0.08); }
-      .face-strong { fill: rgba(53, 83, 255, 0.18); }
+      .bp { stroke: #1C7F7F; fill: none; stroke-linejoin: miter; stroke-linecap: square; }
+      .bp-fill { fill: #1C7F7F; }
+      .face { fill: rgba(28, 127, 127, 0.08); }
+      .face-strong { fill: rgba(28, 127, 127, 0.18); }
       .mono { font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace; }
     </style>
   </defs>

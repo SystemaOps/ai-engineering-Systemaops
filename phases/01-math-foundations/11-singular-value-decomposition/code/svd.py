@@ -82,7 +82,7 @@ def pseudoinverse_via_svd(A, tol=1e-10):
 
 def demo_svd_basics():
     print("=" * 70)
-    print("SVD FROM SCRATCH vs NUMPY")
+    print("SVD FROM SYSTEMAOPS vs NUMPY")
     print("=" * 70)
 
     np.random.seed(42)

@@ -154,7 +154,7 @@ end
 
 function demo_self_attention()
     println("=" ^ 60)
-    println("SELF-ATTENTION FROM SCRATCH")
+    println("SELF-ATTENTION FROM SYSTEMAOPS")
     println("=" ^ 60)
 
     tokens = ["The", "cat", "sat", "on", "the", "mat"]

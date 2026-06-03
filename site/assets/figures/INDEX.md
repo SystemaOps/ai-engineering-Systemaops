@@ -32,7 +32,7 @@ If you have the `blueprint-diagram` skill installed:
 
 If you don't have the skill, do it manually:
 
-1. Author an SVG in the cream + blueprint aesthetic (cream `#fafaf5` paper, `#3553ff` blueprint blue strokes, JetBrains Mono uppercase labels with leader lines, no other chromatic accents).
+1. Author an SVG in the cream + blueprint aesthetic (cream `#fafaf5` paper, `#1C7F7F` green strokes, JetBrains Mono uppercase labels with leader lines, no other chromatic accents).
 2. Save as `site/assets/figures/<NNN>-<slug>.svg` using the next available FIG number from the table above.
 3. Add a row to the table here with the FIG number, slug, target phase + lesson, today's date, and a one-line note.
 4. Reference the figure from the lesson markdown as `![FIG_NNN](../../site/assets/figures/<NNN>-<slug>.svg)`.

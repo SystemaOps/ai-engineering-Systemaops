@@ -6,7 +6,7 @@
     <style>
       .box { fill: #faf6ef; stroke: #1a1a1a; stroke-width: 1.5; }
       .primary { fill: #fff1d6; stroke: #c0392b; stroke-width: 1.5; }
-      .sleep { fill: #e9e6ff; stroke: #5a4fcf; stroke-width: 1.5; }
+      .sleep { fill: #d4efef; stroke: #1C7F7F; stroke-width: 1.5; }
       .block { fill: #e6f4ea; stroke: #2e7d32; stroke-width: 1.5; }
       .step { font-size: 12px; font-family: 'Menlo', monospace; fill: #222; }
       .small { font-size: 10px; font-family: 'Menlo', monospace; fill: #555; }

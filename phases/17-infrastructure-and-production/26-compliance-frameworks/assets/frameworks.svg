@@ -5,7 +5,7 @@
       .soc { fill: #dfe9ff; stroke: #2c5ea9; stroke-width: 1.5; }
       .hipaa { fill: #e6f4ea; stroke: #2e7d32; stroke-width: 1.5; }
       .gdpr { fill: #fff1d6; stroke: #c0392b; stroke-width: 1.5; }
-      .eu { fill: #e9e6ff; stroke: #5a4fcf; stroke-width: 1.5; }
+      .eu { fill: #d4efef; stroke: #1C7F7F; stroke-width: 1.5; }
       .emerging { fill: #ffe1e1; stroke: #b71c1c; stroke-width: 1.5; }
       .title { font-size: 16px; font-weight: 700; fill: #1a1a1a; }
       .head { font-size: 12px; font-weight: 700; fill: #1a1a1a; }

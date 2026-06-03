@@ -7,7 +7,7 @@
       .box { fill: #faf6ef; stroke: #1a1a1a; stroke-width: 1.5; }
       .worker1 { fill: #dff4dd; stroke: #2e7d32; stroke-width: 1.5; }
       .worker2 { fill: #ffd9c2; stroke: #c0392b; stroke-width: 1.5; }
-      .cache { fill: #e9e6ff; stroke: #5a4fcf; stroke-width: 1.5; }
+      .cache { fill: #d4efef; stroke: #1C7F7F; stroke-width: 1.5; }
       .label { font-size: 13px; font-weight: 600; fill: #1a1a1a; }
       .step { font-size: 12px; font-family: 'Menlo', monospace; fill: #222; }
       .small { font-size: 10px; font-family: 'Menlo', monospace; fill: #555; }
@@ -69,8 +69,8 @@
   <!-- Arrows -->
   <line x1="260" y1="120" x2="380" y2="200" stroke="#2e7d32" stroke-width="1.5" marker-end="url(#arrow)"/>
   <line x1="260" y1="420" x2="380" y2="340" stroke="#c0392b" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <line x1="380" y1="250" x2="260" y2="150" stroke="#5a4fcf" stroke-width="1.0" stroke-dasharray="4,3"/>
-  <line x1="380" y1="260" x2="260" y2="390" stroke="#5a4fcf" stroke-width="1.0" stroke-dasharray="4,3"/>
+  <line x1="380" y1="250" x2="260" y2="150" stroke="#1C7F7F" stroke-width="1.0" stroke-dasharray="4,3"/>
+  <line x1="380" y1="260" x2="260" y2="390" stroke="#1C7F7F" stroke-width="1.0" stroke-dasharray="4,3"/>
 
   <!-- Amdahl summary -->
   <rect x="60" y="500" width="860" height="36" class="box"/>

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Build script for AI Engineering from Scratch website.
+ * Build script for AI Engineering from SystemaOps website.
  * Parses README.md, ROADMAP.md, and glossary/terms.md from the repo root
  * and generates data.js with all phase/lesson/glossary data.
  *

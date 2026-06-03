@@ -14,11 +14,11 @@
   --rule-soft: rgba(26, 26, 26, 0.16);
   --paper-rule: rgba(26, 26, 26, 0.08);
 
-  --blueprint: #3553ff;
-  --blueprint-tint: rgba(53, 83, 255, 0.08);
-  --blueprint-tint-strong: rgba(53, 83, 255, 0.18);
+  --blueprint: #1C7F7F;
+  --blueprint-tint: rgba(28, 127, 127, 0.08);
+  --blueprint-tint-strong: rgba(28, 127, 127, 0.18);
 
-  --status-complete: #3553ff;
+  --status-complete: #1C7F7F;
   --status-in-progress: #4a4a4a;
   --status-planned: #b8b6ad;
   --warn: #b8870f;
@@ -34,7 +34,7 @@
   --text-muted: var(--ink-soft);
   --border: var(--rule-soft);
   --accent: var(--blueprint);
-  --accent-hover: #2840d6;
+  --accent-hover: #115757;
   --secondary: var(--blueprint);
   --complete: var(--status-complete);
   --planned: var(--status-planned);
@@ -55,11 +55,11 @@
   --rule-soft: rgba(232, 230, 220, 0.18);
   --paper-rule: rgba(232, 230, 220, 0.08);
 
-  --blueprint: #6b8eff;
-  --blueprint-tint: rgba(107, 142, 255, 0.12);
-  --blueprint-tint-strong: rgba(107, 142, 255, 0.22);
+  --blueprint: #3BA3A1;
+  --blueprint-tint: rgba(59, 163, 161, 0.12);
+  --blueprint-tint-strong: rgba(59, 163, 161, 0.22);
 
-  --status-complete: #6b8eff;
+  --status-complete: #3BA3A1;
   --status-in-progress: #c8c6c0;
   --status-planned: #4a4a48;
   --warn: #d4a83d;
@@ -69,7 +69,7 @@
   --overlay-bg: rgba(10, 13, 26, 0.78);
   --header-bg: rgba(10, 13, 26, 0.94);
 
-  --accent-hover: #8aa5ff;
+  --accent-hover: #3BA3A1;
 }
 
 *,

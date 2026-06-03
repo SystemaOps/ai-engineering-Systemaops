@@ -49,7 +49,7 @@ class CountPattern:
 
 PATTERNS: tuple[CountPattern, ...] = (
     CountPattern(
-        regex=re.compile(r"lessons-(\d+)-3553ff"),
+        regex=re.compile(r"lessons-(\d+)-1C7F7F"),
         field="lessons",
         description="lesson-count badge URL",
     ),
@@ -79,7 +79,7 @@ PATTERNS: tuple[CountPattern, ...] = (
         description="'spine' prose lesson count",
     ),
     CountPattern(
-        regex=re.compile(r"phases-(\d+)-3553ff"),
+        regex=re.compile(r"phases-(\d+)-1C7F7F"),
         field="phases",
         description="phase-count badge URL",
     ),

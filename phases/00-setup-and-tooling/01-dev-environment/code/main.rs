@@ -63,7 +63,7 @@ fn parse_minor_python(version_line: &str) -> Option<(u32, u32)> {
 
 fn print_header() {
     println!();
-    println!("=== AI Engineering from Scratch — Environment Check (Rust) ===");
+    println!("=== AI Engineering from SystemaOps — Environment Check (Rust) ===");
     println!();
     println!("Layer 1 (system) -> Layer 2 (package managers) -> Layer 3 (runtimes) -> Layer 4 (libs)");
     println!();

@@ -375,7 +375,7 @@ def demo_data_leakage():
 
 def demo_pipeline_from_scratch():
     print("=" * 60)
-    print("PIPELINE FROM SCRATCH")
+    print("PIPELINE FROM SYSTEMAOPS")
     print("=" * 60)
 
     rng = np.random.RandomState(42)

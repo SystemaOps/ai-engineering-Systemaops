@@ -507,7 +507,7 @@ def run_demo(cfg: Optional[DPOConfig] = None) -> int:
     tok = InstructionTokenizer()
     triples = make_preferences()
 
-    print("DPO FROM SCRATCH DEMO")
+    print("DPO FROM SYSTEMAOPS DEMO")
     print(f"triples={len(triples)} beta={cfg.beta} lr={cfg.lr} epochs={cfg.epochs}")
     print("")
 

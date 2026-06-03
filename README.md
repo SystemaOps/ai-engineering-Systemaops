@@ -1,13 +1,13 @@
 <p align="center">
-  <img src="assets/banner.svg" alt="AI Engineering from Scratch — reference manual banner" width="100%">
+  <img src="assets/banner.svg" alt="AI Engineering from SystemaOps — reference manual banner" width="100%">
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-1a1a1a?style=flat-square&labelColor=fafaf5" alt="MIT License"></a>
-  <a href="ROADMAP.md"><img src="https://img.shields.io/badge/lessons-503-3553ff?style=flat-square&labelColor=fafaf5" alt="503 lessons"></a>
-  <a href="#contents"><img src="https://img.shields.io/badge/phases-20-3553ff?style=flat-square&labelColor=fafaf5" alt="20 phases"></a>
-  <a href="https://github.com/SystemaOps/ai-engineering-Systemaops/stargazers"><img src="https://img.shields.io/github/stars/SystemaOps/ai-engineering-Systemaops?style=flat-square&labelColor=fafaf5&color=3553ff" alt="GitHub stars"></a>
-  <a href="https://aiengineeringfromscratch.com"><img src="https://img.shields.io/badge/web-aiengineeringfromscratch.com-3553ff?style=flat-square&labelColor=fafaf5" alt="Website"></a>
+  <a href="ROADMAP.md"><img src="https://img.shields.io/badge/lessons-503-1C7F7F?style=flat-square&labelColor=fafaf5" alt="503 lessons"></a>
+  <a href="#contents"><img src="https://img.shields.io/badge/phases-20-1C7F7F?style=flat-square&labelColor=fafaf5" alt="20 phases"></a>
+  <a href="https://github.com/SystemaOps/ai-engineering-Systemaops/stargazers"><img src="https://img.shields.io/github/stars/SystemaOps/ai-engineering-Systemaops?style=flat-square&labelColor=fafaf5&color=1C7F7F" alt="GitHub stars"></a>
+  <a href="https://aiengineeringfromsystemaops.com"><img src="https://img.shields.io/badge/web-aiengineeringfromsystemaops.com-1C7F7F?style=flat-square&labelColor=fafaf5" alt="Website"></a>
 </p>
 
 ```
@@ -49,7 +49,7 @@ Skip ahead if you already know the lower layers, but don't skip and then wonder 
 the top is breaking.
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#fafaf5','primaryTextColor':'#1a1a1a','primaryBorderColor':'#3553ff','lineColor':'#3553ff','fontFamily':'JetBrains Mono','fontSize':'12px'}}}%%
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#fafaf5','primaryTextColor':'#1a1a1a','primaryBorderColor':'#1C7F7F','lineColor':'#1C7F7F','fontFamily':'JetBrains Mono','fontSize':'12px'}}}%%
 flowchart TB
   P0["Phase 0 — Setup &amp; Tooling"] --> P1["Phase 1 — Math Foundations"]
   P1 --> P2["Phase 2 — ML Fundamentals"]
@@ -95,7 +95,7 @@ algorithm from scratch first, then run the same thing through the production lib
 understand what the framework is doing because you wrote the smaller version yourself.
 
 ```mermaid
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#fafaf5','primaryTextColor':'#1a1a1a','primaryBorderColor':'#3553ff','lineColor':'#3553ff','fontFamily':'JetBrains Mono','fontSize':'13px'}}}%%
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#fafaf5','primaryTextColor':'#1a1a1a','primaryBorderColor':'#1C7F7F','lineColor':'#1C7F7F','fontFamily':'JetBrains Mono','fontSize':'13px'}}}%%
 flowchart LR
   M["MOTTO<br/><sub>one-line core idea</sub>"] --> Pr["PROBLEM<br/><sub>concrete pain</sub>"]
   Pr --> C["CONCEPT<br/><sub>diagrams &amp; intuition</sub>"]
@@ -109,14 +109,14 @@ flowchart LR
 Three ways in. Pick one.
 
 **Option A — read.** Open any completed lesson on
-[aiengineeringfromscratch.com](https://aiengineeringfromscratch.com) or expand a phase under
+[aiengineeringfromsystemaops.com](https://aiengineeringfromsystemaops.com) or expand a phase under
 [Contents](#contents). No setup, no cloning.
 
 **Option B — clone and run.**
 
 ```bash
 git clone https://github.com/SystemaOps/ai-engineering-Systemaops.git
-cd ai-engineering-from-scratch
+cd ai-engineering-Systemaops
 python phases/01-math-foundations/01-linear-algebra-intuition/code/vectors.py
 ```
 
@@ -1145,7 +1145,7 @@ Free, MIT-licensed, 503 lessons. The curriculum is maintained on sponsorship alo
 **Reach (verified 2026-05-14):** 55,593 monthly visitors · 90,709 page views · 7.5K stars ·
 Twitter/X is the #1 acquisition channel.
 
-**Current sponsors:** [CodeRabbit](https://coderabbit.link/rohit-ghumare) · [iii](https://iii.dev?utm_source=ai-engineering-from-scratch&utm_medium=readme&utm_campaign=sponsor)
+**Current sponsors:** [CodeRabbit](https://coderabbit.link/rohit-ghumare) · [iii](https://iii.dev?utm_source=ai-engineering-Systemaops&utm_medium=readme&utm_campaign=sponsor)
 
 | Tier | $/mo | What you get |
 |------|------|---|
@@ -1178,10 +1178,10 @@ If this manual helped you, star the repo. It keeps the project alive.
 MIT. Use it however you want — fork it, teach it, sell it, ship it. Attribution appreciated,
 not required.
 
-Maintained by [Rohit Ghumare](https://github.com/rohitg00) and the community.
+Maintained by [Rohit Thumu](https://github.com/SystemaOps/) and the community.
 
 <sub>
   <a href="https://x.com/ghumare64">@ghumare64</a> &nbsp;·&nbsp;
-  <a href="https://aiengineeringfromscratch.com">aiengineeringfromscratch.com</a> &nbsp;·&nbsp;
+  <a href="https://aiengineeringfromsystemaops.com">aiengineeringfromsystemaops.com</a> &nbsp;·&nbsp;
   <a href="https://github.com/SystemaOps/ai-engineering-Systemaops/issues/new/choose">Report / Suggest</a>
 </sub>

@@ -236,7 +236,7 @@ def demo_iqr():
 
 
 def demo_isolation_forest():
-    print_separator("ISOLATION FOREST (FROM SCRATCH)")
+    print_separator("ISOLATION FOREST (FROM SYSTEMAOPS)")
 
     X, y_true = make_anomaly_data(n_normal=500, n_anomaly=25, seed=42)
     print(f"Dataset: {X.shape[0]} samples, {(y_true == 1).sum()} anomalies")

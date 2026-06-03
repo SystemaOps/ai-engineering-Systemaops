@@ -73,7 +73,7 @@ const PROBES: Probe[] = [
 ];
 
 function run(): number {
-  process.stdout.write("\n=== AI Engineering from Scratch — Environment Check ===\n\n");
+  process.stdout.write("\n=== AI Engineering from SystemaOps — Environment Check ===\n\n");
 
   let requiredPassed = 0;
   let requiredTotal = 0;

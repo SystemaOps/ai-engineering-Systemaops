@@ -273,7 +273,7 @@ class StackingClassifier:
 
 def demo_adaboost():
     print("=" * 60)
-    print("ADABOOST FROM SCRATCH")
+    print("ADABOOST FROM SYSTEMAOPS")
     print("=" * 60)
 
     X, y = make_classification_data(n_samples=400, n_features=5)
@@ -299,7 +299,7 @@ def demo_adaboost():
 
 def demo_gradient_boosting():
     print("=" * 60)
-    print("GRADIENT BOOSTING FROM SCRATCH")
+    print("GRADIENT BOOSTING FROM SYSTEMAOPS")
     print("=" * 60)
 
     X, y = make_regression_data(n_samples=400, n_features=5)

@@ -44,7 +44,7 @@ flowchart TD
   ACP["ACP — How do agents talk in auditable systems?<br/>Runs, trajectory metadata, session continuity"]
   MCP["MCP — How does an agent use a tool?<br/>Tool discovery, execution, context sharing"]
 
-  style ANP fill:#f3e8ff,stroke:#7c3aed
+  style ANP fill:#d4efef,stroke:#1C7F7F
   style A2A fill:#dbeafe,stroke:#2563eb
   style ACP fill:#fef3c7,stroke:#d97706
   style MCP fill:#d1fae5,stroke:#059669
@@ -317,7 +317,7 @@ graph LR
     style B fill:#dbeafe,stroke:#2563eb
     style C fill:#d1fae5,stroke:#059669
     style D fill:#fef3c7,stroke:#d97706
-    style E fill:#f3e8ff,stroke:#7c3aed
+    style E fill:#d4efef,stroke:#1C7F7F
 ```
 
 The **AgentManifest** is simpler than A2A's Agent Card:
@@ -438,7 +438,7 @@ graph TB
 
     style Layer1 fill:#d1fae5,stroke:#059669
     style Layer2 fill:#dbeafe,stroke:#2563eb
-    style Layer3 fill:#f3e8ff,stroke:#7c3aed
+    style Layer3 fill:#d4efef,stroke:#1C7F7F
 ```
 
 #### DID Documents (Real Structure)
@@ -1463,8 +1463,8 @@ graph TD
     style MCP_R fill:#d1fae5,stroke:#059669
     style A2A_R fill:#dbeafe,stroke:#2563eb
     style ACP_R fill:#fef3c7,stroke:#d97706
-    style ANP_R fill:#f3e8ff,stroke:#7c3aed
-    style BROKER fill:#e0e7ff,stroke:#4338ca
+    style ANP_R fill:#d4efef,stroke:#1C7F7F
+    style BROKER fill:#c5e8e8,stroke:#115757
 ```
 
 ## Ship It

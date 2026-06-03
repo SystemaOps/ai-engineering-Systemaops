@@ -41,7 +41,7 @@ flowchart LR
     I --> J["Model"]
 
     style A fill:#fef3c7,stroke:#d97706
-    style J fill:#ddd6fe,stroke:#7c3aed
+    style J fill:#d4efef,stroke:#1C7F7F
     style G fill:#fecaca,stroke:#dc2626
     style H fill:#bfdbfe,stroke:#2563eb
 ```

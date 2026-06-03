@@ -8,7 +8,7 @@
       .hot { fill: #fff1d6; stroke: #c0392b; stroke-width: 1.5; }
       .cool { fill: #e6f4ea; stroke: #2e7d32; stroke-width: 1.5; }
       .cold { fill: #dfe9ff; stroke: #2c5ea9; stroke-width: 1.5; }
-      .reg { fill: #e9e6ff; stroke: #5a4fcf; stroke-width: 1.5; }
+      .reg { fill: #d4efef; stroke: #1C7F7F; stroke-width: 1.5; }
       .label { font-size: 13px; font-weight: 600; fill: #1a1a1a; }
       .step { font-size: 12px; font-family: 'Menlo', monospace; fill: #222; }
       .small { font-size: 10px; font-family: 'Menlo', monospace; fill: #555; }

@@ -205,7 +205,7 @@ def demo_3d_rotations():
 
 def demo_eigenvalues_from_scratch():
     print("\n" + "=" * 60)
-    print("EIGENVALUES AND EIGENVECTORS (FROM SCRATCH, 2x2)")
+    print("EIGENVALUES AND EIGENVECTORS (FROM SYSTEMAOPS, 2x2)")
     print("=" * 60)
 
     matrices = [
@@ -234,7 +234,7 @@ def demo_eigenvalues_from_scratch():
 
 def demo_eigendecomposition():
     print("\n" + "=" * 60)
-    print("EIGENDECOMPOSITION (2x2, FROM SCRATCH)")
+    print("EIGENDECOMPOSITION (2x2, FROM SYSTEMAOPS)")
     print("=" * 60)
 
     A = [[3, 1], [0, 2]]

@@ -6,10 +6,10 @@
     <style>
       .ink { fill: #1a1a1a; }
       .mute { fill: #7a7a78; }
-      .bp { fill: #3553ff; }
-      .face { fill: rgba(53, 83, 255, 0.06); }
-      .face-strong { fill: rgba(53, 83, 255, 0.18); }
-      .stroke { stroke: #3553ff; fill: none; stroke-linejoin: miter; stroke-linecap: square; }
+      .bp { fill: #1C7F7F; }
+      .face { fill: rgba(28, 127, 127, 0.06); }
+      .face-strong { fill: rgba(28, 127, 127, 0.18); }
+      .stroke { stroke: #1C7F7F; fill: none; stroke-linejoin: miter; stroke-linecap: square; }
       .mono { font-family: 'JetBrains Mono', ui-monospace, Consolas, monospace; }
     </style>
   </defs>
@@ -21,7 +21,7 @@
   <text class="mono mute" x="1160" y="44" font-size="11" letter-spacing="2.4" text-anchor="end">PHASE 01 · LESSON 08</text>
 
   <!-- divider rule -->
-  <line x1="40" y1="64" x2="1160" y2="64" stroke="#3553ff" stroke-width="0.6" stroke-opacity="0.35"/>
+  <line x1="40" y1="64" x2="1160" y2="64" stroke="#1C7F7F" stroke-width="0.6" stroke-opacity="0.35"/>
 
   <!-- LEFT: continuous bell-curve cross-section family -->
   <g transform="translate(80, 120)">
@@ -167,6 +167,6 @@
   </g>
 
   <!-- bottom rule -->
-  <line x1="40" y1="640" x2="1160" y2="640" stroke="#3553ff" stroke-width="0.6" stroke-opacity="0.35"/>
+  <line x1="40" y1="640" x2="1160" y2="640" stroke="#1C7F7F" stroke-width="0.6" stroke-opacity="0.35"/>
   <text class="mono mute" x="1160" y="668" font-size="10" letter-spacing="2" text-anchor="end">© FIG_004 · GAUSSIAN KERNEL · MIT</text>
 </svg>

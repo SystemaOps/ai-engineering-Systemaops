@@ -60,7 +60,7 @@ end
 
 function demo_svd_basics()
     println("=" ^ 70)
-    println("SVD FROM SCRATCH vs JULIA BUILT-IN")
+    println("SVD FROM SYSTEMAOPS vs JULIA BUILT-IN")
     println("=" ^ 70)
 
     Random.seed!(42)

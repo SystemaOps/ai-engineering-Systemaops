@@ -19,7 +19,7 @@ def model_card() -> str:
 # Model Card: ToyClassifier-1.0
 
 ## Model Details
-- Developer: ai-engineering-from-scratch / Phase 18 / Lesson 26
+- Developer: ai-engineering-Systemaops / Phase 18 / Lesson 26
 - Version: 1.0.0
 - Type: binary logistic classifier (toy)
 - License: MIT

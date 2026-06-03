@@ -51,7 +51,7 @@ Key things to know:
 
 ```bash
 # Move around
-cd ~/projects/ai-engineering-from-scratch
+cd ~/projects/ai-engineering-Systemaops
 pwd
 ls -la
 

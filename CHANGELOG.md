@@ -39,7 +39,7 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/). Each ent
 - Phase 2 (ML Fundamentals): all 18 lessons.
 - Phase 3 (Deep Learning Core): core lessons through perceptron, backprop, optimizers.
 - Built-in Claude Code skills: `find-your-level` (placement quiz) and `check-understanding` (per-phase quiz).
-- Website at `aiengineeringfromscratch.com`: catalog, per-lesson pages, roadmap, 277-term glossary.
+- Website at `aiengineeringfromsystemaops.com`: catalog, per-lesson pages, roadmap, 277-term glossary.
 - Initial scaffolding for all 20 phases (`phases/00-*` through `phases/19-*`).
 - `LESSON_TEMPLATE.md`, `CONTRIBUTING.md`, `ROADMAP.md`, `README.md`.
 

@@ -96,7 +96,7 @@ if __name__ == "__main__":
     X = rng.normal(0, 1, (n_tokens, d_model))
 
     print("=" * 60)
-    print("SELF-ATTENTION FROM SCRATCH")
+    print("SELF-ATTENTION FROM SYSTEMAOPS")
     print("=" * 60)
 
     print(f"\nSentence: {' '.join(sentence)}")

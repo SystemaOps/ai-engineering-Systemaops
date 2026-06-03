@@ -117,7 +117,7 @@ You could create one environment for the whole course. Don't. Different phases n
 Strategy:
 
 ```
-ai-engineering-from-scratch/
+ai-engineering-Systemaops/
 ├── .venv/                    <-- shared lightweight env for phases 0-3
 ├── phases/
 │   ├── 04-neural-networks/
@@ -138,7 +138,7 @@ Every Python project should have a `pyproject.toml`. It replaces `setup.py`, `se
 
 ```toml
 [project]
-name = "ai-engineering-from-scratch"
+name = "ai-engineering-Systemaops"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [

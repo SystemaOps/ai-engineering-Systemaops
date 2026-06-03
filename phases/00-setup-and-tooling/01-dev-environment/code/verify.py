@@ -41,7 +41,7 @@ def run_check(name, check_fn, detail_fn=None):
 
 
 def main():
-    print("\n=== AI Engineering from Scratch — Environment Check ===\n")
+    print("\n=== AI Engineering from SystemaOps — Environment Check ===\n")
 
     print("Core:")
     passed = sum(run_check(name, fn, detail) for name, fn, detail in CHECKS)

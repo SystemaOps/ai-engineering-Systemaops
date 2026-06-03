@@ -48,8 +48,8 @@ ROOT = Path(__file__).resolve().parent.parent
 CACHE_PATH = ROOT / ".link-cache.json"
 CACHE_SCHEMA_VERSION = 1
 USER_AGENT = (
-    "ai-engineering-from-scratch link-check/1.0 "
-    "(+https://aiengineeringfromscratch.com)"
+    "ai-engineering-Systemaops link-check/1.0 "
+    "(+https://aiengineeringfromsystemaops.com)"
 )
 DEFAULT_TIMEOUT = 10
 DEFAULT_CONCURRENCY = 8

@@ -73,7 +73,7 @@ git merge experiment/new-optimizer
 
 ```bash
 git clone https://github.com/SystemaOps/ai-engineering-Systemaops.git
-cd ai-engineering-from-scratch
+cd ai-engineering-Systemaops
 
 git checkout -b my-progress
 # work through lessons, commit your code

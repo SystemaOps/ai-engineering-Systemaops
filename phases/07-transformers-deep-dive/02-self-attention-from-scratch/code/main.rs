@@ -182,7 +182,7 @@ fn main() {
     let dv: usize = 8;
 
     println!("{}", "=".repeat(60));
-    println!("SELF-ATTENTION FROM SCRATCH (Rust port)");
+    println!("SELF-ATTENTION FROM SYSTEMAOPS (Rust port)");
     println!("{}", "=".repeat(60));
 
     let mut rng = Rng::new(42);

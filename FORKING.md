@@ -54,6 +54,6 @@ git merge upstream/main
 Not required by MIT, but appreciated:
 
 ```
-Based on AI Engineering from Scratch
+Based on AI Engineering from SystemaOps
 https://github.com/SystemaOps/ai-engineering-Systemaops
 ```

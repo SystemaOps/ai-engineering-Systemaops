@@ -7,7 +7,7 @@
       .box { fill: #faf6ef; stroke: #1a1a1a; stroke-width: 1.5; }
       .hot { fill: #fff1d6; stroke: #c0392b; stroke-width: 1.5; }
       .cool { fill: #e6f4ea; stroke: #2e7d32; stroke-width: 1.5; }
-      .shared { fill: #e9e6ff; stroke: #5a4fcf; stroke-width: 1.5; }
+      .shared { fill: #d4efef; stroke: #1C7F7F; stroke-width: 1.5; }
       .old { fill: #eeeeee; stroke: #888; stroke-width: 1.2; }
       .label { font-size: 13px; font-weight: 600; fill: #1a1a1a; }
       .step { font-size: 12px; font-family: 'Menlo', monospace; fill: #222; }
@@ -59,10 +59,10 @@
   <text x="480" y="268" text-anchor="middle" class="small">reuses main model's LM head — no extra params</text>
 
   <!-- E feeds into modules -->
-  <line x1="230" y1="175" x2="285" y2="175" stroke="#5a4fcf" stroke-width="1.2"/>
-  <line x1="285" y1="175" x2="285" y2="130" stroke="#5a4fcf" stroke-width="1.2" marker-end="url(#arrow)"/>
-  <line x1="230" y1="175" x2="585" y2="175" stroke="#5a4fcf" stroke-width="1.0" stroke-dasharray="3,2"/>
-  <line x1="585" y1="175" x2="585" y2="130" stroke="#5a4fcf" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="230" y1="175" x2="285" y2="175" stroke="#1C7F7F" stroke-width="1.2"/>
+  <line x1="285" y1="175" x2="285" y2="130" stroke="#1C7F7F" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <line x1="230" y1="175" x2="585" y2="175" stroke="#1C7F7F" stroke-width="1.0" stroke-dasharray="3,2"/>
+  <line x1="585" y1="175" x2="585" y2="130" stroke="#1C7F7F" stroke-width="1.2" marker-end="url(#arrow)"/>
 
   <!-- Joint loss -->
   <rect x="30" y="320" width="900" height="60" class="box"/>

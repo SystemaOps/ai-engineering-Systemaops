@@ -60,7 +60,7 @@ def majority_baseline(y_train, y_test):
 
 def demo_nearest_centroid():
     print("=" * 60)
-    print("NEAREST CENTROID CLASSIFIER FROM SCRATCH")
+    print("NEAREST CENTROID CLASSIFIER FROM SYSTEMAOPS")
     print("=" * 60)
     print()
 

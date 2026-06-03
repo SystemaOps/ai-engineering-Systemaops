@@ -19,7 +19,7 @@ REPO_ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
 cd "$REPO_ROOT"
 
 echo ""
-echo "=== AI Engineering from Scratch: Python Environment Setup ==="
+echo "=== AI Engineering from SystemaOps: Python Environment Setup ==="
 echo ""
 echo "Repo root: $REPO_ROOT"
 echo ""
