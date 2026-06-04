@@ -6,7 +6,6 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-1a1a1a?style=flat-square&labelColor=fafaf5" alt="MIT License"></a>
   <a href="ROADMAP.md"><img src="https://img.shields.io/badge/lessons-503-1C7F7F?style=flat-square&labelColor=fafaf5" alt="503 lessons"></a>
   <a href="#contents"><img src="https://img.shields.io/badge/phases-20-1C7F7F?style=flat-square&labelColor=fafaf5" alt="20 phases"></a>
-  <a href="https://github.com/SystemaOps/ai-engineering-Systemaops/stargazers"><img src="https://img.shields.io/github/stars/SystemaOps/ai-engineering-Systemaops?style=flat-square&labelColor=fafaf5&color=1C7F7F" alt="GitHub stars"></a>
   <a href="https://aiengineeringfromsystemaops.com"><img src="https://img.shields.io/badge/web-aiengineeringfromsystemaops.com-1C7F7F?style=flat-square&labelColor=fafaf5" alt="Website"></a>
 </p>
 
