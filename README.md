@@ -18,7 +18,7 @@
 > professionally.** This curriculum closes that gap.
 >
 > 503 lessons. 20 phases. ~320 hours. Python, TypeScript, Rust, Julia. Every lesson ships
-> a reusable artifact: a prompt, a skill, an agent, an MCP server. Free, open source, MIT.
+> a reusable artifact: a prompt, a skill, an agent, an MCP server. MIT.
 >
 > You don't just learn AI. You build it. End-to-end. By hand.
 
