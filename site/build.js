@@ -232,13 +232,15 @@ function parseReadme(content, roadmapStatuses) {
  *              H3 headings are the densest vocabulary in a lesson doc
  *              (e.g. "Scaled dot-product · Causal masking · KV cache"),
  *              so they extend search coverage without bloating data.js.
+ *   minutes  — parsed from the `**Time:** ~N minutes` metadata line.
+ *              Powers the learning-plan scheduler (plan.html). 0 when absent.
  *
- * Both fields are empty strings when the file is absent or has no
+ * Both string fields are empty when the file is absent or has no
  * matching content — expected for planned lessons with no docs yet.
  */
 function extractLessonMeta(relPath) {
   const docPath = path.join(REPO_ROOT, relPath, 'docs', 'en.md');
-  const result = { summary: '', keywords: '' };
+  const result = { summary: '', keywords: '', minutes: 0 };
   try {
     const lines = fs.readFileSync(docPath, 'utf8').split(/\r?\n/);
     const h3s = [];
@@ -247,6 +249,13 @@ function extractLessonMeta(relPath) {
       if (!result.summary && line.startsWith('> ') && line.length > 3) {
         const s = line.slice(2).trim();
         result.summary = s.length > 180 ? s.slice(0, 177) + '…' : s;
+      }
+      if (!result.minutes) {
+        const timeMatch = line.match(/\*\*Time:\*\*\s*~?(\d+)\s*(min|hour|hr)/i);
+        if (timeMatch) {
+          const n = parseInt(timeMatch[1], 10);
+          result.minutes = /min/i.test(timeMatch[2]) ? n : n * 60;
+        }
       }
       if (line.startsWith('### ')) {
         const heading = line.slice(4).trim();
@@ -389,9 +398,94 @@ function discoverArtifacts() {
   return artifacts;
 }
 
+// ─── Sync ROADMAP.md per-lesson Est. cells from docs/en.md Time lines ─
+/**
+ * Rewrites only the trailing `Est.` cell of each lesson row in ROADMAP.md
+ * so it matches the authoritative `**Time:** ~N minutes` line in the
+ * lesson's docs/en.md. The lesson folder is resolved from the row's link
+ * when present, otherwise from the phase number + the row's `#` column
+ * (phases/NN-…/MM-…). Rows whose doc is missing or has no Time line are
+ * left untouched. The `| # | name | glyph |` prefix is preserved verbatim
+ * so parseRoadmap()'s status-glyph matching is unaffected.
+ */
+function syncRoadmapEstimates() {
+  const phasesDir = path.join(REPO_ROOT, 'phases');
+  const phaseDirByid = {};
+  for (const name of fs.readdirSync(phasesDir)) {
+    const m = name.match(/^(\d{2})-/);
+    if (m) phaseDirByid[parseInt(m[1], 10)] = name;
+  }
+  const lessonDirCache = {}; // phase id → { '01': '01-dev-environment', ... }
+  const lessonDirsFor = phaseId => {
+    if (!lessonDirCache[phaseId]) {
+      const map = {};
+      const dir = phaseDirByid[phaseId];
+      if (dir) {
+        for (const name of fs.readdirSync(path.join(phasesDir, dir))) {
+          const m = name.match(/^(\d{2})-/);
+          if (m) map[m[1]] = name;
+        }
+      }
+      lessonDirCache[phaseId] = map;
+    }
+    return lessonDirCache[phaseId];
+  };
+
+  const docTime = relPath => {
+    try {
+      const doc = fs.readFileSync(path.join(REPO_ROOT, relPath, 'docs', 'en.md'), 'utf8');
+      const m = doc.match(/\*\*Time:\*\*\s*~?(\d+)\s*(min|hour|hr)/i);
+      if (m) return `~${m[1]} ${/min/i.test(m[2]) ? 'min' : 'hr'}`;
+    } catch (_) { /* doc absent — expected for planned lessons */ }
+    return null;
+  };
+
+  const before = fs.readFileSync(ROADMAP_PATH, 'utf8');
+  let currentPhaseId = null;
+  let updated = 0;
+  const unresolved = [];
+  const lines = before.split('\n').map(rawLine => {
+    const eol = rawLine.endsWith('\r') ? '\r' : '';
+    const line = eol ? rawLine.slice(0, -1) : rawLine;
+
+    const phaseMatch = line.match(/^##\s+Phase\s+(\d+)/);
+    if (phaseMatch) { currentPhaseId = parseInt(phaseMatch[1], 10); return rawLine; }
+    if (currentPhaseId === null) return rawLine;
+
+    // | 01 | Dev Environment | ✅ | ~75 min |   (name may be a markdown link)
+    const row = line.match(/^(\|\s*(\d+)\s*\|\s*(.+?)\s*\|\s*(?:✅|🚧|⬚)\s*\|\s*)[^|]*?(\s*\|)\s*$/);
+    if (!row) return rawLine;
+    const [, prefix, numStr, lessonCol, suffix] = row;
+
+    const linkMatch = lessonCol.match(/\]\(([^)]+)\)/);
+    const relPath = linkMatch
+      ? linkMatch[1].replace(/\/+$/, '')
+      : (lessonDirsFor(currentPhaseId)[numStr.padStart(2, '0')]
+          ? `phases/${phaseDirByid[currentPhaseId]}/${lessonDirsFor(currentPhaseId)[numStr.padStart(2, '0')]}`
+          : null);
+    const est = relPath && docTime(relPath);
+    if (!est) {
+      unresolved.push(`Phase ${currentPhaseId} row ${numStr}: ${lessonCol.slice(0, 50)}`);
+      return rawLine;
+    }
+    const next = prefix + est + suffix + eol;
+    if (next !== rawLine) updated++;
+    return next;
+  });
+  const after = lines.join('\n');
+  if (after !== before) {
+    fs.writeFileSync(ROADMAP_PATH, after, 'utf8');
+    console.log(`   updated ${updated} Est. cells in ROADMAP.md`);
+  }
+  for (const u of unresolved) console.warn(`   ⚠ no Time found for ${u}`);
+}
+
 // ─── Main build ──────────────────────────────────────────────────────
 function build() {
   console.log('📖 Reading source files...');
+
+  console.log('🕐 Syncing ROADMAP.md Est. cells from docs/en.md Time lines...');
+  syncRoadmapEstimates();
 
   const readme = fs.readFileSync(README_PATH, 'utf8');
   const roadmap = fs.readFileSync(ROADMAP_PATH, 'utf8');
@@ -411,13 +505,21 @@ function build() {
 
   console.log('📚 Extracting lesson summaries + keywords from docs/en.md...');
   let summarized = 0, withKeywords = 0;
+  let totalMinutes = 0;
+  const phaseMinutes = {}; // phase id → summed lesson minutes
   for (const phase of phases) {
+    phaseMinutes[phase.id] = phaseMinutes[phase.id] || 0;
     for (const lesson of phase.lessons) {
       if (lesson.url) {
         const relPath = lesson.url.replace(GITHUB_BASE, '').replace(/\/+$/, '');
         const meta = extractLessonMeta(relPath);
         if (meta.summary)  { lesson.summary  = meta.summary;  summarized++;   }
         if (meta.keywords) { lesson.keywords = meta.keywords; withKeywords++; }
+        if (meta.minutes)  {
+          lesson.minutes = meta.minutes;
+          totalMinutes += meta.minutes;
+          phaseMinutes[phase.id] += meta.minutes;
+        }
       }
     }
   }
@@ -435,6 +537,7 @@ function build() {
   console.log(`   Lessons: ${totalLessons}`);
   console.log(`   Complete: ${completeLessons}`);
   console.log(`   Summaries: ${summarized}, Keywords: ${withKeywords}`);
+  console.log(`   Estimated time: ${totalMinutes} min (~${Math.round(totalMinutes / 60)} hours)`);
   console.log(`   Glossary terms: ${glossaryTerms.length}`);
   console.log(`   Artifacts: ${artifacts.length}`);
 
@@ -452,23 +555,79 @@ const ARTIFACTS = ${JSON.stringify(artifacts, null, 2)};
   fs.writeFileSync(OUTPUT_PATH, output, 'utf8');
   console.log(`\n✅ Generated ${OUTPUT_PATH}`);
 
-  syncCounts(totalLessons, phases.length, artifacts.length);
+  // Capstone phase is open-ended (pick-your-own projects), so the README
+  // "Where to start" estimates exclude it and call it out separately.
+  const capstonePhase = phases.find(p => p.lessons.some(l => l.type === 'Capstone'));
+  syncCounts(totalLessons, phases.length, artifacts.length, totalMinutes, phaseMinutes,
+    capstonePhase ? capstonePhase.id : null);
 }
 
 // ─── Keep marketing counts in sync (single source of truth = this build) ──
-function syncCounts(lessons, phaseCount, outputs) {
+function syncCounts(lessons, phaseCount, outputs, totalMinutes, phaseMinutes, capstonePhaseId) {
+  const hoursOf = mins => Math.round(mins / 60).toLocaleString('en-US');
+  const totalHours = hoursOf(totalMinutes);
+
   const targets = ['index.html', 'catalog.html', 'lesson.html', 'prereqs.html', 'cmdpalette.js'];
   for (const f of targets) {
     const p = path.join(__dirname, f);
     if (!fs.existsSync(p)) continue;
     const before = fs.readFileSync(p, 'utf8');
-    const after = before
+    let after = before
       .replace(/\b\d+( AI engineering)? lessons\b/g, `${lessons}$1 lessons`)
       .replace(/\b\d+ phases\b/g, `${phaseCount} phases`)
       .replace(/\b\d+ outputs\b/g, `${outputs} outputs`);
+    if (totalMinutes > 0) {
+      after = after.replace(/~[\d,]+(?:\.\d+)? hours\b/g, `~${totalHours} hours`);
+    }
     if (after !== before) {
       fs.writeFileSync(p, after, 'utf8');
       console.log(`   synced counts in ${f}`);
+    }
+  }
+
+  // README.md + ROADMAP.md carry the same totals (headline blockquote,
+  // "Where to start" table, roadmap intro/footer, per-phase headers).
+  // All hour figures are derived from the per-lesson `**Time:**` lines in
+  // docs/en.md — the same numbers that power the plan.html scheduler.
+  // Skipped when no minutes were extracted, so a parsing regression can't
+  // zero out the published totals.
+  if (totalMinutes > 0) {
+    // Lesson-phase hours from startId onward, excluding the capstone phase.
+    const cumulativeFrom = startId => Object.entries(phaseMinutes)
+      .reduce((sum, [id, mins]) =>
+        Number(id) >= startId && Number(id) !== capstonePhaseId ? sum + mins : sum, 0);
+    const capstoneHours = capstonePhaseId !== null && phaseMinutes[capstonePhaseId]
+      ? hoursOf(phaseMinutes[capstonePhaseId]) : null;
+
+    const readmeBefore = fs.readFileSync(README_PATH, 'utf8');
+    let readmeAfter = readmeBefore
+      // Headline: "503 lessons. 20 phases. ~1,137 hours."
+      .replace(/(\d+ lessons\. \d+ phases\. )~[\d,]+(?:\.\d+)? hours/, `$1~${totalHours} hours`)
+      // "Where to start" rows: | ... | Phase N — ... | ~X hours |
+      .replace(/(\|[^|\n]*Phase\s+(\d+)\s+—[^|\n]*\|\s*)~[\d,]+(?:\.\d+)? hours(\s*\|)/g,
+        (_, pre, id, post) => `${pre}~${hoursOf(cumulativeFrom(Number(id)))} hours${post}`);
+    if (capstoneHours) {
+      // Footnote under the "Where to start" table.
+      readmeAfter = readmeAfter.replace(/~[\d,]+(?:\.\d+)? hours if you build all/,
+        `~${capstoneHours} hours if you build all`);
+    }
+    if (readmeAfter !== readmeBefore) {
+      fs.writeFileSync(README_PATH, readmeAfter, 'utf8');
+      console.log('   synced hour totals in README.md');
+    }
+
+    const roadmapBefore = fs.readFileSync(ROADMAP_PATH, 'utf8');
+    const roadmapAfter = roadmapBefore
+      .replace(/(Total estimated time: )~[\d,]+(?:\.\d+)? hours/, `$1~${totalHours} hours`)
+      .replace(/~[\d,]+(?:\.\d+)? hours estimated/, `~${totalHours} hours estimated`)
+      // Phase headers: ## Phase N: Name — ✅ (~X hours)
+      .replace(/^(## Phase (\d+):[^(\n]*\()~[\d,]+(?:\.\d+)? hours\)/gm,
+        (match, pre, id) => phaseMinutes[Number(id)]
+          ? `${pre}~${hoursOf(phaseMinutes[Number(id)])} hours)`
+          : match);
+    if (roadmapAfter !== roadmapBefore) {
+      fs.writeFileSync(ROADMAP_PATH, roadmapAfter, 'utf8');
+      console.log('   synced hour totals in ROADMAP.md');
     }
   }
 }

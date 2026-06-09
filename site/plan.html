@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learning Plan - AI Engineering from SystemaOps</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%23fafaf5'/><rect x='2' y='2' width='28' height='28' fill='none' stroke='%231C7F7F' stroke-width='1.2'/><text x='6' y='22' font-size='14' font-family='monospace' fill='%231C7F7F'>AI</text></svg>">
+  <meta name="description" content="Build a personalized self-paced learning plan across 503 AI engineering lessons. Pick a track and your weekly hours — get a week-by-week schedule with progress tracking.">
+  <meta property="og:title" content="Learning Plan · AI Engineering from SystemaOps">
+  <meta property="og:description" content="Pick a track and your weekly hours — get a personalized week-by-week schedule with progress tracking.">
+  <meta property="og:image" content="https://aiengineeringfromsystemaops.com/og-image.png?v=2">
+  <meta property="og:url" content="https://aiengineeringfromsystemaops.com/plan.html">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Learning Plan · AI Engineering from SystemaOps">
+  <meta name="twitter:description" content="Personalized self-paced schedule across 20 phases.">
+  <meta name="twitter:image" content="https://aiengineeringfromsystemaops.com/og-image.png?v=2">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400..700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=20260525a">
+  <style>
+    /* ===================================================
+       Learning Plan — Page Styles
+    =================================================== */
+
+    .plan-page {
+      padding: 100px 0 80px;
+      min-height: 100vh;
+    }
+
+    .plan-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .plan-header h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      margin-bottom: 8px;
+    }
+
+    .plan-header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    /* --- Config panel --- */
+    .plan-config {
+      max-width: 860px;
+      margin: 0 auto 32px;
+      background: var(--bg-surface);
+      border: 2px solid var(--border);
+      padding: 24px;
+    }
+
+    .config-row {
+      margin-bottom: 24px;
+    }
+
+    .config-row:last-child { margin-bottom: 0; }
+
+    .config-label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .track-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .track-card {
+      text-align: left;
+      background: var(--bg);
+      border: 2px solid var(--border);
+      padding: 12px 14px;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--ink);
+      transition: border-color 0.2s;
+    }
+
+    .track-card:hover { border-color: var(--accent); }
+
+    .track-card.active {
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 1px var(--accent);
+    }
+
+    .track-card .track-name {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .track-card .track-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: block;
+      line-height: 1.4;
+    }
+
+    .hours-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .hours-row input[type="range"] {
+      flex: 1;
+      min-width: 200px;
+      accent-color: var(--accent);
+    }
+
+    .hours-value {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 110px;
+    }
+
+    .known-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .phase-chip {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 5px 10px;
+      background: var(--bg);
+      border: 2px solid var(--border);
+      color: var(--ink);
+      cursor: pointer;
+      transition: border-color 0.2s, opacity 0.2s;
+    }
+
+    .phase-chip:hover { border-color: var(--accent); }
+
+    .phase-chip.skipped {
+      border-color: var(--complete);
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .config-hint {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    /* --- Summary strip --- */
+    .plan-summary {
+      max-width: 860px;
+      margin: 0 auto 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+    }
+
+    .summary-stat {
+      background: var(--bg-surface);
+      border: 2px solid var(--border);
+      padding: 14px 16px;
+      text-align: center;
+    }
+
+    .summary-stat .stat-value {
+      font-family: var(--font-mono);
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--accent);
+      display: block;
+    }
+
+    .summary-stat .stat-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    /* --- Overall progress bar --- */
+    .plan-progress {
+      max-width: 860px;
+      margin: 0 auto 32px;
+    }
+
+    .plan-progress-bar {
+      height: 10px;
+      background: var(--bg-surface);
+      border: 2px solid var(--border);
+      overflow: hidden;
+    }
+
+    .plan-progress-fill {
+      height: 100%;
+      background: var(--complete);
+      width: 0%;
+      transition: width 0.4s;
+    }
+
+    .plan-progress-label {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      text-align: right;
+    }
+
+    /* --- Week cards --- */
+    .plan-weeks {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    .week-card {
+      background: var(--bg-surface);
+      border: 2px solid var(--border);
+      margin-bottom: 14px;
+    }
+
+    .week-card.done { border-color: var(--complete); }
+
+    .week-head {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--ink);
+      text-align: left;
+    }
+
+    .week-head:hover .week-title { color: var(--accent); }
+
+    .week-num {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .week-title {
+      flex: 1;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .week-meta {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .week-chevron {
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      transition: transform 0.2s;
+    }
+
+    .week-card.open .week-chevron { transform: rotate(90deg); }
+
+    .week-body { display: none; padding: 0 18px 14px; }
+    .week-card.open .week-body { display: block; }
+
+    .week-phase-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin: 12px 0 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .plan-lesson {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 0;
+    }
+
+    .plan-lesson input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--complete);
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .plan-lesson a {
+      flex: 1;
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 0.9rem;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .plan-lesson a:hover { color: var(--accent); }
+
+    .plan-lesson.checked a {
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .plan-lesson .lesson-mins {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .lesson-type-tag {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      padding: 2px 6px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    @media (max-width: 600px) {
+      .week-meta { display: none; }
+      .plan-lesson .lesson-type-tag { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <a href="#main" class="skip-link">Skip to content</a>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-icon" aria-hidden="true"></span> AI / FROM SYSTEMAOPS
+      </a>
+      <nav class="header-nav">
+        <a href="index.html#contents">Contents</a>
+        <a href="catalog.html">Catalog</a>
+        <a href="prereqs.html">Roadmap</a>
+        <a href="plan.html">Plan</a>
+        <a href="glossary.html">Glossary</a>
+        <a href="https://github.com/SystemaOps/ai-engineering-Systemaops" target="_blank" rel="noopener" class="header-github">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.4 3-.405 1.02.005 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+          <svg class="star-icon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279L12 19.896l-7.416 3.517 1.48-8.279L0 9.306l8.332-1.151z"/></svg>
+          <span class="star-count" data-loading="true" aria-label="GitHub stars">…</span>
+        </a>
+      </nav>
+      <button class="search-toggle" type="button" data-cmd-palette
+        aria-label="Search (⌘K)" title="Search (⌘K)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </button>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <span class="theme-icon" id="themeIcon">N</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="plan-page" id="main">
+    <div class="container">
+      <div class="plan-header">
+        <h1>Learning Plan</h1>
+        <p>Pick a track and your weekly hours. Get a week-by-week, self-paced schedule built from real per-lesson time estimates. Progress is saved in your browser.</p>
+      </div>
+
+      <div class="plan-config">
+        <div class="config-row">
+          <span class="config-label">Track</span>
+          <div class="track-grid" id="trackGrid"></div>
+        </div>
+
+        <div class="config-row">
+          <span class="config-label">Hours per week</span>
+          <div class="hours-row">
+            <input type="range" id="hoursRange" min="2" max="40" step="1" value="8"
+              aria-label="Hours per week">
+            <span class="hours-value" id="hoursValue">8 hrs/week</span>
+          </div>
+        </div>
+
+        <div class="config-row">
+          <span class="config-label">Phases you already know (click to skip)</span>
+          <div class="known-chips" id="knownChips"></div>
+          <p class="config-hint">Skipped phases are removed from the schedule. Prerequisites stay your responsibility — skip only what you genuinely know.</p>
+        </div>
+      </div>
+
+      <div class="plan-summary" id="planSummary"></div>
+
+      <div class="plan-progress">
+        <div class="plan-progress-bar"><div class="plan-progress-fill" id="progressFill"></div></div>
+        <div class="plan-progress-label" id="progressLabel"></div>
+      </div>
+
+      <div class="plan-weeks" id="planWeeks"></div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>AI Engineering from SystemaOps · open source · free forever.</p>
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="https://github.com/SystemaOps/ai-engineering-Systemaops" target="_blank" rel="noopener">GitHub</a>
+        <a href="catalog.html">Catalog</a>
+        <a href="glossary.html">Glossary</a>
+        <a href="https://github.com/SystemaOps/ai-engineering-Systemaops/issues/new/choose" target="_blank" rel="noopener">Report / Suggest</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="data.js?v=20260525a"></script>
+  <script src="progress.js?v=20260525a"></script>
+  <script src="header.js?v=20260525a" defer></script>
+  <script src="cmdpalette.js?v=20260525a" defer></script>
+  <script>
+  (function () {
+    /* ===================================================
+       Theme Toggle — matches site-wide pattern
+    =================================================== */
+    var root   = document.documentElement;
+    var stored = localStorage.getItem('theme');
+    if (stored) {
+      root.setAttribute('data-theme', stored);
+    } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      root.setAttribute('data-theme', 'dark');
+    } else {
+      root.setAttribute('data-theme', 'light');
+    }
+
+    function updateIcon() {
+      var icon = document.getElementById('themeIcon');
+      if (!icon) return;
+      icon.textContent = root.getAttribute('data-theme') === 'light' ? 'N' : 'D';
+    }
+
+    updateIcon();
+
+    /* ===================================================
+       Phase prerequisites — keep in sync with prereqs.html
+    =================================================== */
+    var PREREQS = {
+      0:  [],
+      1:  [0],
+      2:  [1],
+      3:  [2],
+      4:  [3],
+      5:  [3],
+      6:  [3],
+      7:  [3],
+      8:  [3, 7],
+      9:  [3],
+      10: [7],
+      11: [10],
+      12: [4, 6, 11],
+      13: [11],
+      14: [11, 13],
+      15: [14],
+      16: [15],
+      17: [11],
+      18: [10],
+      19: [14, 15, 16, 17]
+    };
+
+    /*
+     * A track is a set of target phases. The plan includes every
+     * target plus its full prerequisite closure, ordered by phase id
+     * (valid topologically: every prerequisite id < dependent id).
+     */
+    var TRACKS = [
+      {
+        id: 'full',
+        name: 'Full Curriculum',
+        desc: 'All 20 phases, math to capstones. The complete path.',
+        targets: [4, 5, 6, 8, 9, 12, 16, 18, 19]
+      },
+      {
+        id: 'llm-engineer',
+        name: 'LLM Engineer',
+        desc: 'Transformers, LLMs from scratch, production LLM engineering.',
+        targets: [11, 13, 17]
+      },
+      {
+        id: 'agent-engineer',
+        name: 'Agent Engineer',
+        desc: 'Tools, protocols, agent loops, autonomous systems, swarms.',
+        targets: [14, 15, 16]
+      },
+      {
+        id: 'vision-multimodal',
+        name: 'Vision & Multimodal',
+        desc: 'Computer vision, speech, and multimodal models end to end.',
+        targets: [12]
+      }
+    ];
+
+    var DEFAULT_MINUTES = 45; // fallback for lessons without a Time: line
+
+    /* ===================================================
+       Config persistence (localStorage, like progress.js)
+    =================================================== */
+    var CONFIG_KEY = 'aifs:plan:v1';
+
+    function defaultConfig() {
+      return { track: 'full', hoursPerWeek: 8, known: [] };
+    }
+
+    function readConfig() {
+      try {
+        var raw = localStorage.getItem(CONFIG_KEY);
+        if (!raw) return defaultConfig();
+        var parsed = JSON.parse(raw);
+        if (!parsed || typeof parsed !== 'object') return defaultConfig();
+        return {
+          track: typeof parsed.track === 'string' ? parsed.track : 'full',
+          hoursPerWeek: Math.min(40, Math.max(2, parseInt(parsed.hoursPerWeek, 10) || 8)),
+          known: Array.isArray(parsed.known) ? parsed.known.map(Number) : []
+        };
+      } catch (e) {
+        return defaultConfig();
+      }
+    }
+
+    function writeConfig(cfg) {
+      try {
+        localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
+      } catch (e) {
+        // storage disabled; plan still works for this page view
+      }
+    }
+
+    var config = readConfig();
+
+    /* ===================================================
+       Plan computation
+    =================================================== */
+    var PHASE_MAP = {};
+    for (var i = 0; i < PHASES.length; i++) PHASE_MAP[PHASES[i].id] = PHASES[i];
+
+    function trackById(id) {
+      for (var i = 0; i < TRACKS.length; i++) {
+        if (TRACKS[i].id === id) return TRACKS[i];
+      }
+      return TRACKS[0];
+    }
+
+    function closure(targets) {
+      var included = {};
+      var queue = targets.slice();
+      while (queue.length) {
+        var p = queue.shift();
+        if (included[p] || !(p in PREREQS)) continue;
+        included[p] = true;
+        for (var i = 0; i < PREREQS[p].length; i++) queue.push(PREREQS[p][i]);
+      }
+      var ids = [];
+      for (var pid in included) ids.push(parseInt(pid, 10));
+      ids.sort(function (a, b) { return a - b; });
+      return ids;
+    }
+
+    function lessonMinutes(lesson) {
+      return lesson.minutes || DEFAULT_MINUTES;
+    }
+
+    function lessonPath(lesson) {
+      return lesson.url ? window.AIFSProgress.extractPath(lesson.url) : '';
+    }
+
+    /*
+     * Greedy weekly packing: walk lessons in phase order, start a new
+     * week whenever adding the next lesson would exceed the weekly
+     * minute budget (and the week isn't empty).
+     */
+    function computePlan() {
+      var track = trackById(config.track);
+      var phaseIds = closure(track.targets).filter(function (id) {
+        return config.known.indexOf(id) === -1 && PHASE_MAP[id];
+      });
+
+      var capacity = config.hoursPerWeek * 60;
+      var weeks = [];
+      var current = { minutes: 0, items: [] };
+      var totalMinutes = 0, totalLessons = 0;
+
+      for (var p = 0; p < phaseIds.length; p++) {
+        var phase = PHASE_MAP[phaseIds[p]];
+        for (var l = 0; l < phase.lessons.length; l++) {
+          var lesson = phase.lessons[l];
+          var mins = lessonMinutes(lesson);
+          if (current.items.length && current.minutes + mins > capacity) {
+            weeks.push(current);
+            current = { minutes: 0, items: [] };
+          }
+          current.items.push({ phase: phase, lesson: lesson, index: l + 1 });
+          current.minutes += mins;
+          totalMinutes += mins;
+          totalLessons++;
+        }
+      }
+      if (current.items.length) weeks.push(current);
+
+      return {
+        track: track,
+        phaseIds: phaseIds,
+        weeks: weeks,
+        totalMinutes: totalMinutes,
+        totalLessons: totalLessons
+      };
+    }
+
+    /* ===================================================
+       Rendering
+    =================================================== */
+    function escapeHtml(str) {
+      var div = document.createElement('div');
+      div.appendChild(document.createTextNode(String(str)));
+      return div.innerHTML;
+    }
+
+    function fmtDate(d) {
+      var opts = { month: 'short', day: 'numeric' };
+      if (d.getFullYear() !== new Date().getFullYear()) opts.year = 'numeric';
+      return d.toLocaleDateString(undefined, opts);
+    }
+
+    var openWeeks = {}; // weekIndex -> bool, preserved across re-renders
+
+    function renderTracks() {
+      var grid = document.getElementById('trackGrid');
+      var html = '';
+      for (var i = 0; i < TRACKS.length; i++) {
+        var t = TRACKS[i];
+        html += '<button type="button" class="track-card' + (t.id === config.track ? ' active' : '') + '" data-track="' + t.id + '">' +
+          '<span class="track-name">' + escapeHtml(t.name) + '</span>' +
+          '<span class="track-desc">' + escapeHtml(t.desc) + '</span>' +
+          '</button>';
+      }
+      grid.innerHTML = html;
+      var cards = grid.querySelectorAll('.track-card');
+      for (var c = 0; c < cards.length; c++) {
+        cards[c].addEventListener('click', function () {
+          config.track = this.getAttribute('data-track');
+          openWeeks = {};
+          writeConfig(config);
+          renderAll();
+        });
+      }
+    }
+
+    function renderKnownChips(plan) {
+      var wrap = document.getElementById('knownChips');
+      var track = trackById(config.track);
+      var allIds = closure(track.targets);
+      var html = '';
+      for (var i = 0; i < allIds.length; i++) {
+        var id = allIds[i];
+        var phase = PHASE_MAP[id];
+        if (!phase) continue;
+        var skipped = config.known.indexOf(id) !== -1;
+        html += '<button type="button" class="phase-chip' + (skipped ? ' skipped' : '') + '" data-phase="' + id + '">' +
+          'P' + String(id).padStart(2, '0') + ' ' + escapeHtml(phase.name) +
+          '</button>';
+      }
+      wrap.innerHTML = html;
+      var chips = wrap.querySelectorAll('.phase-chip');
+      for (var c = 0; c < chips.length; c++) {
+        chips[c].addEventListener('click', function () {
+          var id = parseInt(this.getAttribute('data-phase'), 10);
+          var idx = config.known.indexOf(id);
+          if (idx === -1) config.known.push(id);
+          else config.known.splice(idx, 1);
+          openWeeks = {};
+          writeConfig(config);
+          renderAll();
+        });
+      }
+    }
+
+    function renderSummary(plan) {
+      var hours = Math.round(plan.totalMinutes / 60);
+      var nWeeks = plan.weeks.length;
+      var finish = new Date(Date.now() + nWeeks * 7 * 24 * 3600 * 1000);
+      var months = (nWeeks / 4.345).toFixed(1);
+      document.getElementById('planSummary').innerHTML =
+        '<div class="summary-stat"><span class="stat-value">' + plan.totalLessons + '</span><span class="stat-label">lessons</span></div>' +
+        '<div class="summary-stat"><span class="stat-value">~' + hours + '</span><span class="stat-label">hours</span></div>' +
+        '<div class="summary-stat"><span class="stat-value">' + nWeeks + '</span><span class="stat-label">weeks (~' + months + ' mo)</span></div>' +
+        '<div class="summary-stat"><span class="stat-value">' + fmtDate(finish) + '</span><span class="stat-label">est. finish</span></div>';
+    }
+
+    function renderProgress(plan) {
+      var done = 0;
+      for (var w = 0; w < plan.weeks.length; w++) {
+        var items = plan.weeks[w].items;
+        for (var i = 0; i < items.length; i++) {
+          if (window.AIFSProgress.isLessonComplete(lessonPath(items[i].lesson))) done++;
+        }
+      }
+      var pct = plan.totalLessons ? Math.round((done / plan.totalLessons) * 100) : 0;
+      document.getElementById('progressFill').style.width = pct + '%';
+      document.getElementById('progressLabel').textContent =
+        done + ' / ' + plan.totalLessons + ' lessons complete (' + pct + '%)';
+    }
+
+    function renderWeeks(plan) {
+      var wrap = document.getElementById('planWeeks');
+      var start = new Date();
+      var html = '';
+
+      for (var w = 0; w < plan.weeks.length; w++) {
+        var week = plan.weeks[w];
+        var weekStart = new Date(start.getTime() + w * 7 * 24 * 3600 * 1000);
+        var doneCount = 0;
+        var phaseNames = [];
+        var lastPhaseId = -1;
+
+        for (var i = 0; i < week.items.length; i++) {
+          var it = week.items[i];
+          if (it.phase.id !== lastPhaseId) {
+            phaseNames.push(it.phase.name);
+            lastPhaseId = it.phase.id;
+          }
+          if (window.AIFSProgress.isLessonComplete(lessonPath(it.lesson))) doneCount++;
+        }
+
+        var allDone = doneCount === week.items.length;
+        var isOpen = !!openWeeks[w];
+        var hoursTxt = (week.minutes / 60).toFixed(1).replace(/\.0$/, '');
+
+        html += '<div class="week-card' + (allDone ? ' done' : '') + (isOpen ? ' open' : '') + '" data-week="' + w + '">';
+        html += '<button type="button" class="week-head" aria-expanded="' + isOpen + '">';
+        html += '<span class="week-num">WK ' + String(w + 1).padStart(2, '0') + '</span>';
+        html += '<span class="week-title">' + escapeHtml(phaseNames.join(' · ')) + '</span>';
+        html += '<span class="week-meta">' + fmtDate(weekStart) + ' · ' + hoursTxt + 'h · ' + doneCount + '/' + week.items.length + '</span>';
+        html += '<span class="week-chevron">&#9656;</span>';
+        html += '</button>';
+        html += '<div class="week-body">';
+
+        lastPhaseId = -1;
+        for (var i = 0; i < week.items.length; i++) {
+          var it = week.items[i];
+          if (it.phase.id !== lastPhaseId) {
+            html += '<div class="week-phase-label">Phase ' + String(it.phase.id).padStart(2, '0') + ' — ' + escapeHtml(it.phase.name) + '</div>';
+            lastPhaseId = it.phase.id;
+          }
+          var path = lessonPath(it.lesson);
+          var checked = window.AIFSProgress.isLessonComplete(path);
+          var href = path ? 'lesson.html?path=' + encodeURIComponent(path) : (it.lesson.url || '#');
+          html += '<div class="plan-lesson' + (checked ? ' checked' : '') + '">';
+          html += '<input type="checkbox" data-path="' + escapeHtml(path) + '"' + (checked ? ' checked' : '') +
+            ' aria-label="Mark complete: ' + escapeHtml(it.lesson.name) + '">';
+          html += '<a href="' + href + '">' + String(it.index).padStart(2, '0') + ' · ' + escapeHtml(it.lesson.name) + '</a>';
+          html += '<span class="lesson-type-tag">' + escapeHtml(it.lesson.type || '') + '</span>';
+          html += '<span class="lesson-mins">' + lessonMinutes(it.lesson) + 'm</span>';
+          html += '</div>';
+        }
+
+        html += '</div></div>';
+      }
+
+      if (!plan.weeks.length) {
+        html = '<p style="text-align:center;color:var(--text-muted)">Nothing left to schedule — every phase in this track is marked as known.</p>';
+      }
+
+      wrap.innerHTML = html;
+
+      var heads = wrap.querySelectorAll('.week-head');
+      for (var h = 0; h < heads.length; h++) {
+        heads[h].addEventListener('click', function () {
+          var card = this.parentNode;
+          var idx = parseInt(card.getAttribute('data-week'), 10);
+          openWeeks[idx] = !openWeeks[idx];
+          card.classList.toggle('open', openWeeks[idx]);
+          this.setAttribute('aria-expanded', String(openWeeks[idx]));
+        });
+      }
+
+      var boxes = wrap.querySelectorAll('input[type="checkbox"][data-path]');
+      for (var b = 0; b < boxes.length; b++) {
+        boxes[b].addEventListener('change', function () {
+          var path = this.getAttribute('data-path');
+          if (!path) return;
+          if (this.checked) window.AIFSProgress.markLessonComplete(path);
+          else window.AIFSProgress.unmarkLessonComplete(path);
+          renderAll();
+        });
+      }
+    }
+
+    function openFirstIncompleteWeek(plan) {
+      // Only on first render: open the week the learner is currently in.
+      for (var w = 0; w < plan.weeks.length; w++) {
+        var items = plan.weeks[w].items;
+        for (var i = 0; i < items.length; i++) {
+          if (!window.AIFSProgress.isLessonComplete(lessonPath(items[i].lesson))) {
+            openWeeks[w] = true;
+            return;
+          }
+        }
+      }
+    }
+
+    var firstRender = true;
+
+    function renderAll() {
+      var plan = computePlan();
+      if (firstRender) {
+        openFirstIncompleteWeek(plan);
+        firstRender = false;
+      }
+      renderTracks();
+      renderKnownChips(plan);
+      renderSummary(plan);
+      renderProgress(plan);
+      renderWeeks(plan);
+      document.getElementById('hoursValue').textContent = config.hoursPerWeek + ' hrs/week';
+      document.getElementById('hoursRange').value = config.hoursPerWeek;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      updateIcon();
+      var btn = document.getElementById('themeToggle');
+      if (btn) {
+        btn.addEventListener('click', function () {
+          var next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+          root.setAttribute('data-theme', next);
+          localStorage.setItem('theme', next);
+          updateIcon();
+        });
+      }
+
+      var range = document.getElementById('hoursRange');
+      range.addEventListener('input', function () {
+        config.hoursPerWeek = parseInt(this.value, 10);
+        document.getElementById('hoursValue').textContent = config.hoursPerWeek + ' hrs/week';
+      });
+      range.addEventListener('change', function () {
+        config.hoursPerWeek = parseInt(this.value, 10);
+        openWeeks = {};
+        writeConfig(config);
+        renderAll();
+      });
+
+      // Re-render when progress changes in another tab.
+      window.AIFSProgress.onChange(function () { renderAll(); });
+
+      renderAll();
+    });
+  })();
+  </script>
+</body>
+</html>
