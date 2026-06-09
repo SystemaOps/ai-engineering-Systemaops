@@ -16,7 +16,7 @@
 > **84% of students already use AI tools. Only 18% feel prepared to use them
 > professionally.** This curriculum closes that gap.
 >
-> 503 lessons. 20 phases. ~320 hours. Python, TypeScript, Rust, Julia. Every lesson ships
+> 503 lessons. 20 phases. ~1,137 hours. Python, TypeScript, Rust, Julia. Every lesson ships
 > a reusable artifact: a prompt, a skill, an agent, an MCP server. MIT.
 >
 > You don't just learn AI. You build it. End-to-end. By hand.
@@ -1060,11 +1060,14 @@ HEAD/GET).
 
 | Background | Start at | Estimated time |
 |---|---|---|
-| New to programming and AI | Phase 0 — Setup | ~306 hours |
-| Know Python, new to ML | Phase 1 — Math Foundations | ~270 hours |
-| Know ML, new to deep learning | Phase 3 — Deep Learning Core | ~200 hours |
-| Know deep learning, want LLMs and agents | Phase 10 — LLMs from Scratch | ~100 hours |
-| Senior engineer, only want agent engineering | Phase 14 — Agent Engineering | ~60 hours |
+| New to programming and AI | Phase 0 — Setup | ~510 hours |
+| Know Python, new to ML | Phase 1 — Math Foundations | ~502 hours |
+| Know ML, new to deep learning | Phase 3 — Deep Learning Core | ~444 hours |
+| Know deep learning, want LLMs and agents | Phase 10 — LLMs from Scratch | ~299 hours |
+| Senior engineer, only want agent engineering | Phase 14 — Agent Engineering | ~154 hours |
+
+Estimates sum the per-lesson time for the lesson phases (0–18). Phase 19 capstones are
+pick-your-own: 20–40 hours per project, ~627 hours if you build all of them.
 
 ```
 ░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒

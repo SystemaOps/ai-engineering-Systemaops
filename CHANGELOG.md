@@ -12,6 +12,10 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/). Each ent
 - `.github/ISSUE_TEMPLATE/bug_report.md` and `new_lesson_proposal.md` — structured intake for bug reports and lesson pitches.
 - This `CHANGELOG.md`.
 
+### Fixed
+- Total-time claims now match the per-lesson `**Time:**` estimates in `docs/en.md` (68,205 min ≈ 1,137 hours): README headline said ~320 hours, ROADMAP said ~314 (intro) and ~1,050 (footer), and ROADMAP per-phase hour headers drifted from their lessons. README's "Where to start" table now sums the lesson phases (0–18) per starting point, with Phase 19 capstones (~627 hours total) called out separately.
+- `site/build.js` `syncCounts()` now derives all of these hour figures from the extracted lesson minutes and rewrites README.md and ROADMAP.md on build, the same way lesson/phase counts are already synced — so they can't drift again.
+
 ## 2026-04 — Phase 4: Computer Vision complete
 
 ### Added

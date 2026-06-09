@@ -4,96 +4,96 @@ Status tracker for every phase and lesson. The status glyphs in this file feed
 the website (`site/build.js` parses them into `site/data.js`); do not change
 their shape.
 
-Total estimated time: ~314 hours, at your own pace.
+Total estimated time: ~1,137 hours, at your own pace.
 
 **Legend:** ✅ Complete &nbsp;·&nbsp; 🚧 In Progress &nbsp;·&nbsp; ⬚ Planned
 
-## Phase 0: Setup & Tooling — ✅ (~14 hours)
+## Phase 0: Setup & Tooling — ✅ (~8 hours)
 
 | # | Lesson | Status | Est. |
 |---|--------|--------|------|
-| 01 | Dev Environment | ✅ | ~75 min |
-| 02 | Git & Collaboration | ✅ | ~45 min |
-| 03 | GPU Setup & Cloud | ✅ | ~75 min |
-| 04 | APIs & Keys | ✅ | ~75 min |
-| 05 | Jupyter Notebooks | ✅ | ~75 min |
-| 06 | Python Environments | ✅ | ~75 min |
-| 07 | Docker for AI | ✅ | ~75 min |
-| 08 | Editor Setup | ✅ | ~75 min |
-| 09 | Data Management | ✅ | ~75 min |
-| 10 | Terminal & Shell | ✅ | ~45 min |
-| 11 | Linux for AI | ✅ | ~45 min |
-| 12 | Debugging & Profiling | ✅ | ~75 min |
+| 01 | Dev Environment | ✅ | ~45 min |
+| 02 | Git & Collaboration | ✅ | ~30 min |
+| 03 | GPU Setup & Cloud | ✅ | ~45 min |
+| 04 | APIs & Keys | ✅ | ~30 min |
+| 05 | Jupyter Notebooks | ✅ | ~30 min |
+| 06 | Python Environments | ✅ | ~30 min |
+| 07 | Docker for AI | ✅ | ~60 min |
+| 08 | Editor Setup | ✅ | ~20 min |
+| 09 | Data Management | ✅ | ~45 min |
+| 10 | Terminal & Shell | ✅ | ~35 min |
+| 11 | Linux for AI | ✅ | ~30 min |
+| 12 | Debugging & Profiling | ✅ | ~60 min |
 
-## Phase 1: Math Foundations — ✅ (~23 hours)
+## Phase 1: Math Foundations — ✅ (~32 hours)
 
 | # | Lesson | Status | Est. |
 |---|--------|--------|------|
-| 01 | Linear Algebra Intuition | ✅ | ~45 min |
-| 02 | Vectors, Matrices & Operations | ✅ | ~75 min |
+| 01 | Linear Algebra Intuition | ✅ | ~60 min |
+| 02 | Vectors, Matrices & Operations | ✅ | ~60 min |
 | 03 | Matrix Transformations & Eigenvalues | ✅ | ~75 min |
-| 04 | Calculus for ML — Derivatives & Gradients | ✅ | ~45 min |
-| 05 | Chain Rule & Automatic Differentiation | ✅ | ~75 min |
-| 06 | Probability & Distributions | ✅ | ~45 min |
+| 04 | Calculus for ML — Derivatives & Gradients | ✅ | ~60 min |
+| 05 | Chain Rule & Automatic Differentiation | ✅ | ~90 min |
+| 06 | Probability & Distributions | ✅ | ~75 min |
 | 07 | Bayes' Theorem & Statistical Thinking | ✅ | ~75 min |
 | 08 | Optimization — Gradient Descent Family | ✅ | ~75 min |
-| 09 | Information Theory — Entropy, KL Divergence | ✅ | ~45 min |
-| 10 | Dimensionality Reduction — PCA, t-SNE, UMAP | ✅ | ~75 min |
-| 11 | Singular Value Decomposition | ✅ | ~75 min |
-| 12 | Tensor Operations | ✅ | ~75 min |
-| 13 | Numerical Stability | ✅ | ~45 min |
-| 14 | Norms & Distances | ✅ | ~45 min |
-| 15 | Statistics for ML | ✅ | ~45 min |
-| 16 | Sampling Methods | ✅ | ~75 min |
-| 17 | Linear Systems | ✅ | ~75 min |
-| 18 | Convex Optimization | ✅ | ~75 min |
-| 19 | Complex Numbers for AI | ✅ | ~45 min |
-| 20 | The Fourier Transform | ✅ | ~75 min |
-| 21 | Graph Theory for ML | ✅ | ~45 min |
-| 22 | Stochastic Processes | ✅ | ~45 min |
+| 09 | Information Theory — Entropy, KL Divergence | ✅ | ~60 min |
+| 10 | Dimensionality Reduction — PCA, t-SNE, UMAP | ✅ | ~90 min |
+| 11 | Singular Value Decomposition | ✅ | ~120 min |
+| 12 | Tensor Operations | ✅ | ~90 min |
+| 13 | Numerical Stability | ✅ | ~120 min |
+| 14 | Norms & Distances | ✅ | ~90 min |
+| 15 | Statistics for ML | ✅ | ~120 min |
+| 16 | Sampling Methods | ✅ | ~120 min |
+| 17 | Linear Systems | ✅ | ~120 min |
+| 18 | Convex Optimization | ✅ | ~90 min |
+| 19 | Complex Numbers for AI | ✅ | ~60 min |
+| 20 | The Fourier Transform | ✅ | ~90 min |
+| 21 | Graph Theory for ML | ✅ | ~90 min |
+| 22 | Stochastic Processes | ✅ | ~75 min |
 
-## Phase 2: ML Fundamentals — ✅ (~21 hours)
+## Phase 2: ML Fundamentals — ✅ (~26 hours)
 
 | # | Lesson | Status | Est. |
 |---|--------|--------|------|
 | 01 | What Is Machine Learning — Types & Taxonomy | ✅ | ~45 min |
-| 02 | Linear Regression from Scratch | ✅ | ~75 min |
-| 03 | Logistic Regression & Classification | ✅ | ~75 min |
-| 04 | Decision Trees & Random Forests | ✅ | ~75 min |
-| 05 | Support Vector Machines | ✅ | ~75 min |
-| 06 | K-Nearest Neighbors & Distance Metrics | ✅ | ~75 min |
-| 07 | Unsupervised Learning — K-Means, DBSCAN | ✅ | ~75 min |
-| 08 | Feature Engineering & Selection | ✅ | ~75 min |
-| 09 | Model Evaluation — Metrics, Cross-Validation | ✅ | ~75 min |
-| 10 | Bias, Variance & the Learning Curve | ✅ | ~45 min |
-| 11 | Ensemble Methods — Boosting, Bagging, Stacking | ✅ | ~75 min |
-| 12 | Hyperparameter Tuning & AutoML | ✅ | ~75 min |
-| 13 | ML Pipelines & Experiment Tracking | ✅ | ~75 min |
+| 02 | Linear Regression from Scratch | ✅ | ~90 min |
+| 03 | Logistic Regression & Classification | ✅ | ~90 min |
+| 04 | Decision Trees & Random Forests | ✅ | ~90 min |
+| 05 | Support Vector Machines | ✅ | ~90 min |
+| 06 | K-Nearest Neighbors & Distance Metrics | ✅ | ~90 min |
+| 07 | Unsupervised Learning — K-Means, DBSCAN | ✅ | ~90 min |
+| 08 | Feature Engineering & Selection | ✅ | ~90 min |
+| 09 | Model Evaluation — Metrics, Cross-Validation | ✅ | ~90 min |
+| 10 | Bias, Variance & the Learning Curve | ✅ | ~75 min |
+| 11 | Ensemble Methods — Boosting, Bagging, Stacking | ✅ | ~120 min |
+| 12 | Hyperparameter Tuning & AutoML | ✅ | ~90 min |
+| 13 | ML Pipelines & Experiment Tracking | ✅ | ~120 min |
 | 14 | Naive Bayes — Multinomial, Gaussian, Bernoulli | ✅ | ~75 min |
-| 15 | Time Series Fundamentals | ✅ | ~45 min |
+| 15 | Time Series Fundamentals | ✅ | ~90 min |
 | 16 | Anomaly Detection | ✅ | ~75 min |
-| 17 | Handling Imbalanced Data | ✅ | ~75 min |
+| 17 | Handling Imbalanced Data | ✅ | ~90 min |
 | 18 | Feature Selection | ✅ | ~75 min |
 
-## Phase 3: Deep Learning Core — ✅ (~15 hours)
+## Phase 3: Deep Learning Core — ✅ (~19 hours)
 
 | # | Lesson | Status | Est. |
 |---|--------|--------|------|
-| 01 | The Perceptron — Where It All Started | ✅ | ~45 min |
-| 02 | Multi-Layer Networks & Forward Pass | ✅ | ~75 min |
-| 03 | Backpropagation from Scratch | ✅ | ~75 min |
-| 04 | Activation Functions — ReLU, Sigmoid, GELU & Why | ✅ | ~45 min |
-| 05 | Loss Functions — MSE, Cross-Entropy, Contrastive | ✅ | ~45 min |
+| 01 | The Perceptron — Where It All Started | ✅ | ~60 min |
+| 02 | Multi-Layer Networks & Forward Pass | ✅ | ~90 min |
+| 03 | Backpropagation from Scratch | ✅ | ~120 min |
+| 04 | Activation Functions — ReLU, Sigmoid, GELU & Why | ✅ | ~75 min |
+| 05 | Loss Functions — MSE, Cross-Entropy, Contrastive | ✅ | ~75 min |
 | 06 | Optimizers — SGD, Momentum, Adam, AdamW | ✅ | ~75 min |
 | 07 | Regularization — Dropout, Weight Decay, BatchNorm | ✅ | ~75 min |
-| 08 | Weight Initialization & Training Stability | ✅ | ~45 min |
-| 09 | Learning Rate Schedules & Warmup | ✅ | ~45 min |
+| 08 | Weight Initialization & Training Stability | ✅ | ~90 min |
+| 09 | Learning Rate Schedules & Warmup | ✅ | ~90 min |
 | 10 | Build Your Own Mini Framework | ✅ | ~120 min |
 | 11 | Introduction to PyTorch | ✅ | ~75 min |
-| 12 | Introduction to JAX | ✅ | ~75 min |
-| 13 | Debugging Neural Networks | ✅ | ~75 min |
+| 12 | Introduction to JAX | ✅ | ~90 min |
+| 13 | Debugging Neural Networks | ✅ | ~90 min |
 
-## Phase 4: Computer Vision — ✅ (~27 hours)
+## Phase 4: Computer Vision — ✅ (~31 hours)
 
 | # | Lesson | Status | Est. |
 |---|--------|--------|------|
@@ -126,7 +126,7 @@ Total estimated time: ~314 hours, at your own pace.
 | 27 | Multi-Object Tracking & Video Memory | ✅ | ~60 min |
 | 28 | World Models & Video Diffusion | ✅ | ~75 min |
 
-## Phase 5: NLP — Foundations to Advanced — ✅ (~30 hours)
+## Phase 5: NLP — Foundations to Advanced — ✅ (~31 hours)
 
 | # | Lesson | Status | Est. |
 |---|--------|--------|------|
@@ -160,7 +160,7 @@ Total estimated time: ~314 hours, at your own pace.
 | 28 | [Long-Context Evaluation — NIAH, RULER, LongBench, MRCR](phases/05-nlp-foundations-to-advanced/28-long-context-evaluation) | ✅ | ~60 min |
 | 29 | [Dialogue State Tracking](phases/05-nlp-foundations-to-advanced/29-dialogue-state-tracking) | ✅ | ~75 min |
 
-## Phase 6: Speech & Audio — ✅ (~18 hours)
+## Phase 6: Speech & Audio — ✅ (~19 hours)
 
 | # | Lesson | Status | Est. |
 |---|--------|--------|------|
@@ -182,12 +182,12 @@ Total estimated time: ~314 hours, at your own pace.
 | 16 | [Voice Anti-Spoofing & Audio Watermarking](phases/06-speech-and-audio/16-anti-spoofing-audio-watermarking) | ✅ | ~75 min |
 | 17 | [Audio Evaluation — WER, MOS, MMAU, Leaderboards](phases/06-speech-and-audio/17-audio-evaluation-metrics) | ✅ | ~60 min |
 
-## Phase 7: Transformers Deep Dive — ✅ (~14 hours)
+## Phase 7: Transformers Deep Dive — ✅ (~17 hours)
 
 | # | Lesson | Status | Est. |
 |---|--------|--------|------|
 | 01 | [Why Transformers — The Problems with RNNs](phases/07-transformers-deep-dive/01-why-transformers) | ✅ | ~45 min |
-| 02 | [Self-Attention from Scratch](phases/07-transformers-deep-dive/02-self-attention-from-scratch) | ✅ | ~75 min |
+| 02 | [Self-Attention from Scratch](phases/07-transformers-deep-dive/02-self-attention-from-scratch) | ✅ | ~90 min |
 | 03 | [Multi-Head Attention](phases/07-transformers-deep-dive/03-multi-head-attention) | ✅ | ~75 min |
 | 04 | [Positional Encoding — Sinusoidal, RoPE, ALiBi](phases/07-transformers-deep-dive/04-positional-encoding) | ✅ | ~45 min |
 | 05 | [The Full Transformer — Encoder + Decoder](phases/07-transformers-deep-dive/05-full-transformer) | ✅ | ~75 min |
@@ -203,7 +203,7 @@ Total estimated time: ~314 hours, at your own pace.
 | 15 | [Attention Variants — Sliding Window, Sparse, Differential](phases/07-transformers-deep-dive/15-attention-variants) | ✅ | ~60 min |
 | 16 | [Speculative Decoding — Draft, Verify, Repeat](phases/07-transformers-deep-dive/16-speculative-decoding) | ✅ | ~60 min |
 
-## Phase 8: Generative AI — ✅ (~14 hours)
+## Phase 8: Generative AI — ✅ (~16 hours)
 
 | # | Lesson | Status | Est. |
 |---|--------|--------|------|
@@ -223,7 +223,7 @@ Total estimated time: ~314 hours, at your own pace.
 | 14 | [Evaluation — FID, CLIP Score, Human Preference](phases/08-generative-ai/14-evaluation-fid-clip-score/) | ✅ | ~45 min |
 | 19 | [Visual Autoregressive Modeling (VAR): Next-Scale Prediction](phases/08-generative-ai/19-visual-autoregressive-var) | ✅ | ~90 min |
 
-## Phase 9: Reinforcement Learning — ✅ (~13 hours)
+## Phase 9: Reinforcement Learning — ✅ (~14 hours)
 
 | # | Lesson | Status | Est. |
 |---|--------|--------|------|
@@ -238,24 +238,24 @@ Total estimated time: ~314 hours, at your own pace.
 | 09 | Reward Modeling & RLHF | ✅ | ~45 min |
 | 10 | Multi-Agent RL | ✅ | ~45 min |
 | 11 | Sim-to-Real Transfer | ✅ | ~45 min |
-| 12 | RL for Games | ✅ | ~75 min |
+| 12 | RL for Games | ✅ | ~120 min |
 
-## Phase 10: LLMs from Scratch — ✅ (~26 hours)
+## Phase 10: LLMs from Scratch — ✅ (~33 hours)
 
 | # | Lesson | Status | Est. |
 |---|--------|--------|------|
-| 01 | [Tokenizers — BPE, WordPiece, SentencePiece](phases/10-llms-from-scratch/01-tokenizers) | ✅ | ~45 min |
-| 02 | [Building a Tokenizer from Scratch](phases/10-llms-from-scratch/02-building-a-tokenizer) | ✅ | ~75 min |
-| 03 | [Data Pipelines for Pre-Training](phases/10-llms-from-scratch/03-data-pipelines) | ✅ | ~75 min |
+| 01 | [Tokenizers — BPE, WordPiece, SentencePiece](phases/10-llms-from-scratch/01-tokenizers) | ✅ | ~90 min |
+| 02 | [Building a Tokenizer from Scratch](phases/10-llms-from-scratch/02-building-a-tokenizer) | ✅ | ~90 min |
+| 03 | [Data Pipelines for Pre-Training](phases/10-llms-from-scratch/03-data-pipelines) | ✅ | ~90 min |
 | 04 | [Pre-Training a Mini GPT (124M)](phases/10-llms-from-scratch/04-pre-training-mini-gpt) | ✅ | ~120 min |
-| 05 | [Scaling — Distributed Training, FSDP, DeepSpeed](phases/10-llms-from-scratch/05-scaling-distributed) | ✅ | ~75 min |
-| 06 | [Instruction Tuning — SFT](phases/10-llms-from-scratch/06-instruction-tuning-sft) | ✅ | ~75 min |
-| 07 | [RLHF — Reward Model + PPO Training](phases/10-llms-from-scratch/07-rlhf) | ✅ | ~75 min |
-| 08 | [DPO — Direct Preference Optimization](phases/10-llms-from-scratch/08-dpo) | ✅ | ~75 min |
+| 05 | [Scaling — Distributed Training, FSDP, DeepSpeed](phases/10-llms-from-scratch/05-scaling-distributed) | ✅ | ~120 min |
+| 06 | [Instruction Tuning — SFT](phases/10-llms-from-scratch/06-instruction-tuning-sft) | ✅ | ~90 min |
+| 07 | [RLHF — Reward Model + PPO Training](phases/10-llms-from-scratch/07-rlhf) | ✅ | ~90 min |
+| 08 | [DPO — Direct Preference Optimization](phases/10-llms-from-scratch/08-dpo) | ✅ | ~90 min |
 | 09 | [Constitutional AI & Self-Improvement](phases/10-llms-from-scratch/09-constitutional-ai-self-improvement) | ✅ | ~45 min |
-| 10 | [Evaluation — Benchmarks, Evals, LM Harness](phases/10-llms-from-scratch/10-evaluation) | ✅ | ~75 min |
-| 11 | [Quantization — INT8, GPTQ, AWQ, GGUF](phases/10-llms-from-scratch/11-quantization) | ✅ | ~75 min |
-| 12 | [Inference Optimization](phases/10-llms-from-scratch/12-inference-optimization) | ✅ | ~75 min |
+| 10 | [Evaluation — Benchmarks, Evals, LM Harness](phases/10-llms-from-scratch/10-evaluation) | ✅ | ~90 min |
+| 11 | [Quantization — INT8, GPTQ, AWQ, GGUF](phases/10-llms-from-scratch/11-quantization) | ✅ | ~120 min |
+| 12 | [Inference Optimization](phases/10-llms-from-scratch/12-inference-optimization) | ✅ | ~120 min |
 | 13 | [Building a Complete LLM Pipeline](phases/10-llms-from-scratch/13-building-complete-llm-pipeline) | ✅ | ~120 min |
 | 14 | [Open Models — Architecture Walkthroughs](phases/10-llms-from-scratch/14-open-models-architecture-walkthroughs) | ✅ | ~45 min |
 | 15 | [Speculative Decoding and EAGLE-3](phases/10-llms-from-scratch/15-speculative-decoding-eagle3) | ✅ | ~75 min |
@@ -269,17 +269,17 @@ Total estimated time: ~314 hours, at your own pace.
 | 25 | [Speculative Decoding and EAGLE](phases/10-llms-from-scratch/25-speculative-decoding) | ✅ | ~75 min |
 | 34 | [Gradient Checkpointing and Activation Recomputation](phases/10-llms-from-scratch/34-gradient-checkpointing) | ✅ | ~70 min |
 
-## Phase 11: LLM Engineering — ✅ (~17 hours)
+## Phase 11: LLM Engineering — ✅ (~21 hours)
 
 | # | Lesson | Status | Est. |
 |---|--------|--------|------|
-| 01 | [Prompt Engineering — Techniques & Patterns](phases/11-llm-engineering/01-prompt-engineering) | ✅ | ~45 min |
+| 01 | [Prompt Engineering — Techniques & Patterns](phases/11-llm-engineering/01-prompt-engineering) | ✅ | ~90 min |
 | 02 | [Few-Shot, Chain-of-Thought, Tree-of-Thought](phases/11-llm-engineering/02-few-shot-cot) | ✅ | ~45 min |
-| 03 | [Structured Outputs](phases/11-llm-engineering/03-structured-outputs) | ✅ | ~75 min |
+| 03 | [Structured Outputs](phases/11-llm-engineering/03-structured-outputs) | ✅ | ~90 min |
 | 04 | [Embeddings & Vector Representations](phases/11-llm-engineering/04-embeddings) | ✅ | ~75 min |
-| 05 | [Context Engineering](phases/11-llm-engineering/05-context-engineering) | ✅ | ~75 min |
-| 06 | [RAG — Retrieval-Augmented Generation](phases/11-llm-engineering/06-rag) | ✅ | ~75 min |
-| 07 | [Advanced RAG](phases/11-llm-engineering/07-advanced-rag) | ✅ | ~75 min |
+| 05 | [Context Engineering](phases/11-llm-engineering/05-context-engineering) | ✅ | ~90 min |
+| 06 | [RAG — Retrieval-Augmented Generation](phases/11-llm-engineering/06-rag) | ✅ | ~90 min |
+| 07 | [Advanced RAG](phases/11-llm-engineering/07-advanced-rag) | ✅ | ~90 min |
 | 08 | [Fine-Tuning with LoRA & QLoRA](phases/11-llm-engineering/08-fine-tuning-lora) | ✅ | ~75 min |
 | 09 | [Function Calling & Tool Use](phases/11-llm-engineering/09-function-calling) | ✅ | ~75 min |
 | 10 | [Evaluation & Testing LLM Applications](phases/11-llm-engineering/10-evaluation) | ✅ | ~45 min |
@@ -288,8 +288,10 @@ Total estimated time: ~314 hours, at your own pace.
 | 13 | [Building a Production LLM Application](phases/11-llm-engineering/13-production-app) | ✅ | ~120 min |
 | 14 | [Model Context Protocol (MCP)](phases/11-llm-engineering/14-model-context-protocol) | ✅ | ~75 min |
 | 15 | [Prompt Caching & Context Caching](phases/11-llm-engineering/15-prompt-caching) | ✅ | ~60 min |
+| 16 | [LangGraph: State Machines for Agents](phases/11-llm-engineering/16-langgraph-state-machines) | ✅ | ~75 min |
+| 17 | [Agent Framework Tradeoffs](phases/11-llm-engineering/17-agent-framework-tradeoffs) | ✅ | ~45 min |
 
-## Phase 12: Multimodal AI — ✅ (~65 hours)
+## Phase 12: Multimodal AI — ✅ (~67 hours)
 
 | # | Lesson | Status | Est. |
 |---|--------|--------|------|
@@ -319,7 +321,7 @@ Total estimated time: ~314 hours, at your own pace.
 | 24 | [Multimodal RAG and Cross-Modal Retrieval](phases/12-multimodal-ai/24-multimodal-rag-cross-modal) | ✅ | ~180 min |
 | 25 | [Multimodal Agents and Computer-Use (Capstone)](phases/12-multimodal-ai/25-multimodal-agents-computer-use) | ✅ | ~240 min |
 
-## Phase 13: Tools & Protocols — ✅ (~24.5 hours)
+## Phase 13: Tools & Protocols — ✅ (~25 hours)
 
 | # | Lesson | Status | Est. |
 |---|--------|--------|------|
@@ -347,7 +349,7 @@ Total estimated time: ~314 hours, at your own pace.
 | 22 | [Skills and Agent SDKs](phases/13-tools-and-protocols/22-skills-and-agent-sdks/) | ✅ | ~45 min |
 | 23 | [Capstone — Tool Ecosystem](phases/13-tools-and-protocols/23-capstone-tool-ecosystem/) | ✅ | ~120 min |
 
-## Phase 14: Agent Engineering — ✅ (~42 hours)
+## Phase 14: Agent Engineering — ✅ (~43 hours)
 
 | # | Lesson | Status | Est. |
 |---|--------|--------|------|
@@ -365,7 +367,7 @@ Total estimated time: ~314 hours, at your own pace.
 | 12 | Anthropic's Workflow Patterns | ✅ | ~60 min |
 | 13 | LangGraph — Stateful Graphs and Durable Execution | ✅ | ~75 min |
 | 14 | AutoGen v0.4 — Actor Model | ✅ | ~75 min |
-| 15 | CrewAI — Role-Based Crews and Flows | ✅ | ~60 min |
+| 15 | CrewAI — Role-Based Crews and Flows | ✅ | ~75 min |
 | 16 | OpenAI Agents SDK — Handoffs, Guardrails, Tracing | ✅ | ~75 min |
 | 17 | Claude Agent SDK — Subagents and Session Store | ✅ | ~75 min |
 | 18 | Agno and Mastra — Production Runtimes | ✅ | ~45 min |
@@ -421,19 +423,19 @@ Total estimated time: ~314 hours, at your own pace.
 | 21 | METR Time Horizons and External Evaluation | ✅ | ~60 min |
 | 22 | CAIS, CAISI, and Societal-Scale Risk | ✅ | ~45 min |
 
-## Phase 16: Multi-Agent & Swarms — ✅ (~28 hours)
+## Phase 16: Multi-Agent & Swarms — ✅ (~31 hours)
 
 | # | Lesson | Status | Est. |
 |---|--------|--------|------|
-| 01 | [Why Multi-Agent](phases/16-multi-agent-and-swarms/01-why-multi-agent/) | ✅ | ~45 min |
+| 01 | [Why Multi-Agent](phases/16-multi-agent-and-swarms/01-why-multi-agent/) | ✅ | ~60 min |
 | 02 | [FIPA-ACL Heritage and Speech Acts](phases/16-multi-agent-and-swarms/02-fipa-acl-heritage/) | ✅ | ~60 min |
-| 03 | [Communication Protocols](phases/16-multi-agent-and-swarms/03-communication-protocols/) | ✅ | ~45 min |
+| 03 | [Communication Protocols](phases/16-multi-agent-and-swarms/03-communication-protocols/) | ✅ | ~120 min |
 | 04 | [The Multi-Agent Primitive Model](phases/16-multi-agent-and-swarms/04-primitive-model/) | ✅ | ~60 min |
 | 05 | [Supervisor / Orchestrator-Worker Pattern](phases/16-multi-agent-and-swarms/05-supervisor-orchestrator-pattern/) | ✅ | ~75 min |
 | 06 | [Hierarchical Architecture and Decomposition Drift](phases/16-multi-agent-and-swarms/06-hierarchical-architecture/) | ✅ | ~60 min |
-| 07 | [Society of Mind and Multi-Agent Debate](phases/16-multi-agent-and-swarms/07-society-of-mind-debate/) | ✅ | ~75 min |
-| 08 | [Role Specialization — Planner / Critic / Executor / Verifier](phases/16-multi-agent-and-swarms/08-role-specialization/) | ✅ | ~75 min |
-| 09 | [Parallel Swarm and Networked Architectures](phases/16-multi-agent-and-swarms/09-parallel-swarm-networks/) | ✅ | ~60 min |
+| 07 | [Society of Mind and Multi-Agent Debate](phases/16-multi-agent-and-swarms/07-society-of-mind-debate/) | ✅ | ~60 min |
+| 08 | [Role Specialization — Planner / Critic / Executor / Verifier](phases/16-multi-agent-and-swarms/08-role-specialization/) | ✅ | ~60 min |
+| 09 | [Parallel Swarm and Networked Architectures](phases/16-multi-agent-and-swarms/09-parallel-swarm-networks/) | ✅ | ~75 min |
 | 10 | [Group Chat and Speaker Selection](phases/16-multi-agent-and-swarms/10-group-chat-speaker-selection/) | ✅ | ~60 min |
 | 11 | [Handoffs and Routines (Stateless Orchestration)](phases/16-multi-agent-and-swarms/11-handoffs-and-routines/) | ✅ | ~60 min |
 | 12 | [A2A — The Agent-to-Agent Protocol](phases/16-multi-agent-and-swarms/12-a2a-protocol/) | ✅ | ~75 min |
@@ -451,7 +453,7 @@ Total estimated time: ~314 hours, at your own pace.
 | 24 | [Evaluation and Coordination Benchmarks](phases/16-multi-agent-and-swarms/24-evaluation-coordination-benchmarks/) | ✅ | ~75 min |
 | 25 | [Case Studies and 2026 State of the Art](phases/16-multi-agent-and-swarms/25-case-studies-2026-sota/) | ✅ | ~90 min |
 
-## Phase 17: Infrastructure & Production — ✅ (~32 hours)
+## Phase 17: Infrastructure & Production — ✅ (~29 hours)
 
 | # | Lesson | Status | Est. |
 |---|--------|--------|------|
@@ -460,7 +462,7 @@ Total estimated time: ~314 hours, at your own pace.
 | 03 | GPU Autoscaling on Kubernetes — Karpenter, KAI Scheduler | ✅ | ~75 min |
 | 04 | vLLM Serving Internals — PagedAttention, Continuous Batching, Chunked Prefill | ✅ | ~75 min |
 | 05 | EAGLE-3 Speculative Decoding in Production | ✅ | ~60 min |
-| 06 | SGLang and RadixAttention for Prefix-Heavy Workloads | ✅ | ~60 min |
+| 06 | SGLang and RadixAttention for Prefix-Heavy Workloads | ✅ | ~75 min |
 | 07 | TensorRT-LLM on Blackwell with FP8 and NVFP4 | ✅ | ~75 min |
 | 08 | Inference Metrics — TTFT, TPOT, ITL, Goodput, P99 | ✅ | ~60 min |
 | 09 | Production Quantization — AWQ, GPTQ, GGUF, FP8, NVFP4 | ✅ | ~75 min |
@@ -490,8 +492,8 @@ Total estimated time: ~314 hours, at your own pace.
 |---|--------|--------|------|
 | 01 | [Instruction-Following as Alignment Signal](phases/18-ethics-safety-alignment/01-instruction-following-alignment-signal) | ✅ | ~45 min |
 | 02 | [Reward Hacking & Goodhart's Law](phases/18-ethics-safety-alignment/02-reward-hacking-goodhart) | ✅ | ~60 min |
-| 03 | [Direct Preference Optimization Family](phases/18-ethics-safety-alignment/03-direct-preference-optimization-family) | ✅ | ~60 min |
-| 04 | [Sycophancy as RLHF Amplification](phases/18-ethics-safety-alignment/04-sycophancy-rlhf-amplification) | ✅ | ~45 min |
+| 03 | [Direct Preference Optimization Family](phases/18-ethics-safety-alignment/03-direct-preference-optimization-family) | ✅ | ~75 min |
+| 04 | [Sycophancy as RLHF Amplification](phases/18-ethics-safety-alignment/04-sycophancy-rlhf-amplification) | ✅ | ~60 min |
 | 05 | [Constitutional AI & RLAIF](phases/18-ethics-safety-alignment/05-constitutional-ai-rlaif) | ✅ | ~60 min |
 | 06 | [Mesa-Optimization & Deceptive Alignment](phases/18-ethics-safety-alignment/06-mesa-optimization-deceptive-alignment) | ✅ | ~75 min |
 | 07 | [Sleeper Agents — Persistent Deception](phases/18-ethics-safety-alignment/07-sleeper-agents-persistent-deception) | ✅ | ~60 min |
@@ -519,7 +521,7 @@ Total estimated time: ~314 hours, at your own pace.
 | 29 | [Moderation Systems — OpenAI, Perspective, Llama Guard](phases/18-ethics-safety-alignment/29-moderation-systems-openai-perspective-llamaguard) | ✅ | ~60 min |
 | 30 | [Dual-Use Risk — Cyber, Bio, Chem, Nuclear](phases/18-ethics-safety-alignment/30-dual-use-risk-cyber-bio-chem-nuclear) | ✅ | ~75 min |
 
-## Phase 19: Capstone Projects — ✅ (~620 hours)
+## Phase 19: Capstone Projects — ✅ (~627 hours)
 
 | # | Project | Status | Est. |
 |---|---------|--------|------|
@@ -611,6 +613,6 @@ Total estimated time: ~314 hours, at your own pace.
 
 ---
 
-**Total: 20 phases, 503 lessons | 503 complete | ~1,050 hours estimated**
+**Total: 20 phases, 503 lessons | 503 complete | ~1,137 hours estimated**
 
 Want to help? Pick any ⬚ lesson and submit a PR. See [CONTRIBUTING.md](CONTRIBUTING.md).
