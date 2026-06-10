@@ -7,6 +7,7 @@
     { "source": "/glossary", "destination": "/glossary.html" },
     { "source": "/catalog", "destination": "/catalog.html" },
     { "source": "/plan", "destination": "/plan.html" },
+    { "source": "/access", "destination": "/access.html" },
     { "source": "/terms", "destination": "/terms.html" },
     { "source": "/refunds", "destination": "/refunds.html" },
     { "source": "/privacy", "destination": "/privacy.html" },
@@ -33,7 +34,7 @@
       ]
     },
     {
-      "source": "/(glossary|catalog|plan|terms|refunds|privacy|path|roadmap)",
+      "source": "/(glossary|catalog|plan|access|terms|refunds|privacy|path|roadmap)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=300, s-maxage=86400, stale-while-revalidate=604800" }
       ]

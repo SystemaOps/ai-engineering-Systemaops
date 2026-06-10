@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=VT323&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400..700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260525a">
+  <link rel="stylesheet" href="style.css?v=20260610a">
   <style>
     .scroll-progress {
       position: fixed;
@@ -1560,6 +1560,59 @@
       .timeline-line { width: 20px; }
     }
   </style>
+  <style>
+    /* --- Locked-lesson preview gate --- */
+    .lesson-lock { position: relative; margin-top: -40px; }
+    .lesson-lock-fade {
+      height: 120px;
+      background: linear-gradient(to bottom, transparent, var(--bg));
+      margin-bottom: -30px;
+      position: relative;
+      z-index: 1;
+    }
+    .lesson-lock-panel {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      border: 2px solid var(--accent);
+      background: var(--bg-surface);
+      padding: 36px 28px;
+      margin: 0 auto 48px;
+      max-width: 560px;
+    }
+    .lesson-lock-icon { font-size: 1.6rem; margin-bottom: 10px; }
+    .lesson-lock-panel h2 {
+      font-size: 1.25rem;
+      margin-bottom: 10px;
+      border: none;
+    }
+    .lesson-lock-panel p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 22px;
+    }
+    .lesson-lock-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .lesson-lock-btn {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      padding: 10px 18px;
+      border: 2px solid var(--border);
+      color: var(--ink);
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .lesson-lock-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .lesson-lock-btn--primary {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+  </style>
 </head>
 <body>
 
@@ -1621,9 +1674,9 @@
     <aside class="toc-sidebar" id="tocSidebar" aria-hidden="true"></aside>
   </div>
 
-  <script src="data.js?v=20260525a"></script>
-  <script src="progress.js?v=20260525a"></script>
-  <script src="cmdpalette.js?v=20260525a" defer></script>
+  <script src="data.js?v=20260610a"></script>
+  <script src="progress.js?v=20260610a"></script>
+  <script src="cmdpalette.js?v=20260610a" defer></script>
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
     mermaid.initialize({
@@ -1715,6 +1768,7 @@
               type: l.type,
               lang: l.lang,
               url: l.url,
+              free: !!l.free,
               path: 'phases/' + pSlug + '/' + lSlug,
               isReadable: l.status === 'complete' || !!l.url
             });
@@ -1829,6 +1883,18 @@
         }, { passive: true });
       }
 
+      // Full access is granted by the license-activation flow (access.html),
+      // which sets this flag after validating a key. Free-preview lessons
+      // (lesson.free in data.js) are always readable.
+      function hasFullAccess() {
+        try { return localStorage.getItem('aifs:access') === 'granted'; }
+        catch (e) { return false; }
+      }
+
+      function isCurrentLessonFree() {
+        return currentLessonIndex >= 0 && !!flatLessons[currentLessonIndex].free;
+      }
+
       function fetchLesson(path) {
         // Lesson content is bundled into site/content/ at build time
         // (see build.js emitContent), so the site is self-contained and
@@ -1842,6 +1908,15 @@
             return res.text();
           })
           .then(function (md) {
+            if (!isCurrentLessonFree() && !hasFullAccess()) {
+              try {
+                renderLockedLesson(md);
+              } catch (err) {
+                console.error('renderLockedLesson failed', err);
+                showError('Render error', 'Failed to render the lesson preview. Details in the browser console.');
+              }
+              return;
+            }
             try {
               renderLesson(md);
             } catch (err) {
@@ -1861,6 +1936,39 @@
           .catch(function () {
             showError('Lesson not found', 'Could not fetch the lesson at <code>' + escapeHtml(path) + '</code>. It may not have been written yet.');
           });
+      }
+
+      // Locked lessons show the opening of the doc (through the problem
+      // statement) followed by an unlock panel, so visitors see real
+      // quality before hitting the gate.
+      function renderLockedLesson(md) {
+        var cut = md.indexOf('\n## The Concept');
+        if (cut === -1) {
+          var mdLines = md.split('\n');
+          cut = mdLines.slice(0, 60).join('\n').length;
+        }
+        var previewMd = md.slice(0, cut);
+
+        var el = document.getElementById('lessonContent');
+        var html = parseMd(previewMd);
+        html += '<div class="lesson-lock">';
+        html += '<div class="lesson-lock-fade" aria-hidden="true"></div>';
+        html += '<div class="lesson-lock-panel">';
+        html += '<div class="lesson-lock-icon" aria-hidden="true">&#9919;</div>';
+        html += '<h2>This lesson is part of the full curriculum</h2>';
+        html += '<p>503 lessons &middot; 20 phases &middot; ~1,137 hours of build-it-from-scratch AI engineering. Every lesson ships a prompt, skill, agent, or MCP server you keep.</p>';
+        html += '<div class="lesson-lock-actions">';
+        html += '<a class="lesson-lock-btn lesson-lock-btn--primary" href="access.html">Get full access &rarr;</a>';
+        html += '<a class="lesson-lock-btn" href="access.html#preview">Browse free lessons</a>';
+        html += '</div>';
+        html += '</div></div>';
+
+        el.innerHTML = '<article class="lesson-article">' + html + '</article>';
+        document.title = extractTitle(md) + ' - AI Engineering from SystemaOps';
+
+        initCodeCopy();
+        renderMermaidBlocks();
+        buildTOC();
       }
 
       function showError(title, msg) {

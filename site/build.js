@@ -19,6 +19,16 @@ const OUTPUT_PATH = path.join(__dirname, 'data.js');
 
 const GITHUB_BASE = 'https://github.com/SystemaOps/ai-engineering-Systemaops/tree/main/';
 
+// Lessons readable without a purchase. One per altitude of the curriculum
+// so prospective buyers can sample the quality at every level. Lessons not
+// in this set render as a locked preview (see lesson.html).
+const FREE_PREVIEW = new Set([
+  'phases/00-setup-and-tooling/01-dev-environment',
+  'phases/01-math-foundations/01-linear-algebra-intuition',
+  'phases/03-deep-learning-core/03-backpropagation',
+  'phases/14-agent-engineering/01-the-agent-loop',
+]);
+
 // ─── Parse ROADMAP.md for lesson statuses ────────────────────────────
 function parseRoadmap(content) {
   const statuses = {}; // { "Phase 0": { phaseStatus, lessons: { "Dev Environment": "complete" } } }
@@ -594,6 +604,7 @@ function build() {
           totalMinutes += meta.minutes;
           phaseMinutes[phase.id] += meta.minutes;
         }
+        if (FREE_PREVIEW.has(relPath)) { lesson.free = true; }
       }
     }
   }
