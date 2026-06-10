@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-1a1a1a?style=flat-square&labelColor=fafaf5" alt="MIT License"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Proprietary-1a1a1a?style=flat-square&labelColor=fafaf5" alt="Proprietary License"></a>
   <a href="ROADMAP.md"><img src="https://img.shields.io/badge/lessons-503-1C7F7F?style=flat-square&labelColor=fafaf5" alt="503 lessons"></a>
   <a href="#contents"><img src="https://img.shields.io/badge/phases-20-1C7F7F?style=flat-square&labelColor=fafaf5" alt="20 phases"></a>
   <a href="https://aiengineeringfromsystemaops.com"><img src="https://img.shields.io/badge/web-aiengineeringfromsystemaops.com-1C7F7F?style=flat-square&labelColor=fafaf5" alt="Website"></a>
@@ -17,7 +17,7 @@
 > professionally.** This curriculum closes that gap.
 >
 > 503 lessons. 20 phases. ~1,137 hours. Python, TypeScript, Rust, Julia. Every lesson ships
-> a reusable artifact: a prompt, a skill, an agent, an MCP server. MIT.
+> a reusable artifact: a prompt, a skill, an agent, an MCP server.
 >
 > You don't just learn AI. You build it. End-to-end. By hand.
 
@@ -35,7 +35,7 @@ PyTorch shows up, you already know what it's doing under the hood.
 
 Each lesson runs the same loop: read the problem, derive the math, write the code, run
 the test, keep the artifact. No five-minute videos, no copy-paste deploys, no hand-holding.
-Free, open source, and built to run on your own laptop.
+Built to run on your own laptop.
 
 ```
 ░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒
@@ -1117,7 +1117,7 @@ pick-your-own: 20–40 hours per project, ~627 hours if you build all of them.
 | Goal | Read |
 |---|---|
 | Contribute a lesson or fix | [CONTRIBUTING.md](CONTRIBUTING.md) |
-| Fork for your team or school | [FORKING.md](FORKING.md) |
+| Team or school licensing | [LICENSE](LICENSE) |
 | Lesson template | [LESSON_TEMPLATE.md](LESSON_TEMPLATE.md) |
 | Track progress | [ROADMAP.md](ROADMAP.md) |
 | Glossary | [glossary/terms.md](glossary/terms.md) |
@@ -1140,47 +1140,17 @@ relative links inside lesson docs.
 ░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒
 ```
 
-## Sponsor the work
-
-Free, MIT-licensed, 503 lessons. The curriculum is maintained on sponsorship alone. Cash only.
-
-**Reach (verified 2026-05-14):** 55,593 monthly visitors · 90,709 page views · 7.5K stars ·
-Twitter/X is the #1 acquisition channel.
-
-**Current sponsors:** [CodeRabbit](https://coderabbit.link/rohit-ghumare) · [iii](https://iii.dev?utm_source=ai-engineering-Systemaops&utm_medium=readme&utm_campaign=sponsor)
-
-| Tier | $/mo | What you get |
-|------|------|---|
-| Backer | $25 | Name in BACKERS.md |
-| Bronze | $250 | Text-only row in README sponsor block + launch-day tweet |
-| Silver | $750 | Small logo in README + listed as one supported provider in API lessons |
-| Gold | $2,000 | Medium logo in README + sponsor page + quarterly X / LinkedIn co-feature |
-| Platinum | $5,000 | Hero logo above the fold + one dedicated integration lesson, max 1 partner |
-
-Full rate card, hard rules, pricing anchors, and reach data: [SPONSORS.md](SPONSORS.md).
-Sign up via [GitHub Sponsors](https://github.com/sponsors/rohitg00).
-
-```
-░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒░░░▒▒▒
-```
-
-## Star history
-
-<a href="https://star-history.com/#SystemaOps/ai-engineering-Systemaops&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=SystemaOps/ai-engineering-Systemaops&type=Date&theme=dark">
-    <img alt="Star history" src="https://api.star-history.com/svg?repos=SystemaOps/ai-engineering-Systemaops&type=Date" width="100%">
-  </picture>
-</a>
-
-If this manual helped you, star the repo. It keeps the project alive.
-
 ## License
 
-MIT. Use it however you want — fork it, teach it, sell it, ship it. Attribution appreciated,
-not required.
+Proprietary. © 2026 Rohit Thumu / SystemaOps. All rights reserved.
 
-Maintained by [Rohit Thumu](https://github.com/SystemaOps/) and the community.
+Purchasing access grants a personal, non-transferable license to learn from the
+curriculum. Redistribution, resale, and teaching from the material require a
+separate commercial agreement — see [LICENSE](LICENSE). For team, school, or
+enterprise licensing, get in touch via
+[aiengineeringfromsystemaops.com](https://aiengineeringfromsystemaops.com).
+
+Maintained by [Rohit Thumu](https://github.com/SystemaOps/).
 
 <sub>
   <a href="https://x.com/ghumare64">@ghumare64</a> &nbsp;·&nbsp;

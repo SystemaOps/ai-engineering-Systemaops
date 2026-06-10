@@ -6,6 +6,13 @@ Format loosely follows [Keep a Changelog](https://keepachangelog.com/). Each ent
 
 ## [Unreleased]
 
+### Changed
+- **Relicensed from MIT to a proprietary commercial license.** The curriculum is
+  now a paid product. `LICENSE` replaced (versions distributed before this change
+  remain MIT for their recipients), README rewritten to drop free/open-source
+  positioning, and the open-source apparatus removed: `FORKING.md`, `SPONSORS.md`,
+  `.github/FUNDING.yml`, the README sponsor block, and the star-history section.
+
 ### Added
 - `scripts/scaffold-lesson.sh` — scaffolder that creates `phases/NN-phase/NN-lesson/` with the full folder structure and a `docs/en.md` skeleton prefilled from `LESSON_TEMPLATE.md`.
 - `.github/PULL_REQUEST_TEMPLATE.md` — contributor checklist (code runs, no code comments, built-from-scratch-first, atomic per-lesson commit, markdown-link ROADMAP row).
