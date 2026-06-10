@@ -373,10 +373,11 @@
           : r.url;
         chip = 'Phase ' + String(r.phaseId).padStart(2, '0');
       } else if (r.kind === 'artifact') {
-        // Jump to the lesson that produced this artifact
+        // Jump to the lesson that produced this artifact; fall back to the
+        // locally bundled file (site/content/) when no lesson path exists
         dest = r.lessonPath
           ? 'lesson.html?path=' + encodeURIComponent(r.lessonPath)
-          : ('https://github.com/SystemaOps/ai-engineering-Systemaops/tree/main/' + r.file);
+          : ('content/' + r.file);
         var ak = (r.artKind || 'artifact');
         chip = ak.charAt(0).toUpperCase() + ak.slice(1);
         chipClass += ' cp-item-chip--alt';

@@ -480,6 +480,77 @@ function syncRoadmapEstimates() {
   for (const u of unresolved) console.warn(`   ⚠ no Time found for ${u}`);
 }
 
+// ─── Emit static lesson content into site/content/ ───────────────────
+/**
+ * Copies every lesson's docs/en.md, quiz.json, and top-level code/ and
+ * outputs/ files into site/content/phases/<phase>/<lesson>/, plus a
+ * manifest.json ({ code: [{name,size}], outputs: [{name,size}] }) that
+ * replaces the GitHub contents-API listing in lesson.html.
+ *
+ * This makes the deployed site fully self-contained: lesson pages fetch
+ * relative URLs instead of raw.githubusercontent.com / api.github.com,
+ * so the site keeps working when the repo is private, renamed, or
+ * GitHub is down. The directory is gitignored and regenerated on every
+ * build (locally and by Vercel's buildCommand).
+ */
+function emitContent() {
+  const contentDir = path.join(__dirname, 'content');
+  fs.rmSync(contentDir, { recursive: true, force: true });
+
+  const phasesDir = path.join(REPO_ROOT, 'phases');
+  let lessons = 0, files = 0, bytes = 0;
+
+  const copyInto = (srcDir, destDir, manifest) => {
+    if (!fs.existsSync(srcDir)) return;
+    for (const name of fs.readdirSync(srcDir).sort()) {
+      if (name === '.gitkeep') continue;
+      const srcPath = path.join(srcDir, name);
+      const stat = fs.statSync(srcPath);
+      if (!stat.isFile()) continue; // top-level files only, matching the old API listing
+      fs.mkdirSync(destDir, { recursive: true });
+      fs.copyFileSync(srcPath, path.join(destDir, name));
+      if (manifest) manifest.push({ name, size: stat.size });
+      files++;
+      bytes += stat.size;
+    }
+  };
+
+  for (const phaseDirName of fs.readdirSync(phasesDir).sort()) {
+    if (!/^[0-9]{2}-/.test(phaseDirName)) continue;
+    const phaseDir = path.join(phasesDir, phaseDirName);
+    for (const lessonDirName of fs.readdirSync(phaseDir).sort()) {
+      if (!/^[0-9]{2}-/.test(lessonDirName)) continue;
+      const lessonDir = path.join(phaseDir, lessonDirName);
+      const destBase = path.join(contentDir, 'phases', phaseDirName, lessonDirName);
+      const manifest = { code: [], outputs: [] };
+
+      const docPath = path.join(lessonDir, 'docs', 'en.md');
+      if (fs.existsSync(docPath)) {
+        fs.mkdirSync(path.join(destBase, 'docs'), { recursive: true });
+        fs.copyFileSync(docPath, path.join(destBase, 'docs', 'en.md'));
+        files++;
+        bytes += fs.statSync(docPath).size;
+      }
+      const quizPath = path.join(lessonDir, 'quiz.json');
+      if (fs.existsSync(quizPath)) {
+        fs.mkdirSync(destBase, { recursive: true });
+        fs.copyFileSync(quizPath, path.join(destBase, 'quiz.json'));
+        files++;
+        bytes += fs.statSync(quizPath).size;
+      }
+      copyInto(path.join(lessonDir, 'code'), path.join(destBase, 'code'), manifest.code);
+      copyInto(path.join(lessonDir, 'outputs'), path.join(destBase, 'outputs'), manifest.outputs);
+
+      if (fs.existsSync(destBase)) {
+        fs.writeFileSync(path.join(destBase, 'manifest.json'), JSON.stringify(manifest));
+        lessons++;
+      }
+    }
+  }
+
+  console.log(`   content bundle: ${lessons} lessons, ${files} files, ${(bytes / 1024 / 1024).toFixed(1)} MB → site/content/`);
+}
+
 // ─── Main build ──────────────────────────────────────────────────────
 function build() {
   console.log('📖 Reading source files...');
@@ -502,6 +573,9 @@ function build() {
 
   console.log('🔍 Discovering outputs + Phase 14 missions...');
   const artifacts = discoverArtifacts();
+
+  console.log('📦 Emitting static lesson content...');
+  emitContent();
 
   console.log('📚 Extracting lesson summaries + keywords from docs/en.md...');
   let summarized = 0, withKeywords = 0;
