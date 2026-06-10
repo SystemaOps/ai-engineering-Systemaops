@@ -1,0 +1,18 @@
+services:
+  site:
+    build: .
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # Set in .env (DOMAIN=yourdomain.com) for automatic HTTPS.
+      - DOMAIN=${DOMAIN:-}
+    volumes:
+      # Persist TLS certificates and Caddy state across restarts.
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,27 @@
+# Set DOMAIN (e.g. "example.com") to serve that domain with automatic
+# HTTPS via Let's Encrypt. Unset, Caddy serves plain HTTP on :80 —
+# useful locally or behind another reverse proxy / load balancer.
+{$DOMAIN::80} {
+	root * /srv
+	encode zstd gzip
+
+	# Clean URLs: /plan -> /plan.html, /access -> /access.html, etc.
+	try_files {path} {path}.html
+
+	# Legacy aliases kept from vercel.json
+	rewrite /path /prereqs.html
+	rewrite /roadmap /prereqs.html
+
+	# Default: short cache for pages (HTML changes on every deploy)
+	header Cache-Control "public, max-age=300, stale-while-revalidate=604800"
+
+	# Static assets: long cache (they carry ?v= cache-busters)
+	@assets path *.css *.js *.png *.jpg *.jpeg *.svg *.webp *.woff2 *.woff *.ttf *.ico
+	header @assets Cache-Control "public, max-age=86400, stale-while-revalidate=2592000"
+
+	# Lesson content bundle: moderate cache
+	@content path /content/*
+	header @content Cache-Control "public, max-age=3600, stale-while-revalidate=86400"
+
+	file_server
+}
