@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "A 4-hour agent run reboots halfway through. What does durable execution do that a naive while-True loop does not?",
+      "options": [
+        "Nothing — both restart from scratch",
+        "Resume from the latest checkpoint: completed activities replay their logged results instead of re-executing, so tool side effects don't repeat, approvals aren't re-requested, and prior LLM calls aren't re-billed",
+        "Switch to a faster model on resume",
+        "Email the user an apology"
+      ],
+      "correct": 1,
+      "explanation": "The naive loop re-runs the three tool calls (real side effects), re-prompts the user, and re-bills forty LLM calls. Durable execution replays from the event log — a decade-old workflow pattern with LLM calls as the new kind of activity."
+    },
+    {
+      "stage": "pre",
+      "question": "Why do LLM calls fit the workflow \"activity\" profile so cleanly?",
+      "options": [
+        "They are deterministic and free",
+        "They are non-deterministic, expensive, potentially failing, and side-effectful — exactly the activity profile, so wrapping them gives retry, checkpointing, and a replayable trace",
+        "They never fail",
+        "They run instantly"
+      ],
+      "correct": 1,
+      "explanation": "Activities are the non-deterministic units that get logged with inputs and outputs; the workflow is the deterministic orchestration that can be replayed. LLM calls drop into the activity slot perfectly."
+    },
+    {
+      "stage": "post",
+      "question": "Why must the workflow (orchestration) code be deterministic while activities need not be?",
+      "options": [
+        "Determinism makes it run faster",
+        "On recovery the workflow re-runs from the start and replays completed activities' logged results — non-deterministic orchestration would diverge from the recorded event log",
+        "Activities are written in a different language",
+        "Determinism is a billing requirement"
+      ],
+      "correct": 1,
+      "explanation": "Same shape as React re-rendering against a virtual DOM or Git rebuilding a tree from commits: determinism in the orchestrator is what makes durability cheap. Activities replay from their logged outputs; the orchestration must reach the same decisions."
+    },
+    {
+      "stage": "post",
+      "question": "What is METR's \"35-minute degradation,\" and how should durable execution respond to it?",
+      "options": [
+        "Sessions are capped at 35 minutes by law",
+        "Reliability decays beyond ~35 minutes (doubling duration roughly quadruples failure rate) — durability lets runs exceed the reliability profile, so pair it with HITL-on-resume and budget kill switches",
+        "Models need a 35-minute warmup",
+        "Checkpoints must be 35 minutes apart"
+      ],
+      "correct": 1,
+      "explanation": "Durable execution doesn't fix the decay; it enables runs longer than the reliability supports — a new way to fail unsafely if mishandled. The safe pattern combines durability with fresh HITL on re-entry and compute caps regardless of wall-clock time."
+    },
+    {
+      "stage": "post",
+      "question": "When is durable execution the WRONG choice?",
+      "options": [
+        "For any agent that calls an LLM",
+        "For sub-few-minute runs with no human input, strictly read-only retrieval, or tasks needing end-to-end correctness within one context window — overhead exceeds benefit",
+        "Whenever PostgreSQL is unavailable",
+        "For tasks longer than an hour"
+      ],
+      "correct": 1,
+      "explanation": "Durability has real overhead. Short, side-effect-free, or single-context-window tasks don't benefit. The human-input-as-first-class-state and replay machinery pay off specifically for long, side-effecting, approval-gated runs."
+    }
+  ]
+}

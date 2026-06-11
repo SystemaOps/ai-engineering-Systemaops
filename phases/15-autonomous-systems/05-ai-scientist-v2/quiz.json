@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why is autonomous research harder to close as a loop than AlphaEvolve-style algorithm search?",
+      "options": [
+        "Research requires more GPUs",
+        "A research result has no machine-checkable correctness criterion — papers are judged by noisy peer review, not unit tests",
+        "Researchers refuse to share data",
+        "Code generation doesn't work for science"
+      ],
+      "correct": 1,
+      "explanation": "AlphaEvolve's domains have tight evaluators; a paper does not. That makes the loop harder to close — and means the operational controls (sandbox, review, disclosure) carry most of the safety weight in AI Scientist v2."
+    },
+    {
+      "stage": "pre",
+      "question": "What did AI Scientist v2 achieve, and what is the honest framing of it?",
+      "options": [
+        "It won a Nobel prize",
+        "One generated paper passed peer review at an ICLR 2025 workshop (with disclosure) — a proof of concept, not a reliability claim; workshop bars are lower and review is noisy",
+        "It replaced human reviewers at ICLR",
+        "It published independently in Nature with no human authors"
+      ],
+      "correct": 1,
+      "explanation": "Both halves are true: the acceptance happened, and the independent evaluation found the system far from reliable. One acceptance under noisy review is a data point, not \"the system does research.\""
+    },
+    {
+      "stage": "post",
+      "question": "What did Beel et al.'s independent evaluation find?",
+      "options": [
+        "The system was flawless but slow",
+        "42% of experiments failed from coding errors, the novelty check frequently mislabeled established concepts as novel, and polished figures masked experimental weaknesses",
+        "All generated papers were plagiarized",
+        "The system refused most research topics"
+      ],
+      "correct": 1,
+      "explanation": "The third finding matters most: a system producing convincing outputs without convincing research is more dangerous than one that fails obviously. Evaluation must reach the underlying claims, not stop at the figure."
+    },
+    {
+      "stage": "post",
+      "question": "Why does AI Scientist v2 demand stronger sandboxing than AlphaEvolve?",
+      "options": [
+        "It uses more memory",
+        "It runs open-ended LLM-written code with open-ended goals — Sakana's own README warns of dangerous packages, uncontrolled web access, and unintended processes, recommending Docker at minimum",
+        "Its Python version is older",
+        "It must run on the public internet"
+      ],
+      "correct": 1,
+      "explanation": "AlphaEvolve's tight evaluator bounds what executed code can be. v2's research loop doesn't have that bound, so isolation (Docker minimum, seccomp/gVisor preferred) plus manual review of anything leaving the system do the safety work."
+    },
+    {
+      "stage": "post",
+      "question": "Comparing AlphaEvolve, DGM, and AI Scientist v2 — which has the weakest automatic evaluator, and what follows?",
+      "options": [
+        "AlphaEvolve; it should be retired",
+        "AI Scientist v2 — peer review is weak and slow, the output surface is widest, and the path to public artifacts is shortest, so operational controls matter most there",
+        "DGM; SWE-bench is unreliable",
+        "All three have equally strong evaluators"
+      ],
+      "correct": 1,
+      "explanation": "The phase's comparison table ranks them by evaluator rigor: unit tests + benchmarks (AlphaEvolve), benchmark suite (DGM), peer review (v2). As rigor drops and output surface widens, the burden shifts from evaluators to sandboxes and human gates."
+    }
+  ]
+}

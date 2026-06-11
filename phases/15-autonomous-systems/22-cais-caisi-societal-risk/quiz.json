@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "CAIS and CAISI sound alike. How do they actually differ?",
+      "options": [
+        "They are the same organization with two names",
+        "CAIS is a non-profit research org publishing risk frameworks and public statements; CAISI is a US-government center within NIST running voluntary lab agreements and unclassified capability evaluations",
+        "CAIS is government, CAISI is private",
+        "CAISI evaluates models; CAIS builds them"
+      ],
+      "correct": 1,
+      "explanation": "The acronyms collide; the missions don't overlap — check the URL (nist.gov for CAISI). CAISI is the public, government-facing counterpart to METR's often-NDA-gated lab engagements; reading both gives a fuller picture."
+    },
+    {
+      "stage": "pre",
+      "question": "What are the four top-level categories in CAIS's widely-cited risk framework?",
+      "options": [
+        "Cost, latency, accuracy, bias",
+        "Malicious use, AI races, organizational risks, and rogue AIs",
+        "Cyber, bio, chemical, nuclear",
+        "Training, deployment, monitoring, retirement"
+      ],
+      "correct": 1,
+      "explanation": "The categories aren't mutually exclusive — a rogue AI produced by an organization that traded audit for speed in a competitive race is all four at once. It's the most cited societal-scale-risk taxonomy in the literature."
+    },
+    {
+      "stage": "post",
+      "question": "Which of the four risk categories is most directly under a practitioner's control, and what are its levers?",
+      "options": [
+        "Rogue AIs; better loss functions",
+        "Organizational risk — safety culture (can people escalate without career cost?), rigorous external audits, multi-layered defenses, and information security",
+        "AI races; faster shipping",
+        "Malicious use; stronger passwords"
+      ],
+      "correct": 1,
+      "explanation": "Organizational dynamics decide whether the controls of Lessons 10-18 actually ship or are unverified checklist items. CAIS surveys find safety culture — whether concerns can be raised safely — is a strong predictor of the other levers."
+    },
+    {
+      "stage": "post",
+      "question": "Why does the lesson highlight California SB-53?",
+      "options": [
+        "It bans all frontier models",
+        "If signed it would be the first US state-level catastrophic-risk regulation (capability thresholds, whistleblower protections, incident reporting) — and US state regulation has historically led federal action",
+        "It is already federal law",
+        "It applies only to chatbots"
+      ],
+      "correct": 1,
+      "explanation": "Regardless of signing status, the bill's framing shapes how other legislatures approach the problem. Californian practitioners should track its status; others should read it to anticipate the shape of US state-level AI regulation."
+    },
+    {
+      "stage": "post",
+      "question": "What is the phase-wide theme that CAIS's framework extends to the societal layer?",
+      "options": [
+        "One regulation can close catastrophic risk",
+        "Defense in depth — no single organization, regulation, or framework is sufficient; the ecosystem (labs, external evaluators, government, civil society) only works in combination",
+        "Self-regulation by labs is enough",
+        "Risk can be fully eliminated with better models"
+      ],
+      "correct": 1,
+      "explanation": "The running theme of Phase 15 — multi-layered defenses, no single sufficient layer — scales up: lab scaling policies, independent evaluation (METR), government standards (CAISI), and civil-society frameworks (CAIS) are each necessary and none sufficient alone."
+    }
+  ]
+}

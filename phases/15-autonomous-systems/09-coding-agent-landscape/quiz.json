@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Same Claude Sonnet 4.5 scored 43.2% on SWE-agent v1 and 59.8% inside Cline. What does that 16.6-point gap demonstrate?",
+      "options": [
+        "Cline used a secretly larger model",
+        "Scaffolding — retrieval, verifier loops, sandbox, edit format — is load-bearing; the base model is a component and the loop is the product",
+        "SWE-bench scores are random noise",
+        "The benchmark favors VS Code extensions"
+      ],
+      "correct": 1,
+      "explanation": "Identical weights, different scaffolds, 16.6 absolute points. The 4% → 80.9% SWE-bench Verified climb came from compounding model gains AND scaffold gains (CodeAct, reflection, verifier loops) — which is why \"which agent is best\" is the wrong question."
+    },
+    {
+      "stage": "pre",
+      "question": "Why are headline SWE-bench Verified scores misleading about real-world reliability?",
+      "options": [
+        "The benchmark is written in a different language",
+        "161 of 500 tasks need only 1-2 line changes — on SWE-bench Pro (10+ line tasks) the same frontier systems score 23-59%",
+        "Verified scores are self-reported without checks",
+        "The tasks are synthetic, not from real repos"
+      ],
+      "correct": 1,
+      "explanation": "The easy tail pulls scores up and saturation hides regressions. Your production bug backlog is closer to Pro than Verified — so benchmark your own distribution before choosing an agent."
+    },
+    {
+      "stage": "post",
+      "question": "What is the CodeAct architecture and its trade-off versus JSON tool calls?",
+      "options": [
+        "CodeAct compiles the model to C; JSON stays interpreted",
+        "The model emits Python executed in a sandboxed kernel — compositional, can chain tools and catch exceptions in one action, but the blast radius is everything the sandbox allows; JSON calls are one-auditable-action-per-turn",
+        "CodeAct is JSON with comments allowed",
+        "JSON tool calls cannot run shell commands"
+      ],
+      "correct": 1,
+      "explanation": "OpenHands' bet: code-as-action wins on compositionality, at the cost of needing hardened Docker isolation. JSON tool calls dominate managed services where the provider controls the executor; CodeAct dominates open platforms."
+    },
+    {
+      "stage": "post",
+      "question": "What are the three scaffolding components that buy the most reliability points?",
+      "options": [
+        "Bigger context, higher temperature, more retries",
+        "Retrieval (finding the right files), a verifier loop (run tests, read traces, retry — worth 10+ points), and failure containment (sandbox rollback)",
+        "GPU count, RAM, disk speed",
+        "Logging, dashboards, alerts"
+      ],
+      "correct": 1,
+      "explanation": "Coding runs are long-horizon trajectories where reliability compounds per step. Retrieval is the silent bottleneck, the verifier loop is a measured 10+ point delta, and rollback prevents compounding damage."
+    },
+    {
+      "stage": "post",
+      "question": "Before adopting a coding agent for your team, what is the right evaluation?",
+      "options": [
+        "Pick the top of the SWE-bench Verified leaderboard",
+        "Run a Pro-like subset of your own bug backlog through the candidate scaffold — the score that matters is on tasks representative of what you ship",
+        "Choose the one with the most GitHub stars",
+        "Benchmark on HumanEval"
+      ],
+      "correct": 1,
+      "explanation": "End-to-end reliability on your task distribution, with your production scaffolding, is the question. The lesson's audit skill checks retrieval quality, verifier presence, sandbox isolation, and benchmark-to-distribution fit."
+    }
+  ]
+}

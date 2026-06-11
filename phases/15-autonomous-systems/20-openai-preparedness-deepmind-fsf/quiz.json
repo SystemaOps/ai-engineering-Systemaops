@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What do Anthropic's RSP, OpenAI's Preparedness Framework, and DeepMind's FSF have in common?",
+      "options": [
+        "They are identical documents",
+        "They are cousin artifacts addressing the same question — when should a frontier lab pause or gate a model — converging on long-range autonomy, deceptive behavior, and an internal review body",
+        "They are all legally binding regulations",
+        "They all forbid autonomous agents entirely"
+      ],
+      "correct": 1,
+      "explanation": "All three track long-range autonomy, name deceptive behavior (alignment faking, sandbagging) as a risk class, have a Safety Advisory Group, and publish standing artifacts on a cadence — while diverging on how categories trigger mitigations."
+    },
+    {
+      "stage": "pre",
+      "question": "In OpenAI's Preparedness Framework v2, what is the key difference between Tracked and Research Categories?",
+      "options": [
+        "Tracked are public; Research are secret",
+        "Tracked Categories trigger Capabilities + Safeguards Reports reviewed before deployment; Research Categories (including Long-range Autonomy) are monitored but do NOT automatically trigger mitigations — language is \"potential\"",
+        "Research Categories are higher risk than Tracked",
+        "Tracked Categories apply only to image models"
+      ],
+      "correct": 1,
+      "explanation": "The hinge is which bucket a capability lives in: Tracked means gated, Research means observed. Long-range Autonomy sitting in Research is the specific delta to watch — it's tracked but not gating."
+    },
+    {
+      "stage": "post",
+      "question": "How does DeepMind's FSF v3 treat autonomy differently from OpenAI?",
+      "options": [
+        "It ignores autonomy",
+        "It folds autonomy into the domains where it causes harm (ML R&D and Cyber) rather than naming it as a top-level category — e.g. ML R&D autonomy level 1 = fully automate the AI R&D pipeline at competitive cost",
+        "It bans autonomous models",
+        "It treats autonomy as identical to cyber risk"
+      ],
+      "correct": 1,
+      "explanation": "DeepMind's argument: autonomy without a domain is capability without risk. The counter-argument: cross-domain autonomy is a meta-risk the framework should name. April 2026 added Tracked Capability Levels for granularity."
+    },
+    {
+      "stage": "post",
+      "question": "Why does sandbagging complicate all three frameworks at once?",
+      "options": [
+        "It makes models run slower",
+        "If a model strategically underperforms on evaluations, every framework's capability thresholds are underestimated — the framework only works if the measurement works",
+        "It only affects open-weights models",
+        "It is illegal under all three policies"
+      ],
+      "correct": 1,
+      "explanation": "Sandbagging is in OpenAI's Research Categories, addressed via Anthropic's eval-context gap and DeepMind's deceptive-alignment monitoring. Because it undermines measurement itself, external evaluation (METR, Lesson 21) and adversarial evals are necessary beyond lab self-assessment."
+    },
+    {
+      "stage": "post",
+      "question": "What ceiling do the frameworks themselves acknowledge about monitoring-based defenses?",
+      "options": [
+        "Monitoring is sufficient forever",
+        "DeepMind states automated monitoring for instrumental-reasoning misuse \"will not remain sufficient long-term\" if instrumental reasoning strengthens",
+        "Monitoring catches 100% of attacks",
+        "Monitoring is banned by the EU AI Act"
+      ],
+      "correct": 1,
+      "explanation": "Even the labs concede monitoring-only defenses have a ceiling — the same theme as the classifier and kill-switch lessons. This is why the four policy-reading checks (locate, classify, cadence, independence) and external measurement matter."
+    }
+  ]
+}

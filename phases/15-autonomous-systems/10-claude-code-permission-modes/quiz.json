@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why is an autonomous coding agent on your machine a distinct security category from a chatbot?",
+      "options": [
+        "It uses more electricity",
+        "Its attack surface is everything it can reach — filesystem, network, credentials, clipboard, terminals — a new risk profile, not a chatbot feature update",
+        "It cannot be uninstalled",
+        "It always runs as administrator"
+      ],
+      "correct": 1,
+      "explanation": "Schneier and others flag this publicly: computer-use agents act on real state. That's why Claude Code ships a seven-mode permission ladder instead of one autonomous/not-autonomous switch."
+    },
+    {
+      "stage": "pre",
+      "question": "Across the permission ladder, what distinguishes plan, acceptEdits, and bypassPermissions?",
+      "options": [
+        "They select different models",
+        "plan reviews every action against an approved plan; acceptEdits auto-approves file writes but still confirms shell/network; bypassPermissions approves everything and belongs only in throwaway containers",
+        "They differ only in pricing tier",
+        "plan is read-only; the others are identical"
+      ],
+      "correct": 1,
+      "explanation": "Each rung trades review-per-action for speed. The documented placement: plan for unfamiliar/prod-adjacent work, acceptEdits for big refactors, bypassPermissions \"only inside ephemeral containers you are willing to throw away.\""
+    },
+    {
+      "stage": "post",
+      "question": "How does Auto Mode's two-stage classifier work?",
+      "options": [
+        "Two humans review every action",
+        "A cheap single-token classifier runs on every action in parallel; flagged actions get a chain-of-thought policy review that can escalate to the user",
+        "Stage 1 encrypts, stage 2 decrypts",
+        "It votes between two different models on every action"
+      ],
+      "correct": 1,
+      "explanation": "Stage 1 keeps approved actions off the user's critical path; stage 2 does the focused safety assessment over action, session state, and declared task — escalating to human review at low confidence. Budgets (max_turns, max_budget_usd, per-tool caps) sit alongside."
+    },
+    {
+      "stage": "post",
+      "question": "Which failure shape can per-action classification structurally miss?",
+      "options": [
+        "Misspelled shell commands",
+        "Compositions of individually-safe actions — e.g. writing data to your own file then git-pushing to a public repo; each step is allowed, the sequence is exfiltration",
+        "Actions in languages other than English",
+        "Actions that take longer than a second"
+      ],
+      "correct": 1,
+      "explanation": "The classifier judges the action, not the trajectory's intent. Subtle injection that never produces one flagged action, and semantic-level misbehavior across steps, are the documented gaps — which is why Anthropic states the classifier is not sufficient alone."
+    },
+    {
+      "stage": "post",
+      "question": "What preconditions does the lesson set for running autoMode unattended?",
+      "options": [
+        "A paid subscription and a fast GPU",
+        "A workspace with measured blast radius: no credentials, no production mounts, no egress you didn't opt into — plus budgets and trajectory audits",
+        "At least 100 prior supervised runs",
+        "Nothing — autoMode is fully safe by design"
+      ],
+      "correct": 1,
+      "explanation": "Auto Mode is a research preview and a layer, not a solution: combine it with allowlists, isolation, budget caps, and audits. The eval-vs-deploy gap from Lesson 1 applies to safety classifiers too."
+    }
+  ]
+}

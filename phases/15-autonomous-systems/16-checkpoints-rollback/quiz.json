@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What question does this lesson answer that durable execution and propose-then-commit alone do not?",
+      "options": [
+        "How to make the agent faster",
+        "What happens when an approved action executes partially, crashes, and resumes — when does rollback run, and against what state?",
+        "How to reduce token cost",
+        "Which model to use for approvals"
+      ],
+      "correct": 1,
+      "explanation": "Durable execution makes a crash resumable; propose-then-commit makes an action auditable. This lesson joins them — the working combination is idempotency key + precondition check + post-action verify + rollback on verify-fail."
+    },
+    {
+      "stage": "pre",
+      "question": "What is lease recovery in a checkpointed workflow?",
+      "options": [
+        "Renewing the cloud provider contract",
+        "When a worker crashes, its short-lived claim on the run expires and another worker resumes from the latest checkpoint — letting systems survive rolling deploys without losing in-flight work",
+        "Recovering deleted training data",
+        "Extending the model's context lease"
+      ],
+      "correct": 1,
+      "explanation": "The workflow isn't lost on crash; the lease simply expires and another worker picks up the persisted checkpoint. Persisting every graph-state transition (not just commit points) is what makes recovery land precisely."
+    },
+    {
+      "stage": "post",
+      "question": "Why is an idempotency key insufficient without a precondition check?",
+      "options": [
+        "Idempotency keys expire too fast",
+        "\"Transfer $100 when balance > $1000\" can resume after a crash with the key still valid, but if A's balance dropped to $500 meanwhile, only a precondition check catches the now-invalid state — preventing an overdraft",
+        "Precondition checks are faster",
+        "Keys cannot be hashed reliably"
+      ],
+      "correct": 1,
+      "explanation": "Idempotency prevents double-execute; the precondition confirms the world still matches what was approved. Both are required on every consequential action because state can change between approval/crash and resume."
+    },
+    {
+      "stage": "post",
+      "question": "What are the three rollback types, and what about un-undoable actions?",
+      "options": [
+        "Soft, hard, and factory reset",
+        "In-band (reverse directly), compensating transaction (SAGA-style neutralizing action), out-of-band (alert a human and pause) — and no-op rollbacks must be named in the proposal, requiring stronger HITL at commit",
+        "Git revert, git reset, git rebase",
+        "Retry, skip, abort"
+      ],
+      "correct": 1,
+      "explanation": "Every consequential action carries a rollback plan. Actions that genuinely cannot be undone must declare that up front, which raises the bar to challenge-and-response HITL before they ever commit."
+    },
+    {
+      "stage": "post",
+      "question": "What does EU AI Act Article 14 require operationally for checkpoints and rollback?",
+      "options": [
+        "Checkpoints stored only in the EU",
+        "Checkpoints queryable by an auditor, rollbacks rehearsed end-to-end at least once, the audit trail surviving a deploy, and failed verifications alerted on rather than silently logged",
+        "A human approving every read",
+        "Annual third-party penetration tests"
+      ],
+      "correct": 1,
+      "explanation": "\"Effective human oversight\" is not decorative. A workflow that crashes mid-commit, resumes, and completes the side effect with no verify+rollback pathway does not survive the Article 14 test."
+    }
+  ]
+}

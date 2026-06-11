@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "LLMs and evolutionary search both hit ceilings alone. What are those ceilings, and how does AlphaEvolve pair them?",
+      "options": [
+        "LLMs are too slow; GAs are too expensive — AlphaEvolve uses neither",
+        "LLM confabulation (plausible-but-wrong code) and GA search cost (random mutations rarely compile) — the LLM proposes plausible edits, the evaluator catches confabulations",
+        "LLMs can't write Python; GAs can't write C",
+        "Both lacked enough GPUs before 2025"
+      ],
+      "correct": 1,
+      "explanation": "The LLM concentrates search on plausible neighborhoods (random byte mutations almost never compile); the machine-checkable evaluator settles every confabulated claim with a unit test or wall-clock benchmark. Each component covers the other's ceiling."
+    },
+    {
+      "stage": "pre",
+      "question": "What headline results did AlphaEvolve report?",
+      "options": [
+        "Beating GPT-4 on MMLU",
+        "A 48-multiplication 4x4 complex matmul (first improvement over Strassen's 49 in 56 years), a production Borg scheduling heuristic recovering ~0.7% of cluster compute, and a 32.5% FlashAttention speedup",
+        "Solving the Riemann hypothesis",
+        "A new transformer architecture"
+      ],
+      "correct": 1,
+      "explanation": "The wins span pure algorithms, production infrastructure, and kernels — all domains with fast, deterministic, hard-to-game evaluators. That common denominator is the lesson's core point."
+    },
+    {
+      "stage": "post",
+      "question": "Why is the database structured as MAP-elites or islands rather than just keeping the best program?",
+      "options": [
+        "To save disk space",
+        "To preserve diversity so the loop explores broadly instead of converging on a local optimum",
+        "Because the LLM requires multiple prompts",
+        "For audit-trail compliance"
+      ],
+      "correct": 1,
+      "explanation": "Sampling parents from a diversity-keyed archive (score plus feature vector) keeps distinct solution families alive. The toy in this lesson shows the same loop converging prematurely without it."
+    },
+    {
+      "stage": "post",
+      "question": "What is the relationship between evaluator quality and reward hacking in code-search loops?",
+      "options": [
+        "Reward hacking only happens with small models",
+        "Evolution optimizes whatever the evaluator measures — imperfect evaluators get their imperfections found, like time-to-complete metrics rewarding empty solutions",
+        "Evaluators prevent all reward hacking by definition",
+        "Reward hacking is a myth in practice"
+      ],
+      "correct": 1,
+      "explanation": "Real 2025-2026 examples: rewarding completion time produced empty submissions; correctness-under-test produced test memorization; a \"code quality\" proxy rewarded deleting comments. AlphaEvolve's mitigation: held-out evaluators with inputs generated at evaluation time, plus human review before deployment."
+    },
+    {
+      "stage": "post",
+      "question": "What single property determines whether the AlphaEvolve recipe transfers to a new domain?",
+      "options": [
+        "The size of the LLM used as generator",
+        "Whether the domain has a fast, deterministic, hard-to-game machine-checkable evaluator whose rigor matches the search's ambition",
+        "The programming language involved",
+        "The number of GPUs available"
+      ],
+      "correct": 1,
+      "explanation": "DeepMind flags this explicitly: the architecture is deliberately boring, and the wins come from evaluator rigor. Remove the evaluator and the loop optimizes for pretty code — the asymmetry that defines where generator-plus-evaluator systems work."
+    }
+  ]
+}

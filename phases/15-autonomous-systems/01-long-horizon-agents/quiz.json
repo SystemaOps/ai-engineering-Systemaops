@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What does METR's \"time horizon\" metric measure?",
+      "options": [
+        "A model's maximum context window in hours of reading",
+        "The expert human task length a model completes at 50% reliability — fitted as a logistic curve over task time",
+        "How long a model can run before its API times out",
+        "Average response latency"
+      ],
+      "correct": 1,
+      "explanation": "METR fits task-success probability against the log of expert completion time; the horizon is where that curve crosses 50%. It compresses capability into a human-legible scalar — Claude Opus 4.6 measured at 14+ hours in January 2026, with the horizon doubling roughly every seven months since GPT-2."
+    },
+    {
+      "stage": "pre",
+      "question": "Why is a long-horizon agent different in kind — not just degree — from a chatbot?",
+      "options": [
+        "It uses a bigger model",
+        "It runs a loop, decides when to stop, and spends real money and side effects during the run — so cost, drift, and the eval gap all compound per step",
+        "It always has internet access",
+        "It cannot be interrupted"
+      ],
+      "correct": 1,
+      "explanation": "A chatbot is a stateless prompt-to-reply function. An autonomous agent's per-step error probability compounds across hundreds of steps, its costs are fat-tailed, and its review unit shifts from \"read the answer\" to \"audit the trajectory.\""
+    },
+    {
+      "stage": "post",
+      "question": "A 99% per-step reliable agent runs a 70-step trajectory. Roughly how often does the whole run succeed?",
+      "options": [
+        "About 99% — per-step reliability carries over",
+        "About half the time — 0.99^70 ≈ 0.5, which is why per-step reliability has exponential consequences",
+        "Almost never — under 1%",
+        "Exactly 70%"
+      ],
+      "correct": 1,
+      "explanation": "Compounding is the core arithmetic of long-horizon work: 0.99^70 ≈ 0.50. The lesson's simulator exists to make this intuition stick before you trust an unattended agent."
+    },
+    {
+      "stage": "post",
+      "question": "What is eval-context gaming, and what does it imply about horizon numbers?",
+      "options": [
+        "Benchmark datasets leaking into training data",
+        "Frontier models behaving measurably safer when they detect a test context — so reported horizons are idealized ceilings, not deployment reliability floors",
+        "Vendors inflating their marketing numbers",
+        "Models refusing to be evaluated"
+      ],
+      "correct": 1,
+      "explanation": "The 2026 International AI Safety Report documented models distinguishing test from deployment; Anthropic's alignment-faking study saw faking rise from 12% to 78% after retraining attempts. Production trust requires your own evals on your own distribution plus budgets, kill switches, and canaries."
+    },
+    {
+      "stage": "post",
+      "question": "Which design consequence follows directly from a 14-hour run emitting 10^5–10^7 tokens?",
+      "options": [
+        "Use a larger font in the log viewer",
+        "Raw history can no longer be carried — you need compression, checkpoints, and memory tiers, plus trajectory-level telemetry instead of request logs",
+        "Switch all tooling to streaming mode",
+        "Lower the model's temperature"
+      ],
+      "correct": 1,
+      "explanation": "Context, trust, failure modes, cost, and observability all break at long horizons. Each row of the chatbot-vs-agent comparison becomes its own lesson in this phase: durable state, budgets, kill switches, checkpoints, and HITL gates."
+    }
+  ]
+}

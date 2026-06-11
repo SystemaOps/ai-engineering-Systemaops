@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why does external evaluation by an organization like METR matter alongside lab self-assessment?",
+      "options": [
+        "External evaluators have bigger GPUs",
+        "Internal labs have incentives to optimize the metrics they report — METR's independence (a 501(c)(3) with declared, peer-reviewed methodology) is the structural mitigation, though labs still control what it sees",
+        "It is legally required before any model release",
+        "External evaluation is cheaper"
+      ],
+      "correct": 1,
+      "explanation": "Scaling policies are only as useful as the measurements they reference. METR (ex-ARC Evals, independent since December 2023) produces the specific numbers that policy prose like \"AI R&D-4\" and \"Long-range Autonomy\" become actionable against."
+    },
+    {
+      "stage": "pre",
+      "question": "How is a model's time horizon computed?",
+      "options": [
+        "The longest single task it has ever completed",
+        "Fit a logistic curve of P(success) against log(expert human completion time) across a task suite; the horizon is the expert-time where P(success) = 0.5",
+        "Total training hours divided by parameters",
+        "The model's maximum context length in tokens"
+      ],
+      "correct": 1,
+      "explanation": "The logistic shape fits capability's increasing, plateau-approaching relationship with difficulty. 50% is the lead threshold for intuitiveness (METR reports others too), computed over suites like HCAST (189 tasks, 1 min to 8+ hours) and RE-Bench."
+    },
+    {
+      "stage": "post",
+      "question": "Why is a reported time horizon an upper bound rather than a deployment prediction?",
+      "options": [
+        "METR rounds the number up",
+        "Benchmarks give idealized tooling, no real consequences, structured prompts, and are subject to eval-context gaming — deployment is messier, higher-stakes, and ambiguous, so real reliability is lower",
+        "Horizons are measured on the smallest model",
+        "The 50% threshold is too generous"
+      ],
+      "correct": 1,
+      "explanation": "The horizon is the capability ceiling under favorable conditions. Idealized tools, no irreversible stakes, no legitimate-user variance, and the documented eval-vs-deploy gap (Lesson 1) all mean teams must measure their own distribution to know deployment reliability."
+    },
+    {
+      "stage": "post",
+      "question": "What does RE-Bench specifically measure, and which policy threshold does it feed?",
+      "options": [
+        "Reading comprehension; the bio threshold",
+        "71 ML research-engineering tasks against a human expert baseline — measuring the kind of ML R&D work that feeds the AI R&D-4 / ML R&D autonomy thresholds",
+        "Regular expressions; the cyber threshold",
+        "Response latency; no threshold"
+      ],
+      "correct": 1,
+      "explanation": "RE-Bench targets exactly the capability the RSP's AI R&D-4 and FSF's ML R&D autonomy levels are about — can the model do the research-engineering work that would let it automate AI R&D."
+    },
+    {
+      "stage": "post",
+      "question": "What do METR's prototype monitoring evaluations test, and which policy categories do they feed?",
+      "options": [
+        "Whether the model is polite; none",
+        "Whether a monitor can catch a model performing a side task and whether the agent can evade the monitor — feeding OpenAI's \"Undermining Safeguards\" and DeepMind's deceptive-alignment monitoring",
+        "Inference cost per token; billing policy",
+        "Image-generation quality; the CSAM category"
+      ],
+      "correct": 1,
+      "explanation": "Monitoring evaluations are the measurement side of the deception risk the scaling policies name. They connect directly to the kill-switch/canary and constitutional layers — can the controls actually catch a model that's trying to evade them?"
+    }
+  ]
+}

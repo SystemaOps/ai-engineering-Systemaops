@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What is \"Denial of Wallet\"?",
+      "options": [
+        "A provider refusing to issue API credits",
+        "An autonomous agent that keeps reasoning, tool-calling, and billing inside a loop because nothing was designed to stop it",
+        "A user disputing a charge",
+        "A rate limit that blocks legitimate traffic"
+      ],
+      "correct": 1,
+      "explanation": "A chatbot's bad output is a bad reply; an agent's bad loop is a bill. The documented e-commerce case tripled monthly cost ($1,200 → $4,800) after a new order-tracking tool let the agent poll on every session with no per-tool cap."
+    },
+    {
+      "stage": "pre",
+      "question": "Why is a single monthly budget cap insufficient?",
+      "options": [
+        "Monthly caps are too expensive to compute",
+        "Different failure modes need different time scales — a monthly cap catches a runaway loop only after the wallet is gone; velocity limits catch loops in minutes",
+        "Providers don't support monthly billing",
+        "Monthly caps violate the EU AI Act"
+      ],
+      "correct": 1,
+      "explanation": "The stack spans scales: velocity limits catch runaway loops (minutes), daily caps catch slow leaks (hours), monthly caps catch a bad release (days). A single cap at any one scale misses the others."
+    },
+    {
+      "stage": "post",
+      "question": "What does a financial velocity limit do that an iteration cap does not?",
+      "options": [
+        "Nothing — they are identical",
+        "It trips on spend rate (e.g. >$50 in 10 minutes), catching a token-cheap-but-frequent polling loop before slower caps fire",
+        "It limits the number of users",
+        "It caps the model's parameter count"
+      ],
+      "correct": 1,
+      "explanation": "A loop can stay under any per-request cap and under a daily total while burning fast. Velocity limits watch the rate, firing within the loop's own time window — the layer that catches burn before monthly caps even notice."
+    },
+    {
+      "stage": "post",
+      "question": "Why does Anthropic frame Auto Mode as requiring budget controls specifically?",
+      "options": [
+        "Budgets make the classifier more accurate",
+        "The safety classifier is orthogonal to cost — an autoMode session without max_budget_usd is ungoverned autonomy, since a 'safe' action can still loop expensively",
+        "Budgets are required to enable Auto Mode in the UI",
+        "Auto Mode disables all other caps"
+      ],
+      "correct": 1,
+      "explanation": "The classifier judges safety, not spend. A trajectory of individually-safe actions can still burn the wallet, so max_turns and max_budget_usd are mandatory companions to the permission classifier, not alternatives."
+    },
+    {
+      "stage": "post",
+      "question": "What is the operational template from the $1,200 → $4,800 case?",
+      "options": [
+        "Cap total users per month",
+        "Every new tool surface is a new potential loop — so every new tool needs its own per-tool cap and its own growth alert",
+        "Disable all tools by default",
+        "Switch to a cheaper provider when costs rise"
+      ],
+      "correct": 1,
+      "explanation": "The fix was a per-tool cap plus a daily-growth alert. The general rule: adding a tool adds a loop surface, and the governance stack must extend to cover it — matching OWASP Agentic Top 10 and EU AI Act Article 14 oversight requirements."
+    }
+  ]
+}

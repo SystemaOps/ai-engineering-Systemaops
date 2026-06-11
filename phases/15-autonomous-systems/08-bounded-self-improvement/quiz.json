@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What engineering question do bounded self-improvement designs answer?",
+      "options": [
+        "How to make loops run faster",
+        "What constraints can be placed on a self-improvement loop such that the loop itself cannot silently weaken them",
+        "How to eliminate the need for evaluators",
+        "How to prove a loop is absolutely safe"
+      ],
+      "correct": 1,
+      "explanation": "Lesson 7 showed rate gaps compound; Lesson 4 showed loops game their own evaluators. The four primitives are mitigations that raise the cost of silent failure — explicitly not proofs of safety, since information-theoretic limits bound what a system can prove about its successors."
+    },
+    {
+      "stage": "pre",
+      "question": "What are the four bounding primitives?",
+      "options": [
+        "Logging, caching, batching, retries",
+        "Formal invariants, alignment anchors, multi-objective constraints, regression detection",
+        "Encryption, authentication, authorization, audit",
+        "Unit tests, integration tests, fuzzing, canaries"
+      ],
+      "correct": 1,
+      "explanation": "Invariants must hold across every edit (checked by code the loop can't touch); anchors pin the objective outside the edit surface; multi-objective constraints close single-scalar shortcuts; regression detection pauses on historical drops. All four gate every proposed edit."
+    },
+    {
+      "stage": "post",
+      "question": "What is the subtle failure mode of alignment anchors?",
+      "options": [
+        "Anchors consume too much memory",
+        "An anchor the loop cannot edit can still be REINTERPRETED — drift lives in the reasoning layer that reads the anchor, so anchors are necessary but not sufficient",
+        "Anchors expire after a fixed time",
+        "Anchors block all improvements"
+      ],
+      "correct": 1,
+      "explanation": "A read-only constitution still passes through an interpretation step on every use, and constitutional reasoning is deliberately flexible for novel situations. The loop may keep the text and drift in the reading."
+    },
+    {
+      "stage": "post",
+      "question": "Why do multi-objective constraints reduce reward hacking compared to a single scalar score?",
+      "options": [
+        "They are computed on faster hardware",
+        "Shortcuts that inflate one axis usually violate another — requiring performance AND safety AND fairness AND robustness to all hold leaves fewer exploitable gaps",
+        "They make the score larger",
+        "Single scores are illegal under RSPs"
+      ],
+      "correct": 1,
+      "explanation": "A loop optimizing one number finds its imperfections. Conjunctive constraints mean an edit is accepted only if every axis holds — and the lesson's harness shows each disabled primitive lets a specific failure class through."
+    },
+    {
+      "stage": "post",
+      "question": "What does Lob's theorem imply for self-improvement safety?",
+      "options": [
+        "Self-improvement is mathematically impossible",
+        "Systems face hard limits proving properties of their own successors — so bounding primitives can't close the problem formally; they convert silent failure into detectable active undermining",
+        "Any loop longer than 10 cycles diverges",
+        "Proof assistants solve RSI safety completely"
+      ],
+      "correct": 1,
+      "explanation": "Lob's self-reference result (and Kolmogorov-complexity bounds) is why the formal Godel Machine never ran. The honest value of the primitives: a drifted loop must actively undermine an explicit check — a much more detectable signature than walking past a missing one."
+    }
+  ]
+}

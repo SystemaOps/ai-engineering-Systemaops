@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why aren't cost governors enough on their own?",
+      "options": [
+        "They are too slow to compute",
+        "They bound what the agent can spend, not what it can do inside the budget — exfiltrating a secret or deleting a resource is often cheap in tokens",
+        "They only work in the EU",
+        "They require a human to approve every action"
+      ],
+      "correct": 1,
+      "explanation": "The expensive action is frequently the cheap one in tokens. Kill switches, circuit breakers, and canary tokens sit next to the cost layer to bound behavior, not just spend."
+    },
+    {
+      "stage": "pre",
+      "question": "What are the three detectors this lesson covers and their granularity?",
+      "options": [
+        "Firewall, proxy, VPN — all network-level",
+        "Kill switch (disables the whole agent), circuit breaker (pauses one offending path), canary token (bait whose access is the alarm)",
+        "Logging, metrics, tracing — all observability",
+        "Linter, type-checker, test runner"
+      ],
+      "correct": 1,
+      "explanation": "All three are pre-LLM engineering — feature-flag kills, Nygard-style breakers, classical honeytokens. What's new is the attack surface: agents read untrusted content, edit memory, and compose safe actions into unsafe ones, so the detectors must not trust the agent's self-report."
+    },
+    {
+      "stage": "post",
+      "question": "What property must a correct kill switch have?",
+      "options": [
+        "The agent can toggle it for self-correction",
+        "The agent can read it but cannot set it off — it lives in a system the agent's credentials cannot write, is checked on every consequential action, and re-enabling is an explicit human act",
+        "It auto-resets after a timeout",
+        "It only checks at startup"
+      ],
+      "correct": 1,
+      "explanation": "A kill switch the agent can flip is not a kill switch. It must be outside the edit surface (managed flag, signed config, OS-level kill), checked per consequential action, and require deliberate human re-enable — never an automatic timeout."
+    },
+    {
+      "stage": "post",
+      "question": "How does a canary token work, and what makes a bad one?",
+      "options": [
+        "It encrypts secrets; a bad one uses weak encryption",
+        "It is bait the agent has no legitimate reason to touch (fake credential, sentinel DB record), so access is the alarm — a canary the agent has a real reason to touch is just noise",
+        "It caps the token budget; a bad one is set too high",
+        "It is a backup of the agent's memory"
+      ],
+      "correct": 1,
+      "explanation": "A fake AWS key with no privilege makes exfiltration instantly attributable; a fake memory entry appearing in later output proves memory exfiltration. Canary design is workflow-specific precisely because a legitimately-touched canary generates false alarms."
+    },
+    {
+      "stage": "post",
+      "question": "Why layer statistical detectors (EWMA, CUSUM) with hard constitutional limits?",
+      "options": [
+        "Statistical detectors are always more accurate",
+        "Adaptive detectors track a moving baseline — a feature for legitimate drift, a bug for adversarial drift a patient attacker shifts slowly; hard limits like \"never email secrets@\" don't bend",
+        "Hard limits are faster to compute",
+        "Constitutional limits replace the need for detectors"
+      ],
+      "correct": 1,
+      "explanation": "A slow attacker can move the statistical baseline under the alarm. The layering: statistical detectors catch most noise, and non-negotiable hard limits catch the attack that deliberately walked past them."
+    }
+  ]
+}

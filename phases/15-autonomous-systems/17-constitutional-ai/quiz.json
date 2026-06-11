@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What is the core difference between rule-based and reason-based alignment?",
+      "options": [
+        "Rule-based is for chatbots, reason-based for agents",
+        "Rule-based lists every disallowed thing (fast, auditable, impossible to keep current, over-refuses); reason-based encodes principles the model reasons from (scales to unseen cases, harder to audit, fails by misapplying a principle)",
+        "Reason-based requires no training",
+        "Rule-based uses a bigger model"
+      ],
+      "correct": 1,
+      "explanation": "No rule list is both long enough for the long tail and short enough for fast inference. The 2026 Claude Constitution takes a middle position: hardcoded prohibitions are rule-based; everything else is reason-based."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the four-tier priority hierarchy in the 2026 Constitution, highest first?",
+      "options": [
+        "Helpfulness, ethics, safety, guidelines",
+        "Safety and supporting human oversight; ethics; Anthropic guidelines; helpfulness",
+        "Speed, accuracy, cost, style",
+        "User, operator, Anthropic, model"
+      ],
+      "correct": 1,
+      "explanation": "Higher tiers win conflicts — the same shape as Unix priorities or network QoS. Tier 1 is specifically \"do not act in ways that make human oversight harder,\" not generic caution; helpfulness is deliberately last."
+    },
+    {
+      "stage": "post",
+      "question": "What is the difference between hardcoded prohibitions and soft-coded defaults?",
+      "options": [
+        "Hardcoded ones are written in C",
+        "Hardcoded prohibitions (CBRN uplift, CSAM, infrastructure attacks) cannot be overridden by operator or user; soft-coded defaults (length, scope, style, tool patterns) are operator-adjustable within declared bounds",
+        "Soft-coded rules apply only on weekends",
+        "Hardcoded rules expire after each session"
+      ],
+      "correct": 1,
+      "explanation": "Wrongness that doesn't depend on context is hardcoded and enforced at the weights level where possible, the inference layer where not. Operators adjust defaults inside a bound but cannot rename away a prohibition."
+    },
+    {
+      "stage": "post",
+      "question": "How did the original 2022 Constitutional AI train harmlessness?",
+      "options": [
+        "Pure human labeling of every response",
+        "Generate responses, have the model critique each against the constitution, revise based on the critique, then RLAIF on the revised pairs",
+        "Filtering the pretraining corpus",
+        "A separate classifier blocking outputs"
+      ],
+      "correct": 1,
+      "explanation": "Self-critique plus RLAIF (RL from AI feedback) produced a model that refuses with principled explanations rather than blanket refusals. The 2026 Constitution uses a descendant plus post-training on the explicit tier hierarchy."
+    },
+    {
+      "stage": "post",
+      "question": "What is the honest caveat about reason-based alignment the lesson stresses?",
+      "options": [
+        "It is slower than rule-based alignment",
+        "It relies on the model generalizing principles to unanticipated situations — and can drift in interpretation, miss principle-conflict cases, or be exploited via \"the user asked, so helpfulness says yes\"",
+        "It cannot handle multiple languages",
+        "It only works on Anthropic models"
+      ],
+      "correct": 1,
+      "explanation": "Interpretation drift over training cycles connects to the alignment-anchor failure mode from Lesson 8. The lesson also notes the 2023 participatory experiment found ~50% divergence between public and corporate principles — findings the 2026 version did not incorporate."
+    }
+  ]
+}

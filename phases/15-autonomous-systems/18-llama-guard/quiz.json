@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Where does a classifier layer like Llama Guard sit, and why is that placement powerful but risky?",
+      "options": [
+        "Inside the model weights; it cannot be bypassed",
+        "At the narrowest point of the stack — every input and output passes through — so it catches obvious misuse cheaply, but a weak classifier becomes a false sense of security",
+        "Only on the output side",
+        "Between the GPU and the CPU"
+      ],
+      "correct": 1,
+      "explanation": "The choke point means a small compute cost screens everything. That leverage cuts both ways: it's why classifiers are valuable AND why over-trusting them is dangerous — they're a layer, not a solution."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the \"product\" of Llama Guard — the thing downstream systems actually wire actions to?",
+      "options": [
+        "Its parameter count",
+        "The hazard taxonomy (S1 Violent Crimes through S13/S14) — a shared vocabulary letting systems block some categories, flag others for review, and annotate-but-allow the rest",
+        "Its inference speed",
+        "The base model's chat ability"
+      ],
+      "correct": 1,
+      "explanation": "Llama Guard 3 uses the MLCommons 13-hazard taxonomy across 8 languages; Guard 4 adds multimodal input and S14 Code Interpreter Abuse — directly relevant to sandboxed coding agents. Category-specific routing is the integration point."
+    },
+    {
+      "stage": "post",
+      "question": "What does NeMo Guardrails' dialog-rail layer add over input/output rails?",
+      "options": [
+        "Faster GPU inference",
+        "Colang-defined flow constraints across turns — e.g. \"do not discuss medical diagnosis in a support bot even if asked three different ways\" — versus single-turn classify-and-block",
+        "Encryption of the conversation",
+        "Automatic model fine-tuning"
+      ],
+      "correct": 1,
+      "explanation": "Input/output rails judge one turn; dialog rails enforce multi-turn flow policy. NeMo also composes Llama Guard, Prompt Guard, and custom classifiers under one framework."
+    },
+    {
+      "stage": "post",
+      "question": "What did Huang et al. (2025) demonstrate about guardrail classifiers?",
+      "options": [
+        "They achieve 100% accuracy on all attacks",
+        "Emoji Smuggling reached 100% attack success on six prominent guard systems, and NeMo Guard Detect recorded 72.54% ASR on crafted jailbreaks — classifiers are a layer, not a solution",
+        "Classifiers are unnecessary with modern models",
+        "Only open-source guards are vulnerable"
+      ],
+      "correct": 1,
+      "explanation": "Character-level attacks (emoji smuggling, homoglyph substitution), in-context redirection, and semantic paraphrase all measurably drop classifier accuracy. The ceiling is clearly not zero ASR, which is why classifiers pair with constitutional behavior and HITL."
+    },
+    {
+      "stage": "post",
+      "question": "Given their bypass rates, what do classifiers still legitimately win at?",
+      "options": [
+        "Nothing — they should be removed",
+        "Fast default rejection of obvious misuse, category routing for differential handling, output rails catching leaked categories, and an auditable compliance surface with a declared taxonomy",
+        "Replacing human review entirely",
+        "Proving a model is safe"
+      ],
+      "correct": 1,
+      "explanation": "A CSAM request is caught in milliseconds; categories route to block/log/escalate; output rails catch what the model would otherwise leak; and a documented taxonomy is a real regulatory surface. They reduce blast radius cheaply — they just can't be the only defense."
+    }
+  ]
+}

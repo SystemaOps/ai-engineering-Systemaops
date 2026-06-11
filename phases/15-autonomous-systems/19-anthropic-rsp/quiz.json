@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why read a scaling policy closely if compliance with it isn't legally binding?",
+      "options": [
+        "It is enforceable in EU courts",
+        "The framing shapes how a lab conceives of catastrophic risk and communicates trade-offs publicly — scaling policies are the primary public signal labs emit about catastrophic-risk posture",
+        "Regulators wrote it",
+        "It determines API pricing"
+      ],
+      "correct": 1,
+      "explanation": "Nothing forces a lab to follow its own RSP, but reading it with specificity and skepticism is a practical skill for anyone whose work depends on frontier capabilities. The v3.0-vs-v2.0 diff is the useful unit."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the AI R&D-4 threshold in RSP v3.0?",
+      "options": [
+        "A model with 4 trillion parameters",
+        "A capability level where a model could automate a substantial fraction of AI research at competitive cost — crossing it requires Anthropic to publish an affirmative case before continued scaling",
+        "The fourth version of the safety team",
+        "A benchmark score of 4.0"
+      ],
+      "correct": 1,
+      "explanation": "Claude Opus 4.6 does not cross it, but the announcement concedes \"confidently ruling this out is becoming difficult.\" Lessons 6 (AAR) and 7 (RSI) feed directly into this threshold — automated alignment researchers clearing quality bars is evidence it's approaching."
+    },
+    {
+      "stage": "post",
+      "question": "What does the two-tier mitigation structure (new in v3.0) require a reader to check?",
+      "options": [
+        "Whether the model is open-source",
+        "Which column a commitment lives in — Anthropic-unilateral actions are promises; industry-wide recommendations (including RAND SL-4) are policy advocacy, not Anthropic commitments",
+        "The model's release date",
+        "Whether the policy is in PDF or HTML"
+      ],
+      "correct": 1,
+      "explanation": "A security measure in the \"industry-wide recommendation\" column is Anthropic's hope, not its promise. The two-tier split didn't exist in v2, so the same-looking measure can mean very different things depending on its column."
+    },
+    {
+      "stage": "post",
+      "question": "What was the sharpest regression from RSP v2 to v3.0?",
+      "options": [
+        "Removing the safety team",
+        "Dropping the explicit 2023 pause commitment (training pauses until mitigations are ready) in favor of a softer \"publish an affirmative case and proceed if adequate\"",
+        "Increasing the price of Claude",
+        "Removing public access to the document"
+      ],
+      "correct": 1,
+      "explanation": "SaferAI and other analysts flagged this directly. The pro-change argument: 2023's quantitative thresholds became unreachable as benchmarks re-scaled. The counter: a pause clause is a commitment device, and removing it removes the policy's credibility."
+    },
+    {
+      "stage": "post",
+      "question": "What did SaferAI's rating change signify?",
+      "options": [
+        "Anthropic's RSP improved from 1.9 to 2.2",
+        "A downgrade from 2.2 (v2) to 1.9 (v3.0), moving Anthropic from \"moderate\" to \"weak\" alongside OpenAI and DeepMind — a policy got less rigorous while looking more polished",
+        "A perfect 4.0 score",
+        "That the RSP became legally binding"
+      ],
+      "correct": 1,
+      "explanation": "Downgrade factors: qualitative thresholds replacing quantitative ones, the removed pause commitment, \"affirmative case\" instead of specific R&D-4 measures, and review depending on Anthropic's own Safety Advisory Group with limited independent oversight."
+    }
+  ]
+}

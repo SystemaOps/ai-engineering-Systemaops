@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "How does 2026 propose-then-commit differ from the 2023 \"Approve?\" prompt?",
+      "options": [
+        "It removes the human entirely",
+        "The proposal is persisted durably with intent, data lineage, permissions, blast radius, and a rollback plan; committed only on positive ack; verified after — versus a synchronous prompt that gets rubber-stamped",
+        "It uses voice instead of buttons",
+        "It approves actions automatically below a cost threshold"
+      ],
+      "correct": 1,
+      "explanation": "The 2023 synchronous prompt produced fast approvals that predicted little and an audit trail the user can't recall. Propose-then-commit moves HITL onto a durable substrate with structured metadata — the shape LangGraph interrupt(), Microsoft RequestInfoEvent, and Cloudflare waitForApproval() all share."
+    },
+    {
+      "stage": "pre",
+      "question": "What does the idempotency key prevent?",
+      "options": [
+        "Unauthorized users from approving",
+        "A retry after transient failure from double-executing an already-approved action — the key ties approval to one unique side effect, making the second execution a no-op",
+        "The agent from editing its own proposal",
+        "Approvals from expiring too quickly"
+      ],
+      "correct": 1,
+      "explanation": "Approve \"transfer $100,\" network blips, workflow retries — without the key the transfer runs twice on one approval. It's the same idempotency pattern Stripe and AWS APIs use, reused for agent approvals."
+    },
+    {
+      "stage": "post",
+      "question": "What is the challenge-and-response mitigation for rubber-stamp approvals?",
+      "options": [
+        "A CAPTCHA before approving",
+        "A checklist requiring positive answers (resource understood? blast radius acceptable? rollback plan?) before the Approve button enables — a forcing function toward escalation or safe-default decline",
+        "Two users must both approve",
+        "A mandatory 60-second wait timer"
+      ],
+      "correct": 1,
+      "explanation": "The reviewer who can't tick the boxes asks for clarification or declines. Anthropic's agent-safety research cites checklist-driven HITL specifically as the mitigation for fast, review-free approvals."
+    },
+    {
+      "stage": "post",
+      "question": "Which actions warrant propose-then-commit under the 2026 guidance?",
+      "options": [
+        "Every single action including reads",
+        "Consequential ones always (irreversible writes, payments, outbound comms, prod DB changes); reversible ones sometimes; reads and inspections never",
+        "Only actions over $1,000",
+        "Only the first action of a session"
+      ],
+      "correct": 1,
+      "explanation": "Reads are never gated; reversible local edits sometimes; irreversible/financial/outbound/destructive actions always. Gating reads would train the reviewer to rubber-stamp everything — the opposite of the goal."
+    },
+    {
+      "stage": "post",
+      "question": "Why is a post-action verify step required after commit?",
+      "options": [
+        "To log the action for billing",
+        "\"The commit ran\" is not \"the side effect happened\" — network partitions and races can leave the workflow believing it succeeded while the backend didn't persist; verify re-reads the target",
+        "To ask the user to approve again",
+        "To measure latency"
+      ],
+      "correct": 1,
+      "explanation": "Same pattern as DB transactions with RETURNING or GetObject after PutObject. If verify fails, the system is in a known-bad state and alerting engages — silent success is the trap."
+    }
+  ]
+}

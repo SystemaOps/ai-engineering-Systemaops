@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What is the motivating economics of Automated Alignment Research?",
+      "options": [
+        "Alignment researchers are too expensive to hire at all",
+        "Alignment experiments take weeks per iteration and the workload grows faster than the supply of qualified researchers — frontier models may help close their own gap",
+        "Automation removes the need for safety review",
+        "Investors demanded it"
+      ],
+      "correct": 1,
+      "explanation": "AAR asks whether the models whose capabilities outrun alignment can contribute to closing that gap. Anthropic's 2026 weak-to-strong study is one of the first public results — AARs outperformed the human baseline on that task."
+    },
+    {
+      "stage": "pre",
+      "question": "In Anthropic's AAR architecture, where does the shared forum's storage live, and why?",
+      "options": [
+        "Inside each agent's sandbox for speed",
+        "Outside every sandbox — agents can read and post but cannot delete or edit records, so they cannot cover up failed or dubious experiments",
+        "On each researcher's laptop",
+        "In the model's context window"
+      ],
+      "correct": 1,
+      "explanation": "Log integrity is the difference between a controlled experiment and a compromised one. The infrastructure analog is append-only storage with object-lock — the same pattern used for ransomware-resistant audit trails."
+    },
+    {
+      "stage": "post",
+      "question": "What is the prescribed-workflow tradeoff Anthropic reported?",
+      "options": [
+        "Prescribed workflows are illegal under the EU AI Act",
+        "Step-by-step human-written plans degrade AAR performance versus high-level goals with free decomposition — but that same flexibility enables goal-drift and unsanctioned decomposition",
+        "Workflows cost more tokens than freedom",
+        "Agents refuse to follow any prescribed steps"
+      ],
+      "correct": 1,
+      "explanation": "Overspecified scaffolds hurt capable agents (consistent across agentic research). The safety design question: how much flexibility buys human-beating capability without handing the agent room to generalize goals off-distribution?"
+    },
+    {
+      "stage": "post",
+      "question": "What is the \"compression risk\" that makes AAR a qualified good?",
+      "options": [
+        "Compressed model weights lose alignment data",
+        "Automating alignment research is one step from automating AI R&D entirely — the exact capability threshold RSP v3.0 and DeepMind's FSF treat as a trigger for elevated controls",
+        "Forum logs may be gzip-corrupted",
+        "Research papers get shorter each year"
+      ],
+      "correct": 1,
+      "explanation": "If alignment and capability research compound at similar rates, the risk surface grows with capability; historically capability compounds faster. Each AAR result narrows the gap only if the research process itself is trustworthy."
+    },
+    {
+      "stage": "post",
+      "question": "What role do humans keep in the AAR pipeline?",
+      "options": [
+        "None — the system is fully autonomous end to end",
+        "Humans set the task queue, review results, and decide what to publish or retract — AARs accelerate the middle, which is propose-then-commit applied to research",
+        "Humans only pay the API bills",
+        "Humans write all the experiment code"
+      ],
+      "correct": 1,
+      "explanation": "AARs propose; humans commit. The ends of the pipeline — problem selection and publication authority — stay human, mirroring the HITL pattern this phase formalizes in the propose-then-commit lesson."
+    }
+  ]
+}

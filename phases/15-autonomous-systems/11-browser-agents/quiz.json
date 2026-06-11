@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why is a browser agent a uniquely dangerous category of long-horizon agent?",
+      "options": [
+        "Browsers are slow to automate",
+        "It reads untrusted content and takes consequential actions — every page is input the user didn't write, and every form is a potential command channel",
+        "Browsers require constant internet",
+        "It can only run one tab at a time"
+      ],
+      "correct": 1,
+      "explanation": "The 2025-2026 attack corpus (Tainted Memories, HashJack, Comet one-click hijacks) is real, not hypothetical. The attack lives in the agent's reading-vs-acting boundary, which is architecturally fuzzy."
+    },
+    {
+      "stage": "pre",
+      "question": "Why did OpenAI's head of preparedness say indirect prompt injection \"is not a bug that can be fully patched\"?",
+      "options": [
+        "The codebase is too large to fix",
+        "The attack is isomorphic to the agent's capability — it must read untrusted content to work, and any content it reads could contain instructions it follows",
+        "Browsers refuse security updates",
+        "It only affects open-source agents"
+      ],
+      "correct": 1,
+      "explanation": "Same reasoning shape as Lob's theorem: the agent can't prove the next token is safe. Defenses (trust boundaries, allowlists, HITL) raise attack cost and shrink blast radius, but they don't close the class."
+    },
+    {
+      "stage": "post",
+      "question": "What do BrowseComp, OSWorld, and WebArena-Verified each measure, and why does it matter which you cite?",
+      "options": [
+        "They are three names for the same benchmark",
+        "Fact-finding on the open web, operating a full desktop, and finishing transactional web flows respectively — a high BrowseComp score says nothing about whether the agent can book a flight",
+        "They all measure raw token throughput",
+        "Only OSWorld measures anything real"
+      ],
+      "correct": 1,
+      "explanation": "Different axes, different horizons. WebArena-Verified (ICLR 2026) also fixed an ~11.3% false-negative rate in the original WebArena and added a 258-task Hard subset. Production decisions need the benchmark matching the task distribution."
+    },
+    {
+      "stage": "post",
+      "question": "What is a memory-binding attack on a browser agent?",
+      "options": [
+        "Overflowing the agent's RAM",
+        "A page instructs the agent to write a persistent memory; next session the memory fires the payload with no visible trigger",
+        "Encrypting the agent's memory for ransom",
+        "Filling the context window with junk"
+      ],
+      "correct": 1,
+      "explanation": "The Tainted Memories class weaponizes durable state (Lesson 12): the attack persists across sessions and detonates later. The defense includes canary tokens on memory so a firing entry is visible to the user."
+    },
+    {
+      "stage": "post",
+      "question": "What is the load-bearing principle of a shipping browser-agent defense posture?",
+      "options": [
+        "Block all JavaScript",
+        "The read/write boundary: reading is never consequential, but writing (form submit, side-effecting tool) triggered by out-of-trust-boundary content requires fresh human approval",
+        "Run the agent as root for full visibility",
+        "Trust pages from HTTPS sites"
+      ],
+      "correct": 1,
+      "explanation": "Reading untrusted content is unavoidable; acting on it is the gate. Combined with per-task tool allowlists, scoped-credential session isolation, content sanitizers, and HITL on consequential actions, it reduces blast radius without pretending to close the injection class."
+    }
+  ]
+}

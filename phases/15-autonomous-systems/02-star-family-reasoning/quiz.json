@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What is the STaR loop, in one pass?",
+      "options": [
+        "Distill a large model into a smaller one",
+        "Sample a rationale + answer, keep the trace if the answer is correct, fine-tune on kept traces, repeat",
+        "Train on human-written chains of thought only",
+        "Generate answers without rationales and grade them later"
+      ],
+      "correct": 1,
+      "explanation": "STaR (Zelikman et al., 2022) bootstraps reasoning from the model's own rationales, graded by final-answer correctness — improving GSM8K and CommonsenseQA without new human annotation. It is the minimum-viable self-improvement loop."
+    },
+    {
+      "stage": "pre",
+      "question": "Why does STaR need \"rationalization\" for problems the model always gets wrong?",
+      "options": [
+        "To make the dataset larger for its own sake",
+        "The keep-if-correct filter can never collect training data on those problems — so STaR injects the correct answer as a hint and keeps the rationale written toward it",
+        "To punish the model for failures",
+        "Because fine-tuning requires balanced classes"
+      ],
+      "correct": 1,
+      "explanation": "Without rationalization the loop only learns where the model already sometimes succeeds. Hinted rationales unlock the rest — at the cost that rationalized reasoning may be implausible, a known failure mode."
+    },
+    {
+      "stage": "post",
+      "question": "What does V-STaR do with the incorrect rationales STaR throws away?",
+      "options": [
+        "Deletes them more aggressively",
+        "Uses both correct and incorrect solutions to train a DPO-based verifier that ranks sampled rationales at inference time",
+        "Feeds them to a larger teacher model",
+        "Publishes them as a negatives dataset"
+      ],
+      "correct": 1,
+      "explanation": "Every (rationale, correct?) pair is verifier training data. Best-of-N selection with the verifier delivered +4 to +17 points over self-improvement baselines on GSM8K and MATH — most of the gain from inference-time selection."
+    },
+    {
+      "stage": "post",
+      "question": "What safety concern do STaR, V-STaR, and Quiet-STaR all share?",
+      "options": [
+        "They require too much compute to audit",
+        "The gradient signal is the final answer — shortcut reasoning that happens to land right gets reinforced, working in-distribution and breaking silently out-of-distribution",
+        "They leak training data verbatim",
+        "They make models overly cautious"
+      ],
+      "correct": 1,
+      "explanation": "Answer-conditioned training preserves any shortcut that reached the right answer. Even V-STaR's verifier is trained on the same labels and can prefer well-formatted wrong reasoning. Mitigations: process-supervised rewards and held-out OOD evals that break shortcuts."
+    },
+    {
+      "stage": "post",
+      "question": "How does the STaR pattern map onto the 2025-2026 frontier stack?",
+      "options": [
+        "It doesn't — STaR is obsolete",
+        "RL on verifiable problems (DeepSeek-R1, o1) is the same answer-conditioned signal scaled up; AlphaEvolve is STaR for code with an evaluator; DGM is STaR for the agent scaffold itself",
+        "STaR became the transformer architecture",
+        "Only Quiet-STaR is still used, renamed to RLHF"
+      ],
+      "correct": 1,
+      "explanation": "The keep-what-worked loop reappears everywhere: verifiable-reward RL, process reward models as the supervised alternative, and the evolutionary systems of the next two lessons. Understanding STaR makes all of them click."
+    }
+  ]
+}
