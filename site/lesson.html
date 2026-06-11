@@ -791,20 +791,39 @@
       line-height: 1;
     }
 
-    .lesson-article .mermaid-container {
-      margin: 24px 0;
-      display: flex;
-      justify-content: center;
+    /* --- Numbered diagram figures (technical-manual style) --- */
+    .lesson-article .mermaid-figure {
+      margin: 28px 0;
+      border: 1px solid var(--rule-soft);
+      background: var(--bg-surface);
     }
 
-    .mermaid-block { width: 100%; max-width: 100%; }
-
-    .mermaid-toolbar {
+    .mermaid-figure-head {
       display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      margin-bottom: 8px;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--rule-soft);
     }
+
+    .mermaid-fig-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      color: var(--blueprint);
+      flex: 1;
+    }
+
+    .mermaid-scroll-hint {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: var(--ink-mute);
+      display: none;
+    }
+
+    .mermaid-figure[data-scrollable] .mermaid-scroll-hint { display: inline; }
 
     .mermaid-btn {
       font-family: var(--font-mono);
@@ -828,9 +847,15 @@
       width: 100%;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
-      border: 1px solid var(--rule-soft);
-      padding: 16px;
-      background: var(--bg-surface);
+      padding: 18px 16px;
+      cursor: zoom-in;
+    }
+
+    /* Natural-size rendering: wide diagrams scroll, never shrink. */
+    .mermaid-render svg {
+      max-width: none !important;
+      display: block;
+      margin: 0 auto;
     }
 
     .mermaid-source { display: none; }
@@ -1677,23 +1702,118 @@
   <script src="data.js?v=20260610a"></script>
   <script src="progress.js?v=20260610a"></script>
   <script src="cmdpalette.js?v=20260610a" defer></script>
-  <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
-    mermaid.initialize({
-      startOnLoad: false,
-      theme: document.documentElement.getAttribute('data-theme') === 'light' ? 'default' : 'dark',
-      fontFamily: 'JetBrains Mono, ui-monospace, monospace',
-      themeVariables: {
-        fontSize: '13px'
-      },
-      flowchart: {
-        useMaxWidth: true,
-        htmlLabels: true,
-        nodeSpacing: 40,
-        rankSpacing: 50,
-        padding: 12
+  <script src="vendor/mermaid.min.js?v=20260611a"></script>
+  <script>
+    // Brand-matched mermaid theme. Both light and dark map onto the site
+    // palette in style.css (paper/teal manual aesthetic) instead of the
+    // stock mermaid themes. Shared by boot init and the theme toggle.
+    window._mermaidConfig = function () {
+      // Resolve the theme the same way the page boot script does — this
+      // runs before that script has set data-theme on <html>, so reading
+      // only the attribute would always see the markup default.
+      var stored = null;
+      try { stored = localStorage.getItem('theme'); } catch (e) {}
+      var dark;
+      if (stored) {
+        dark = stored === 'dark';
+      } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        dark = true;
+      } else {
+        dark = document.documentElement.getAttribute('data-theme') !== 'light';
       }
-    });
+      var tv = dark ? {
+        darkMode: true,
+        background: '#131830',
+        mainBkg: '#1a2140',
+        primaryColor: '#1a2140',
+        primaryTextColor: '#e8e6dc',
+        primaryBorderColor: '#3BA3A1',
+        nodeBorder: '#3BA3A1',
+        nodeTextColor: '#e8e6dc',
+        textColor: '#e8e6dc',
+        titleColor: '#e8e6dc',
+        lineColor: '#3BA3A1',
+        secondaryColor: '#16243c',
+        secondaryBorderColor: '#2c6f6d',
+        tertiaryColor: '#1c1f38',
+        tertiaryBorderColor: '#4a4a66',
+        clusterBkg: '#10162b',
+        clusterBorder: '#2c3354',
+        edgeLabelBackground: '#131830',
+        defaultLinkColor: '#3BA3A1',
+        actorBkg: '#1a2140',
+        actorBorder: '#3BA3A1',
+        actorTextColor: '#e8e6dc',
+        actorLineColor: '#4a4a66',
+        signalColor: '#e8e6dc',
+        signalTextColor: '#e8e6dc',
+        labelBoxBkgColor: '#16243c',
+        labelBoxBorderColor: '#3BA3A1',
+        labelTextColor: '#e8e6dc',
+        loopTextColor: '#e8e6dc',
+        noteBkgColor: '#2a2716',
+        noteBorderColor: '#8a7b3f',
+        noteTextColor: '#e8e6dc',
+        activationBkgColor: '#16243c',
+        activationBorderColor: '#3BA3A1',
+        sequenceNumberColor: '#0a0d1a'
+      } : {
+        darkMode: false,
+        background: '#f3f1e8',
+        mainBkg: '#fafaf5',
+        primaryColor: '#fafaf5',
+        primaryTextColor: '#1a1a1a',
+        primaryBorderColor: '#1C7F7F',
+        nodeBorder: '#1C7F7F',
+        nodeTextColor: '#1a1a1a',
+        textColor: '#1a1a1a',
+        titleColor: '#1a1a1a',
+        lineColor: '#1C7F7F',
+        secondaryColor: '#e7f0ee',
+        secondaryBorderColor: '#7fb3b2',
+        tertiaryColor: '#efece0',
+        tertiaryBorderColor: '#c9c4b0',
+        clusterBkg: '#eef0e6',
+        clusterBorder: '#c9c4b0',
+        edgeLabelBackground: '#f3f1e8',
+        defaultLinkColor: '#1C7F7F',
+        actorBkg: '#fafaf5',
+        actorBorder: '#1C7F7F',
+        actorTextColor: '#1a1a1a',
+        actorLineColor: '#c9c4b0',
+        signalColor: '#1a1a1a',
+        signalTextColor: '#1a1a1a',
+        labelBoxBkgColor: '#e7f0ee',
+        labelBoxBorderColor: '#1C7F7F',
+        labelTextColor: '#1a1a1a',
+        loopTextColor: '#1a1a1a',
+        noteBkgColor: '#f7f0dc',
+        noteBorderColor: '#c9b97a',
+        noteTextColor: '#1a1a1a',
+        activationBkgColor: '#e7f0ee',
+        activationBorderColor: '#1C7F7F',
+        sequenceNumberColor: '#fafaf5'
+      };
+      tv.fontSize = '13px';
+      tv.fontFamily = 'JetBrains Mono, ui-monospace, monospace';
+      return {
+        startOnLoad: false,
+        theme: 'base',
+        fontFamily: 'JetBrains Mono, ui-monospace, monospace',
+        themeVariables: tv,
+        // useMaxWidth:false renders diagrams at natural size — wide ones
+        // scroll horizontally inside the figure instead of shrinking to
+        // an illegible smear.
+        flowchart: { useMaxWidth: false, htmlLabels: true, nodeSpacing: 40, rankSpacing: 50, padding: 12 },
+        sequence: { useMaxWidth: false },
+        state: { useMaxWidth: false },
+        class: { useMaxWidth: false },
+        timeline: { useMaxWidth: false },
+        journey: { useMaxWidth: false },
+        er: { useMaxWidth: false }
+      };
+    };
+    mermaid.initialize(window._mermaidConfig());
     window._mermaidReady = mermaid;
   </script>
   <script>
@@ -2291,15 +2411,19 @@
               var raw = codeLines.join('\n');
               if (codeLang === 'mermaid') {
                 mermaidBlocks++;
-                out += '<div class="mermaid-container">';
-                out += '<div class="mermaid-block" data-mermaid-index="' + mermaidBlocks + '">';
-                out += '<div class="mermaid-toolbar">';
+                // Manual-style numbered figure: FIG <phase>.<lesson>-<n>,
+                // matching the homepage's FIG_NNN aesthetic.
+                var figNums = (lessonPath || '').match(/phases\/(\d{2})[^/]*\/(\d{2})/);
+                var figLabel = 'FIG ' + (figNums ? figNums[1] + '.' + figNums[2] : '00.00') + '-' + mermaidBlocks;
+                out += '<figure class="mermaid-figure" data-mermaid-index="' + mermaidBlocks + '">';
+                out += '<figcaption class="mermaid-figure-head">';
+                out += '<span class="mermaid-fig-label">' + figLabel + '</span>';
+                out += '<span class="mermaid-scroll-hint" aria-hidden="true">&#8596; scroll</span>';
                 out += '<button type="button" class="mermaid-btn mermaid-expand" data-mermaid-index="' + mermaidBlocks + '">Expand</button>';
-                out += '</div>';
+                out += '</figcaption>';
                 out += '<pre class="mermaid mermaid-source" id="mermaid-' + mermaidBlocks + '">' + escapeHtml(raw) + '</pre>';
-                out += '<div class="mermaid-render" id="mermaid-render-' + mermaidBlocks + '"></div>';
-                out += '</div>';
-                out += '</div>';
+                out += '<div class="mermaid-render" id="mermaid-render-' + mermaidBlocks + '" data-mermaid-index="' + mermaidBlocks + '"></div>';
+                out += '</figure>';
               } else {
                 out += renderCodeBlock(raw, codeLang);
               }
@@ -2657,13 +2781,7 @@
       function updateMermaidThemeAndRerender() {
         if (!window._mermaidReady) return;
         try {
-          window._mermaidReady.initialize({
-            startOnLoad: false,
-            theme: mermaidTheme(),
-            fontFamily: 'JetBrains Mono, ui-monospace, monospace',
-            themeVariables: { fontSize: '13px' },
-            flowchart: { useMaxWidth: true, htmlLabels: true, nodeSpacing: 40, rankSpacing: 50, padding: 12 }
-          });
+          window._mermaidReady.initialize(window._mermaidConfig());
         } catch (_) {}
         rerenderMermaidBlocks();
         rerenderMermaidModal();
@@ -2687,6 +2805,12 @@
           window._mermaidReady.render('mermaid-' + idx + '-svg', def).then(function (result) {
             if (target._mermaidRenderToken !== token) return;
             target.innerHTML = result.svg;
+            // Flag wide diagrams so the figure header shows a scroll hint.
+            var figure = target.closest('.mermaid-figure');
+            if (figure) {
+              if (target.scrollWidth > target.clientWidth + 4) figure.setAttribute('data-scrollable', '');
+              else figure.removeAttribute('data-scrollable');
+            }
           }).catch(function () {
             if (target._mermaidRenderToken !== token) return;
             target.innerHTML = '<p style="color:var(--text-muted);font-style:italic;">Diagram could not be rendered.</p>';
@@ -2701,6 +2825,16 @@
           btn.addEventListener('click', function () {
             var idx = btn.getAttribute('data-mermaid-index');
             openMermaidModal(idx, btn);
+          });
+        });
+        // The whole diagram is click-to-zoom; the Expand button stays as
+        // the visible, keyboard-accessible affordance.
+        document.querySelectorAll('.mermaid-render').forEach(function (area) {
+          if (area._zoomBound) return;
+          area._zoomBound = true;
+          area.addEventListener('click', function () {
+            var idx = area.getAttribute('data-mermaid-index');
+            if (idx) openMermaidModal(idx, area);
           });
         });
       }
