@@ -59,8 +59,8 @@
           <line x1="21" y1="21" x2="16.65" y2="16.65"/>
         </svg>
       </button>
-      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-        <span class="theme-icon" id="themeIcon">N</span>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark / light mode" title="Toggle dark / light mode">
+        <span class="theme-icon" id="themeIcon">&#9790;</span>
       </button>
     </div>
   </header>
@@ -197,7 +197,7 @@
 
     function updateIcon() {
       var icon = document.getElementById('themeIcon');
-      if (icon) icon.textContent = root.getAttribute('data-theme') === 'light' ? 'N' : 'D';
+      if (icon) icon.textContent = root.getAttribute('data-theme') === 'light' ? '☾' : '☀';
     }
 
     updateIcon();
