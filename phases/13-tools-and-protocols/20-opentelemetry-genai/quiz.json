@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "An agent's latency varies from 3 to 30 seconds and logs only show the LLM calls. Why is end-to-end tracing the fix?",
+      "options": [
+        "Tracing makes the agent faster automatically",
+        "One trace spans the agent loop, LLM calls, tool dispatch, MCP round-trips, and sub-agents — exposing things like an MCP server hanging on cold-start",
+        "Tracing replaces the need for logs",
+        "Providers refund slow requests if you have traces"
+      ],
+      "correct": 1,
+      "explanation": "The February 2026 debugging story in the lesson: the cause was a cold-start hang in one MCP server — invisible in LLM logs, obvious in a span hierarchy where every hop nests under one trace id."
+    },
+    {
+      "stage": "pre",
+      "question": "Why do the OTel GenAI semantic conventions matter, rather than custom span attributes?",
+      "options": [
+        "Custom attributes are rejected by collectors",
+        "Stable shared attribute names mean Datadog, Langfuse, Phoenix, OpenLLMetry, and AgentOps all parse the same spans — instrument once, ship to any backend",
+        "The conventions are required by law in the EU",
+        "They compress spans better"
+      ],
+      "correct": 1,
+      "explanation": "The semconv group standardized gen_ai.* attribute names (stable from v1.37). All backends speak OTLP and parse the same fields, so instrumentation isn't coupled to an observability vendor."
+    },
+    {
+      "stage": "post",
+      "question": "Which attributes does an LLM span require under the GenAI conventions?",
+      "options": [
+        "Only the model name",
+        "gen_ai.operation.name, provider.name, request.model, response.model, usage input/output tokens, and response.id",
+        "The full prompt and completion text",
+        "CPU and memory usage"
+      ],
+      "correct": 1,
+      "explanation": "Operation, provider, requested vs served model, token usage, and the provider response id for correlation. Tool spans add gen_ai.tool.name and tool.call.id; agent spans add gen_ai.agent.* fields."
+    },
+    {
+      "stage": "post",
+      "question": "How do the conventions treat prompt and completion content by default?",
+      "options": [
+        "Captured in full on every span",
+        "Off by default — spans carry metrics and timing; content capture is opt-in via env vars because payloads are large and may contain PII",
+        "Captured but automatically encrypted",
+        "Only the first 100 characters are kept"
+      ],
+      "correct": 1,
+      "explanation": "Privacy-safe defaults: timing and token counts, no content. Enabling gen_ai.content.* events requires explicit opt-in (OTEL_SEMCONV_STABILITY_OPT_IN plus content-capture vars) and deserves careful review before production."
+    },
+    {
+      "stage": "post",
+      "question": "When is a span marked SpanKind.CLIENT vs INTERNAL?",
+      "options": [
+        "CLIENT for user-facing agents, INTERNAL for background jobs",
+        "CLIENT when crossing a process boundary (LLM provider, MCP server); INTERNAL for the agent's own loop steps and tool execution",
+        "CLIENT for errors, INTERNAL for successes",
+        "The kind is assigned randomly by the SDK"
+      ],
+      "correct": 1,
+      "explanation": "Span kind encodes the call topology: llm.chat and mcp.call are CLIENT spans (remote hops), while agent.invoke_agent and tool.execute are INTERNAL — making the hierarchy agent → LLM → tool → MCP readable in any trace viewer."
+    }
+  ]
+}

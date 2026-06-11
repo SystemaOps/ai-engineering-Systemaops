@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What does MCP's OAuth profile require, beyond vanilla OAuth 2.1?",
+      "options": [
+        "Client-credentials flow as the default",
+        "Authorization code + PKCE only, mandatory resource indicators on every token request, and published protected-resource metadata",
+        "API keys rotated every 24 hours",
+        "Biometric confirmation per tool call"
+      ],
+      "correct": 1,
+      "explanation": "The 2025-11-25 spec profiles OAuth 2.1 strictly: no implicit flow, no default client-credentials, RFC 8707 resource indicators on every token request, and RFC 9728 metadata so clients can discover the authorization server from just the resource URL."
+    },
+    {
+      "stage": "pre",
+      "question": "What attack do resource indicators (RFC 8707) prevent?",
+      "options": [
+        "Brute-forcing the user's password",
+        "The confused deputy: a malicious Server A replaying the client's token against Server B — the token's aud pins it to its intended audience",
+        "SQL injection in the token endpoint",
+        "Phishing of the consent screen"
+      ],
+      "correct": 1,
+      "explanation": "The resource parameter at token request time bakes aud: \"https://notes.example.com\" into the token. Any other server receiving that token checks the audience and rejects it — tokens are no longer bearer-anywhere."
+    },
+    {
+      "stage": "post",
+      "question": "In the PKCE flow, what does the code_verifier/code_challenge pair accomplish?",
+      "options": [
+        "It encrypts the access token",
+        "It defeats authorization-code interception: the token request must present the verifier whose SHA256 matches the challenge sent at authorization time",
+        "It replaces the user's password",
+        "It compresses the redirect URL"
+      ],
+      "correct": 1,
+      "explanation": "An attacker who intercepts the authorization code still can't redeem it, because the token endpoint validates the code_verifier against the code_challenge hash from step one — and only the legitimate client holds the verifier."
+    },
+    {
+      "stage": "post",
+      "question": "How does step-up authorization (SEP-835) work when a notes:read client needs to delete a note?",
+      "options": [
+        "The server silently grants the higher scope",
+        "The server returns 403 with WWW-Authenticate naming the missing scope; the client runs a consent prompt and mini OAuth flow for just that scope, then retries",
+        "The client must restart the entire session from initialize",
+        "The user must email the server administrator"
+      ],
+      "correct": 1,
+      "explanation": "The insufficient_scope error names exactly what's missing (scope=\"notes:delete\"). The client escalates with user consent for the increment — least-privilege by default, scope added only at the moment of need."
+    },
+    {
+      "stage": "post",
+      "question": "What does the .well-known/oauth-protected-resource document (RFC 9728) give clients?",
+      "options": [
+        "The server's source code",
+        "Discovery: which authorization servers issue tokens for this resource and which scopes exist — so the client only needs the resource URL to start",
+        "A list of all registered users",
+        "Rate-limit quotas"
+      ],
+      "correct": 1,
+      "explanation": "The resource server publishes its authorization_servers and scopes_supported. Clients bootstrap the whole flow from one URL instead of out-of-band configuration."
+    }
+  ]
+}

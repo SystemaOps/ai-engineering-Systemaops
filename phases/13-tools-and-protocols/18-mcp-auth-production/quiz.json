@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What three operational gaps separate a memory-only OAuth simulator from production MCP auth?",
+      "options": [
+        "Logging, monitoring, alerting",
+        "Client enrollment at scale, JWKS key rotation that breaks boot-time-only fetches, and audience binding enforced on every request",
+        "Load balancing, sharding, replication",
+        "Password storage, 2FA, captchas"
+      ],
+      "correct": 1,
+      "explanation": "Production means thousands of clients enrolling without an admin (CIMD/DCR), signing keys that rotate hourly (a boot-time JWKS fetch fails at 3 a.m.), and token.aud checked against the server's canonical URL on every single request."
+    },
+    {
+      "stage": "pre",
+      "question": "Why did the 2025-11-25 spec make Client ID Metadata Documents (CIMD) the preferred enrollment mechanism over Dynamic Client Registration?",
+      "options": [
+        "CIMD is faster to parse",
+        "CIMD inverts push to pull: the client's HTTPS URL IS its client_id, trust roots in DNS, and there's no registration round-trip or per-server state to sync",
+        "DCR was found to have a cryptographic flaw",
+        "CIMD works without HTTPS"
+      ],
+      "correct": 1,
+      "explanation": "With CIMD the authorization server fetches the client's metadata from the URL the client controls — no minted client_ids, no namespace exhaustion, no per-server registration. DCR was demoted from SHOULD to MAY but remains the backwards-compatible fallback."
+    },
+    {
+      "stage": "post",
+      "question": "Per the spec, what must a client do if the authorization server's metadata lacks code_challenge_methods_supported with S256?",
+      "options": [
+        "Fall back to the implicit flow",
+        "Refuse to proceed — absent S256 means no PKCE support, and there is no degraded mode",
+        "Use a longer client secret instead",
+        "Warn the user but continue"
+      ],
+      "correct": 1,
+      "explanation": "PKCE is non-negotiable in MCP's OAuth profile. If S256 is missing from the RFC 8414 metadata, the IdP cannot satisfy the contract and the deployment must be rejected — the manifest is wrong, not the code."
+    },
+    {
+      "stage": "post",
+      "question": "How does production JWKS handling survive key rotation?",
+      "options": [
+        "Fetch JWKS once at boot and restart the server weekly",
+        "A cached key set with a scheduled refresh that overwrites before expiry, plus a fallback fetch on cache miss for tokens signed by newer keys",
+        "Disable signature verification during rotation windows",
+        "Pin one key forever"
+      ],
+      "correct": 1,
+      "explanation": "Authorization servers rotate signing keys on schedules (hourly, faster under incident response). The cache-plus-refresh-plus-miss-fallback pattern keeps validation working through rollover without restarts."
+    },
+    {
+      "stage": "post",
+      "question": "Which check stops a token issued for one MCP server being replayed against another?",
+      "options": [
+        "Comparing the token's issue time",
+        "The resource server comparing token.aud against its own canonical resource URL and rejecting mismatches with 401",
+        "Rate limiting per client",
+        "TLS alone prevents replay"
+      ],
+      "correct": 1,
+      "explanation": "Audience pinning is the confused-deputy defense made operational: the RFC 8707 resource indicator becomes a hard aud claim check on every request. Each role owns its checks — the authorization server issues and rotates; the resource server validates."
+    }
+  ]
+}

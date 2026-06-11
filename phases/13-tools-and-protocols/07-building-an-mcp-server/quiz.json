@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "How does a local (stdio) MCP server communicate with its client?",
+      "options": [
+        "Over a Unix socket with protobuf frames",
+        "It is spawned as a child process; newline-delimited JSON-RPC flows over stdin/stdout",
+        "Via a local HTTP server on port 8080",
+        "Through shared memory"
+      ],
+      "correct": 1,
+      "explanation": "The client spawns the server as a child process and exchanges one JSON object per line over stdin/stdout. The 2025-11-25 spec uses explicit newline separation — no length-prefixed framing, and no SSE (that legacy remote mode is being removed in mid-2026)."
+    },
+    {
+      "stage": "pre",
+      "question": "Why must a stdio MCP server never print debug output to stdout?",
+      "options": [
+        "Stdout is reserved for JSON-RPC envelopes — anything else corrupts the protocol stream; logs go to stderr",
+        "Stdout is too slow for logging",
+        "The spec requires logs be written to a file",
+        "Clients automatically kill servers that log"
+      ],
+      "correct": 0,
+      "explanation": "Stdout IS the wire. A stray print statement injects non-JSON bytes into the message stream and breaks the client's parser. Debug logs belong on stderr; also flush stdout after every write."
+    },
+    {
+      "stage": "post",
+      "question": "MCP distinguishes protocol-level errors from tool-level errors. How is each returned?",
+      "options": [
+        "Both as HTTP status codes",
+        "Protocol errors (unknown method, bad params) as JSON-RPC error objects; tool failures as a normal result with isError: true so the model can see and react to the failure",
+        "Both crash the server, which the client restarts",
+        "Tool errors as JSON-RPC errors; protocol errors as plain text"
+      ],
+      "correct": 1,
+      "explanation": "A valid call whose tool failed returns {content: [...], isError: true} — putting the failure into the model's context so it can adjust. JSON-RPC error envelopes are reserved for protocol violations like unknown methods."
+    },
+    {
+      "stage": "post",
+      "question": "What does tools/call return on success?",
+      "options": [
+        "A plain string",
+        "{content: [typed blocks like text, resource, image], isError: false}",
+        "An HTTP 200 with no body",
+        "The raw return value of the Python function"
+      ],
+      "correct": 1,
+      "explanation": "Results are arrays of typed content blocks — {type: \"text\"}, {type: \"resource\", resource: {uri, text}}, {type: \"image\", data, mimeType} — letting one call return rich, mixed content."
+    },
+    {
+      "stage": "post",
+      "question": "Why is a notes server the teaching example for MCP servers?",
+      "options": [
+        "Notes are the only data MCP supports",
+        "It exercises all three server primitives: tools for mutations, resources for data (notes://{id}), prompts for templates",
+        "It requires no error handling",
+        "Anthropic mandates it as the certification project"
+      ],
+      "correct": 1,
+      "explanation": "notes_create is a mutating tool, notes://14 is a readable resource, and review_note is a prompt template surfaced as a slash-command — one small domain covering the full server surface, generalizable to any real integration."
+    }
+  ]
+}

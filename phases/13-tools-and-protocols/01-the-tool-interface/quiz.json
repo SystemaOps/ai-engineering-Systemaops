@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why can't a language model, on its own, take actions like checking the weather?",
+      "options": [
+        "Models are not allowed to access the internet by law",
+        "Its only output surface is a probability distribution over next tokens — it generates text, not API calls",
+        "Weather APIs block requests from AI systems",
+        "Models lack enough parameters to encode actions"
+      ],
+      "correct": 1,
+      "explanation": "An LLM emits tokens — that is the entire output surface. It can write a plausible sentence about the weather, but it cannot dial into a weather API. The tool interface exists to close exactly this gap."
+    },
+    {
+      "stage": "pre",
+      "question": "Before native function calling existed, how did developers get structured output from models, and why did it fail?",
+      "options": [
+        "They fine-tuned a separate model per API; it was too expensive",
+        "They prompted the model to reply in JSON; it produced invalid JSON ~5-15% of the time on frontier models",
+        "They used regex on the model's prose; regex cannot parse natural language",
+        "They could not — structured output was impossible before 2023"
+      ],
+      "correct": 1,
+      "explanation": "\"Ask the model to reply in JSON\" was the pre-function-calling pattern, failing ~5-15% of the time with missing braces, trailing commas, and hallucinated fields. Native function calling with constrained decoding pushes valid-output rates to 98-99%."
+    },
+    {
+      "stage": "post",
+      "question": "What are the four steps of the tool-call loop, in order?",
+      "options": [
+        "plan → generate → validate → respond",
+        "describe → decide → execute → observe",
+        "register → invoke → parse → retry",
+        "prompt → call → stream → finish"
+      ],
+      "correct": 1,
+      "explanation": "The host describes tools (name, description, JSON Schema), the model decides whether to call one, the host executes the call after validating arguments, and the result is fed back for the model to observe. Every 2026 stack — function calling, MCP, A2A — encodes this same loop."
+    },
+    {
+      "stage": "post",
+      "question": "Why does every tool call carry a call id?",
+      "options": [
+        "To bill each call to the right customer account",
+        "So the host can correlate results with specific calls — essential when parallel calls return out of order",
+        "Because JSON requires every object to have an id field",
+        "To let the model retry a failed call with the same id"
+      ],
+      "correct": 1,
+      "explanation": "The id lets the host match each tool result back to the call that produced it. With parallel tool calls enabled, results can come back out of order, so name alone is not enough."
+    },
+    {
+      "stage": "post",
+      "question": "Why must production agent loops set a maximum turn count (circuit breaker)?",
+      "options": [
+        "Providers reject conversations longer than 30 turns",
+        "Unbounded loops are how agents burn budgets overnight — beyond ~5-20 turns the model is almost certainly stuck",
+        "The context window physically cannot hold more than 20 tool results",
+        "JSON Schema validation slows down after many turns"
+      ],
+      "correct": 1,
+      "explanation": "Production hosts bound the loop at 5-20 iterations (Claude Code: 20, OpenAI Assistants: 10). Past that, the model is almost certainly in a loop it cannot exit — the classic \"agent spent $400 in API calls overnight\" failure."
+    }
+  ]
+}

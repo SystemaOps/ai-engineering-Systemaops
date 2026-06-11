@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why do parallel tool calls cut wall-clock time so dramatically on fan-out workloads?",
+      "options": [
+        "The model thinks faster when it emits several calls",
+        "One LLM round trip replaces several, and executor time becomes the max of the calls instead of the sum",
+        "Providers give parallel calls priority routing",
+        "Parallel calls skip schema validation"
+      ],
+      "correct": 1,
+      "explanation": "Serializing three weather lookups costs three LLM round trips plus the sum of executor latencies. Parallel emission costs one round trip plus only the slowest executor — production benchmarks show 60-70% wall-clock reduction."
+    },
+    {
+      "stage": "pre",
+      "question": "When should you deliberately disable parallel tool calls?",
+      "options": [
+        "When tools have ordering dependencies or one call's output feeds another's input",
+        "Whenever you use more than two tools",
+        "Always in production — parallel is only for development",
+        "When the model is smaller than 70B parameters"
+      ],
+      "correct": 0,
+      "explanation": "Disable parallel when order matters (create_file then write_file), when outputs chain into inputs, or when downstream rate limits cannot absorb the fan-out. Otherwise the default-parallel behavior is a free win."
+    },
+    {
+      "stage": "post",
+      "question": "Three parallel calls complete out of order. How does the model still line results up correctly?",
+      "options": [
+        "The host must sort results back into call order before replying",
+        "Each result carries the matching call id (tool_call_id / tool_use_id / functionResponse id)",
+        "The model re-issues any call whose result looks misplaced",
+        "Results are matched by tool name"
+      ],
+      "correct": 1,
+      "explanation": "Ids are the correlation mechanism — order in the reply doesn't matter for correctness as long as each result cites its id. Matching by name (as pre-Gemini-3 did) breaks when two parallel calls hit the same tool."
+    },
+    {
+      "stage": "post",
+      "question": "While streaming, when is it safe to json.loads the accumulated arguments of a tool call?",
+      "options": [
+        "After every chunk — JSON parsers handle partial input",
+        "Once the brace count balances",
+        "Only on the provider's end-of-call signal, like finish_reason \"tool_calls\" or content_block_stop",
+        "After a fixed 500 ms timeout"
+      ],
+      "correct": 2,
+      "explanation": "Partial JSON like {\"city\": \"Beng is invalid and raises. Brace-counting gives false positives (braces inside quoted strings), so the reliable gate is the provider's completion signal — or an incremental JSON parser for live-UX cases."
+    },
+    {
+      "stage": "post",
+      "question": "Why did Gemini 3 add unique ids to function calls?",
+      "options": [
+        "To bill each call separately",
+        "Because matching results by name broke when two parallel calls hit the same tool",
+        "To support tools written in languages other than Python",
+        "For compatibility with OpenAI's id format"
+      ],
+      "correct": 1,
+      "explanation": "Gemini 2 correlated results by function name, which made two parallel calls to the same tool indistinguishable. Gemini 3's UUIDs let interleaved streamed chunks and out-of-order results correlate cleanly."
+    }
+  ]
+}

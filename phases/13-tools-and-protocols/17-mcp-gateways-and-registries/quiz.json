@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why do enterprises put an MCP gateway between developers and backend servers?",
+      "options": [
+        "Gateways make tool calls faster",
+        "5000 developers installing arbitrary servers is a non-starter — the gateway centralizes auth, RBAC, audit, rate limits, and policy behind one endpoint",
+        "MCP requires a gateway by spec",
+        "Backend servers cannot speak Streamable HTTP"
+      ],
+      "correct": 1,
+      "explanation": "The gateway is the enterprise control plane: developers connect to one Streamable HTTP endpoint, the gateway holds backend credentials and applies policy, and every call is logged for compliance."
+    },
+    {
+      "stage": "pre",
+      "question": "What are the five gateway responsibilities?",
+      "options": [
+        "Build, test, deploy, monitor, rollback",
+        "Auth, RBAC, audit, rate limiting, and policy (poisoning rejection, Rule of Two, PII redaction)",
+        "Caching, compression, encryption, routing, logging",
+        "Discovery, installation, updates, billing, support"
+      ],
+      "correct": 1,
+      "explanation": "Identify the developer (OAuth), scope what they may touch (RBAC), record everything (audit), cap usage (rate limits), and enforce security policy centrally — including the tool-poisoning defenses from the previous lesson."
+    },
+    {
+      "stage": "post",
+      "question": "How does a gateway apply the rug-pull defense centrally?",
+      "options": [
+        "It re-downloads servers weekly",
+        "It keeps a manifest of SHA256 hashes of approved tool descriptions and drops any tool whose description has mutated at discovery time",
+        "It asks each developer to re-approve tools monthly",
+        "It blocks all server updates permanently"
+      ],
+      "correct": 1,
+      "explanation": "Hash-pinning at the gateway means one manifest protects every developer: at tools/list time the gateway compares each description hash against the approved manifest and removes mutations before they reach any model."
+    },
+    {
+      "stage": "post",
+      "question": "What distinguishes the Official MCP Registry from metaregistries like Glama or MCP.so?",
+      "options": [
+        "The Official Registry is paid; metaregistries are free",
+        "The Official Registry is namespace-verified with mandated reverse-DNS names (io.github.user/server); metaregistries aggregate openly across sources",
+        "Metaregistries only list TypeScript servers",
+        "There is no difference"
+      ],
+      "correct": 1,
+      "explanation": "registry.modelcontextprotocol.io (Anthropic, GitHub, PulseMCP, Microsoft stewardship) verifies namespaces and pre-filters quality — reverse-DNS naming prevents squatting like the fake-Postmark incident. Enterprise gateways pull from it by default and reject anything unpinned."
+    },
+    {
+      "stage": "post",
+      "question": "How does the gateway handle developers who need tools from several backend servers at once?",
+      "options": [
+        "It requires one gateway connection per backend",
+        "It multiplexes: one developer session maps to N backend sessions, names merge with prefix-on-collision (github.open_pr, notes.search), notifications route through",
+        "It merges all backends into a single process",
+        "It round-robins requests across backends regardless of tool"
+      ],
+      "correct": 1,
+      "explanation": "To the developer the gateway is one MCP server; internally it rewrites session ids at the boundary and holds a backend session per server. Prefix-merged namespaces keep routing unambiguous."
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What problem did MCP solve when Anthropic shipped it in November 2024?",
+      "options": [
+        "Models were too slow at emitting tool calls",
+        "Every host had its own incompatible tool protocol, so the same integration had to be rebuilt per host",
+        "JSON-RPC did not exist before MCP",
+        "There was no way to run models locally"
+      ],
+      "correct": 1,
+      "explanation": "Before MCP, a \"Postgres query\" tool had to be written separately for Claude Desktop, Cursor, and VS Code. MCP standardizes the wire format so one server works in every client — 300+ clients and 10,000+ public servers by April 2026."
+    },
+    {
+      "stage": "pre",
+      "question": "What are the three JSON-RPC 2.0 message shapes MCP is built on?",
+      "options": [
+        "GET, POST, and DELETE",
+        "Requests (with id), responses (matching id, result or error), and notifications (no id, no response)",
+        "Headers, body, and footer",
+        "Sync, async, and batch"
+      ],
+      "correct": 1,
+      "explanation": "Every MCP message is one of three JSON-RPC envelopes. The id discipline matters: every request must get a response with the same id, and notifications must never be responded to."
+    },
+    {
+      "stage": "post",
+      "question": "Which are the three SERVER primitives and three CLIENT primitives in MCP?",
+      "options": [
+        "Server: models, weights, GPUs — Client: prompts, chats, files",
+        "Server: tools, resources, prompts — Client: roots, sampling, elicitation",
+        "Server: REST, GraphQL, gRPC — Client: HTTP, WebSocket, stdio",
+        "Server: read, write, execute — Client: list, get, call"
+      ],
+      "correct": 1,
+      "explanation": "Servers expose tools (callable actions), resources (read-only data by URI), and prompts (templates). Clients provide roots (allowed URIs), sampling (server borrows the client's model), and elicitation (server asks the user for input). Every MCP capability belongs to exactly one."
+    },
+    {
+      "stage": "post",
+      "question": "During the initialize handshake, what does capability negotiation actually decide?",
+      "options": [
+        "Which model the server will use",
+        "Which features each side may use with the other — e.g. a server must not call sampling/createMessage if the client didn't declare sampling",
+        "How much the session will cost",
+        "The maximum message size"
+      ],
+      "correct": 1,
+      "explanation": "The exchanged capabilities objects form the contract: features either side didn't declare are off-limits. This is what lets a minimal client and a full-featured server interoperate without drift — they simply don't use undeclared features together."
+    },
+    {
+      "stage": "post",
+      "question": "What is the difference between an MCP resource and an MCP tool?",
+      "options": [
+        "Resources are paid; tools are free",
+        "Resources are read-only data addressed by URI that the client can inject into context; tools are callable actions the model invokes",
+        "Resources run on the client; tools run in the cloud",
+        "There is no difference — they are aliases"
+      ],
+      "correct": 1,
+      "explanation": "Tools are the four-step call loop (actions, possibly with side effects). Resources expose content at URIs like file:/// or notes://14 — the model doesn't \"call\" them; the client reads or subscribes and places content into context."
+    }
+  ]
+}

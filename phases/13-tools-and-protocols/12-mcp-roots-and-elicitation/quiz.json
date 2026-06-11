@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What two production failure modes do roots and elicitation respectively fix?",
+      "options": [
+        "Slow tools and expensive tools",
+        "Hard-coded path assumptions (server touches the wrong directories) and ambiguous under-specified arguments mid-tool-call",
+        "Model hallucination and prompt injection",
+        "Memory leaks and connection drops"
+      ],
+      "correct": 1,
+      "explanation": "Roots scope the server to user-declared URIs, fixing the server that assumed ~/notes when the user's notes live elsewhere. Elicitation pauses a tool call to ask the user which of three matching \"TPS report\" notes to delete — instead of guessing catastrophically."
+    },
+    {
+      "stage": "pre",
+      "question": "Why are roots a CLIENT primitive rather than something the server declares?",
+      "options": [
+        "Servers cannot parse URIs",
+        "Roots encode the user's consent — the user told the client which directories the server may touch, and the server cannot widen that scope",
+        "It reduces network traffic",
+        "Historical accident in the spec"
+      ],
+      "correct": 1,
+      "explanation": "The root list is the user's consent model, declared by the client at initialize. A spec-compliant server treats it as a hard boundary and rejects any file operation outside it — and updates when notifications/roots/list_changed arrives."
+    },
+    {
+      "stage": "post",
+      "question": "What are the three possible outcomes of an elicitation request?",
+      "options": [
+        "success, timeout, retry",
+        "accept (user filled the form), decline (user closed it), cancel (user aborted the whole tool call)",
+        "yes, no, maybe",
+        "200, 400, 500"
+      ],
+      "correct": 1,
+      "explanation": "The client renders the requested form schema, and the response's action field distinguishes a filled form from a dismissed one from a full abort of the underlying tool call — three different things the server must handle."
+    },
+    {
+      "stage": "post",
+      "question": "What schema limitation applies to elicitation forms in v1?",
+      "options": [
+        "Only strings are allowed",
+        "Schemas must be flat — nested objects are not supported, and SDKs typically reject anything deeper than one layer",
+        "Maximum of two fields",
+        "No enums allowed"
+      ],
+      "correct": 1,
+      "explanation": "Elicitation form schemas are single-layer: properties like an enum-constrained note_id and a boolean confirm work; nested objects don't. Complex input belongs in URL-mode elicitation (SEP-1036) — which is experimental through H1 2026."
+    },
+    {
+      "stage": "post",
+      "question": "Who enforces the root boundary at runtime?",
+      "options": [
+        "The client blocks out-of-root file operations at the OS level",
+        "The server itself — roots are honored by spec-compliant server code; the client cannot intercept the server's file I/O",
+        "The LLM refuses out-of-root calls",
+        "The operating system's sandbox"
+      ],
+      "correct": 1,
+      "explanation": "Roots are a contract, not a sandbox: the server is code the user chose to trust, and spec-compliant servers reject out-of-root reads and writes themselves. Real OS-level sandboxing is a separate, complementary defense."
+    }
+  ]
+}

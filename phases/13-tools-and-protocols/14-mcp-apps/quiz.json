@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What gap do MCP Apps (SEP-1724) close?",
+      "options": [
+        "MCP servers could not return errors before",
+        "Tool output was text-only — interactive UI required client-specific widget APIs or nothing; Apps standardize sandboxed inline HTML across hosts",
+        "Servers could not run JavaScript",
+        "Models could not see images"
+      ],
+      "correct": 1,
+      "explanation": "Before SEP-1724 (official January 26, 2026), a visualize_timeline tool returned a paragraph. With Apps, one HTML bundle behind a ui:// URI renders the same interactive timeline in Claude Desktop, ChatGPT, Cursor, Goose, and VS Code."
+    },
+    {
+      "stage": "pre",
+      "question": "How does a tool result reference its interactive UI?",
+      "options": [
+        "Inline HTML directly in the text block",
+        "A ui:// resource URI in the content plus _meta.ui declaring resourceUri, CSP, and permissions; the host reads it with resources/read",
+        "A link the user must open in their browser",
+        "A base64-encoded video"
+      ],
+      "correct": 1,
+      "explanation": "The result carries a ui_resource pointing at e.g. ui://notes/timeline; the host fetches it via resources/read and receives HTML with MIME text/html;profile=mcp-app, rendered per the declared CSP."
+    },
+    {
+      "stage": "post",
+      "question": "How is the App's HTML contained by the host?",
+      "options": [
+        "It runs in the host's main window with full DOM access",
+        "In a sandboxed iframe with server-declared CSP, no host cookies or localStorage, and network limited to connectSrc",
+        "In a separate OS process with root privileges",
+        "It is converted to static text before display"
+      ],
+      "correct": 1,
+      "explanation": "The host renders the bundle in a sandboxed iframe (allow-scripts allow-same-origin or stricter), applies the declared CSP, and grants no host-origin storage — the UI gets exactly the network surface the CSP allows."
+    },
+    {
+      "stage": "post",
+      "question": "Why must postMessage between the App iframe and host never use \"*\" as the target origin?",
+      "options": [
+        "\"*\" is a syntax error in modern browsers",
+        "The channel carries tool calls and resource reads — without pinned origins and origin validation, any frame could inject or intercept them",
+        "It makes messages slower",
+        "The MCP spec charges per origin"
+      ],
+      "correct": 1,
+      "explanation": "The iframe-host channel is a JSON-RPC dialect carrying privileged operations like host.callTool. Both sides must pin targetOrigin to the exact peer and validate event.origin against an allowlist before processing anything."
+    },
+    {
+      "stage": "post",
+      "question": "What can the UI inside the iframe do via the postMessage JSON-RPC?",
+      "options": [
+        "Nothing — it is display-only",
+        "Call host methods like host.callTool to invoke the server's tools (e.g. notes_update from an edit form), within granted permissions",
+        "Read any file on the user's machine",
+        "Replace the host's system prompt"
+      ],
+      "correct": 1,
+      "explanation": "The dialect lets interactive UIs round-trip into the same MCP tool surface — an edit form posting host.callTool with notes_update — making the UI a first-class client of the server, gated by the declared permissions."
+    }
+  ]
+}

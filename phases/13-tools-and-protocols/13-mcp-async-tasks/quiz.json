@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why do long-running tools break under the synchronous MCP call model?",
+      "options": [
+        "MCP forbids tools that take over 10 seconds",
+        "Holding a connection open for minutes gets dropped by remote transports, times out clients, and freezes UIs",
+        "Long tool results exceed the JSON size limit",
+        "Models lose context during long calls"
+      ],
+      "correct": 1,
+      "explanation": "A multi-minute generate_report under synchronous semantics means a connection held open through proxies and WAFs that kill it. The pre-Tasks workarounds — custom polling endpoints or fire-and-forget — break MCP's uniformity."
+    },
+    {
+      "stage": "pre",
+      "question": "What does SEP-1686 task augmentation change about a tools/call?",
+      "options": [
+        "The call runs on a faster server",
+        "The server returns a task id immediately; the client polls tasks/status and fetches tasks/result later, with state surviving restarts",
+        "The call is queued and retried until it succeeds",
+        "The model is swapped to a long-context variant"
+      ],
+      "correct": 1,
+      "explanation": "Tagging a request with _meta.task turns call-now-wait into call-now-fetch-later: immediate {id, state: \"working\", ttl} response, then status polling or update notifications until terminal state."
+    },
+    {
+      "stage": "post",
+      "question": "Which task state transitions are legal?",
+      "options": [
+        "completed → working (restart a finished task)",
+        "working ⇄ input_required (elicitation loop), and working → completed/failed/cancelled, which are terminal",
+        "Any state to any state",
+        "failed → completed after a retry"
+      ],
+      "correct": 1,
+      "explanation": "The state machine is append-only: a task can bounce between working and input_required (waiting on user input), but completed, failed, and cancelled are terminal — tasks/cancel on a terminal task is an idempotent no-op."
+    },
+    {
+      "stage": "post",
+      "question": "What does taskSupport: \"forbidden\" on a tool annotation mean?",
+      "options": [
+        "The tool is disabled",
+        "The tool always runs synchronously — task augmentation is not allowed (right for fast tools like notes_search)",
+        "Only admins may call it",
+        "It cannot return errors"
+      ],
+      "correct": 1,
+      "explanation": "Per-tool opt-in has three levels: forbidden (always sync — fast tools), optional (client may augment), required (client must — right for generate_report-class work)."
+    },
+    {
+      "stage": "post",
+      "question": "What durability promise does a task-supporting server make, and what bounds it?",
+      "options": [
+        "Results are kept forever",
+        "State must survive crashes within the task's ttl — after ttl the server may discard the result",
+        "Durability is best-effort with no requirements",
+        "Tasks must be stored in Redis specifically"
+      ],
+      "correct": 1,
+      "explanation": "The spec requires persisted task state — a crash must not lose a completed result inside the ttl window the server promised. The store can be SQLite, Redis, or the filesystem; the ttl is the contract's boundary."
+    }
+  ]
+}

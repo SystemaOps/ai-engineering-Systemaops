@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Name three production scenarios where an LLM routing layer earns its place.",
+      "options": [
+        "Code formatting, linting, testing",
+        "Per-request cost routing (Haiku for triage, Sonnet for synthesis), automatic failover when a provider has a bad hour, and region-pinned routing for compliance",
+        "Caching, minification, bundling",
+        "Fine-tuning, distillation, quantization"
+      ],
+      "correct": 1,
+      "explanation": "Cost, failover, latency SLAs, compliance regions, and A/B experimentation are the five scenarios — all repetitive to hand-code per integration, all solved once at the gateway."
+    },
+    {
+      "stage": "pre",
+      "question": "Why do routing gateways expose an OpenAI-compatible API?",
+      "options": [
+        "OpenAI requires it contractually",
+        "Everyone already speaks the OpenAI schema, so the gateway accepts it at /v1/chat/completions and proxies internally to Anthropic, Gemini, or anything else — clients don't change",
+        "It is the only schema that supports streaming",
+        "Other formats are deprecated"
+      ],
+      "correct": 1,
+      "explanation": "The OpenAI shape is the de-facto lingua franca. The gateway translates at the edge, which is also what makes model aliases work: your code says our_smart_model and the mapping changes server-side."
+    },
+    {
+      "stage": "post",
+      "question": "What guard keeps a fallback chain (gpt-4o → claude → gemini) from exploding costs?",
+      "options": [
+        "Fallbacks are free under provider agreements",
+        "Retries count against a budget, so cascading failovers stop instead of multiplying spend",
+        "Only one fallback is ever allowed",
+        "The chain only runs at night"
+      ],
+      "correct": 1,
+      "explanation": "Failover on 5xx is automatic, but each retry consumes a defined budget. Without that, a provider outage turns into N-times cost amplification across the chain."
+    },
+    {
+      "stage": "post",
+      "question": "How does semantic caching differ from exact-match caching, and what does it save?",
+      "options": [
+        "It caches by URL; saves bandwidth only",
+        "Keys are embedding-based so near-identical prompts share a slot — repeated agent loops save 30-60%",
+        "It stores responses in the model's weights",
+        "It only works for embeddings endpoints"
+      ],
+      "correct": 1,
+      "explanation": "Agent loops repeat nearly-identical prompts constantly. Embedding-keyed caching catches paraphrases that exact-match misses, which is where the 30-60% savings come from."
+    },
+    {
+      "stage": "post",
+      "question": "Which routing option fits a team that needs guardrails and compliance out of the box?",
+      "options": [
+        "LiteLLM — it ships mandatory guardrails",
+        "Portkey — production-grade with PII redaction and full OTel; LiteLLM suits self-hosted control, OpenRouter suits rapid prototyping",
+        "OpenRouter — compliance is its core feature",
+        "None — guardrails must always be custom"
+      ],
+      "correct": 1,
+      "explanation": "The 2026 archetypes: LiteLLM (open-source, your keys, data sovereignty, needs an SRE team), OpenRouter (managed SaaS, 300+ models, fastest start), Portkey (open-sourced March 2026, opinionated guardrails + compliance)."
+    }
+  ]
+}

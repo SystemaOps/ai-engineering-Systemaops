@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "In the capstone's research-and-report system, why does paper summarization go through A2A rather than an MCP tool call?",
+      "options": [
+        "A2A is faster than MCP",
+        "The writer is an opaque agent — the caller sends a Task and sees only state transitions and outputs, never the writer's internal reasoning",
+        "MCP cannot transfer PDFs",
+        "A2A is required for any text generation"
+      ],
+      "correct": 1,
+      "explanation": "Delegation to a specialized agent is agent-to-agent collaboration: the writer keeps its internals private (opacity is verified in the capstone), while tools like arxiv_search stay on MCP. The two protocols are complementary layers of the same system."
+    },
+    {
+      "stage": "pre",
+      "question": "Why is generate_report task-augmented while arxiv_search is a plain synchronous tool?",
+      "options": [
+        "Reports are larger than search results",
+        "Report generation is long-running — the client gets a task id, polls tasks/status, and fetches the result later; search is fast enough to run synchronously",
+        "Tasks are required for all tools in production",
+        "arxiv_search predates the Tasks spec"
+      ],
+      "correct": 1,
+      "explanation": "The >30-seconds rule from the Tasks lesson: long work becomes call-now-fetch-later (taskSupport: required) and even returns a ui:// resource on completion, while fast pure tools stay synchronous (taskSupport: forbidden)."
+    },
+    {
+      "stage": "post",
+      "question": "How does the capstone's security posture express RBAC?",
+      "options": [
+        "All authenticated users get all tools",
+        "Per-user policy at the gateway: alice with research:write can call everything; bob with research:read cannot call generate_report",
+        "Each tool checks a hard-coded password",
+        "RBAC is delegated to the LLM's judgment"
+      ],
+      "correct": 1,
+      "explanation": "The gateway maps OAuth identities to scopes and gates tools accordingly, alongside pinned description hashes (rug-pull defense) and a Rule of Two audit ensuring no tool combines untrusted input, sensitive data, and consequential action."
+    },
+    {
+      "stage": "post",
+      "question": "How can a user click a paper in the rendered report and trigger a new summarization?",
+      "options": [
+        "The report links out to arXiv's website",
+        "The ui:// dashboard runs in a sandboxed iframe and posts host.callTool('summarize_paper', {arxiv_id}) back to the host via the postMessage JSON-RPC",
+        "The user must copy-paste the id into chat",
+        "The report regenerates fully every minute"
+      ],
+      "correct": 1,
+      "explanation": "MCP Apps closes the loop: the interactive dashboard returned by the completed task is itself a client of the server's tools, calling back through the origin-pinned postMessage channel within its declared permissions."
+    },
+    {
+      "stage": "post",
+      "question": "What makes the whole capstone system drivable by other agents?",
+      "options": [
+        "A REST API with Swagger docs",
+        "Packaging: AGENTS.md for project conventions plus a run-research SKILL.md wrapping the top-level workflow — any skills-compatible agent can load and operate the stack",
+        "A Dockerfile alone",
+        "Hard-coded support for one specific client"
+      ],
+      "correct": 1,
+      "explanation": "The capstone ships the full Phase 13 layer cake: MCP for tools, gateway for security, A2A for delegation, OTel for observability, and the AGENTS.md + SKILL.md bundle so the system itself becomes a portable, agent-operable artifact."
+    }
+  ]
+}

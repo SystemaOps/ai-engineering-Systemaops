@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "When is A2A the right protocol instead of MCP?",
+      "options": [
+        "Whenever the agents are written in different languages",
+        "When two opaque agents must collaborate — delegating a Task while each keeps its internal reasoning private; MCP is agent-to-tool, A2A is agent-to-agent",
+        "When tools need OAuth",
+        "A2A replaces MCP for all new projects"
+      ],
+      "correct": 1,
+      "explanation": "MCP calls tools; A2A lets a customer-service agent hand a Task to a specialist writer agent across frameworks, seeing only state transitions and outputs. The two protocols are complementary, not competing."
+    },
+    {
+      "stage": "pre",
+      "question": "How does one agent discover another's capabilities in A2A?",
+      "options": [
+        "A central registry assigns capabilities",
+        "Fetch the Agent Card at /.well-known/agent.json — it lists skills with input/output modes, the A2A endpoint URL, and capabilities like streaming",
+        "Send a probe message and parse the reply",
+        "Capabilities are hard-coded in the SDK"
+      ],
+      "correct": 1,
+      "explanation": "Discovery is URL-based: the card names the agent, its skills (e.g. summarize_paper with text/file input modes), endpoint, and capability flags. The AP2 extension adds JWT signatures so cards can't be impersonated."
+    },
+    {
+      "stage": "post",
+      "question": "Which A2A task lifecycle path is valid?",
+      "options": [
+        "completed → working → submitted",
+        "submitted → working → input_required → working → completed",
+        "rejected → working",
+        "working → submitted"
+      ],
+      "correct": 1,
+      "explanation": "Tasks flow submitted → working, may loop through input_required (the called agent needs more from the caller), and end in a terminal state: completed, failed, canceled, or rejected. Clients follow along via SSE subscription or polling."
+    },
+    {
+      "stage": "post",
+      "question": "What are the three Part types an A2A message can carry?",
+      "options": [
+        "header, body, footer",
+        "text (plain content), file (base64 blob with mimeType), and data (typed JSON payload)",
+        "prompt, completion, embedding",
+        "task, message, artifact"
+      ],
+      "correct": 1,
+      "explanation": "One message can combine all three — e.g. a text instruction, the paper.pdf file, and a data part with {targetLength: \"3 paragraphs\"} as structured input. Artifacts are the called agent's outputs."
+    },
+    {
+      "stage": "post",
+      "question": "What is A2A's governance and adoption status as of v1.0?",
+      "options": [
+        "A Google-proprietary API in closed beta",
+        "Released by Google (April 2025), donated to the Linux Foundation, v1.0 in April 2026 with 150+ supporters; it absorbed IBM's ACP and added the AP2 payments extension",
+        "An academic proposal with no implementations",
+        "Merged into the MCP specification"
+      ],
+      "correct": 1,
+      "explanation": "A2A followed the same neutral-governance path as MCP: vendor-launched, foundation-donated, broadly backed (AWS, Cisco, Microsoft, Salesforce, SAP, ServiceNow among supporters)."
+    }
+  ]
+}

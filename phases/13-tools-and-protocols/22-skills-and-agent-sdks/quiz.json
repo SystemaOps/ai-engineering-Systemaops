@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What problem do AGENTS.md and SKILL.md solve for a workflow used across Claude Code, Cursor, and Codex?",
+      "options": [
+        "They make the agents share one API key",
+        "Each agent had its own instruction format (slash-commands, rules, .codex.md) — these standards make one portable artifact replace three maintained copies",
+        "They compile prompts to bytecode",
+        "They encrypt the workflow"
+      ],
+      "correct": 1,
+      "explanation": "The engineer's release-notes workflow had to be copied into each agent's proprietary format. AGENTS.md (read on session start) and SKILL.md (loaded by name on demand) travel unchanged across compatible agents."
+    },
+    {
+      "stage": "pre",
+      "question": "How do the three layers divide responsibilities?",
+      "options": [
+        "AGENTS.md is for tests, SKILL.md for docs, MCP for deployment",
+        "AGENTS.md: project context and conventions; SKILL.md: reusable task know-how; MCP: the tools the skill invokes",
+        "All three are interchangeable formats for the same data",
+        "AGENTS.md and SKILL.md are deprecated in favor of MCP"
+      ],
+      "correct": 1,
+      "explanation": "\"What tools exist\" is MCP; \"how to do a task\" is the skill; \"how this project works\" is AGENTS.md. The 2026 stack layers all three — one repo-level context file, portable skills, and a standard tool protocol."
+    },
+    {
+      "stage": "post",
+      "question": "What does a SKILL.md consist of?",
+      "options": [
+        "Pure YAML configuration",
+        "YAML frontmatter (name, description) plus a markdown body that becomes the model's prompt when the skill loads, optionally with bundled resources",
+        "A Python entry point and requirements.txt",
+        "A JSON Schema only"
+      ],
+      "correct": 1,
+      "explanation": "Anthropic's Agent Skills (open standard, December 2025): frontmatter declares identity for discovery; the body is the instructions. Resources alongside the file enable progressive disclosure."
+    },
+    {
+      "stage": "post",
+      "question": "What is progressive disclosure in skills?",
+      "options": [
+        "Showing the user one line of output at a time",
+        "The skill references sub-resources (style guides, templates) that the agent fetches only when needed, keeping the initial context load small",
+        "Gradually increasing the model's temperature",
+        "Revealing the skill's source code after purchase"
+      ],
+      "correct": 1,
+      "explanation": "A skill folder can hold style-guide.md and template.md next to SKILL.md; the agent loads the main body up front and pulls supporting files on demand — full depth without paying full context cost every time."
+    },
+    {
+      "stage": "post",
+      "question": "What is AGENTS.md and how widely is it adopted?",
+      "options": [
+        "An Anthropic-only configuration file",
+        "A repo-root file with project conventions and commands that agents read on session start — adopted by 60,000+ repos and supported by every major coding agent",
+        "A registry of public agents",
+        "A replacement for README.md"
+      ],
+      "correct": 1,
+      "explanation": "Launched late 2025; by April 2026 Claude Code, Cursor, Codex, Copilot Workspace, opencode, Windsurf, and Zed all read it — one place for \"strict TypeScript, tests run with pnpm test\" instead of per-agent config."
+    }
+  ]
+}

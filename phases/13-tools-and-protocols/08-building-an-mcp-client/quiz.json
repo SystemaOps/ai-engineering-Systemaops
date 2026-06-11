@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why is MCP client code harder than the server tutorials suggest?",
+      "options": [
+        "Clients must be written in Rust for performance",
+        "The client owns the orchestration: spawning processes, per-server handshakes, merging tool lists, routing calls, handling notifications, reconnecting",
+        "Clients must implement every model provider's API",
+        "The MCP spec doesn't document the client side"
+      ],
+      "correct": 1,
+      "explanation": "A real host loads several servers at once (filesystem, Postgres, GitHub). Spawning each, negotiating capabilities independently, flattening tool lists, and routing the model's calls to the owning server is where the hard engineering lives."
+    },
+    {
+      "stage": "pre",
+      "question": "Two loaded servers both expose a tool named \"search\". What are the client's realistic options?",
+      "options": [
+        "MCP forbids two servers from sharing tool names, so this cannot happen",
+        "Prefix by server name, silently let the later one win, or reject the colliding server with an error",
+        "Merge the two tools into one that calls both",
+        "Ask the model to pick a server at random"
+      ],
+      "correct": 1,
+      "explanation": "Claude Desktop and VS Code prefix by server (notes/search, files/search); Cursor rejects the collision with a clear error. Silent first-come-wins is the risky option because it hides the collision entirely."
+    },
+    {
+      "stage": "post",
+      "question": "What state does the client keep per server session?",
+      "options": [
+        "Only the server's name",
+        "The process handle, declared capabilities, the last tools/list result, and a map of pending request ids to futures",
+        "A copy of the server's source code",
+        "The user's API keys for that server"
+      ],
+      "correct": 1,
+      "explanation": "Each Session holds the Popen handle, the capability contract from initialize, the cached tool list, and pending-request futures — because calls are async and a call to server A must not block while server B is mid-call."
+    },
+    {
+      "stage": "post",
+      "question": "What classic bug does a background reader thread + message queue prevent in an MCP client?",
+      "options": [
+        "Memory leaks from unclosed pipes",
+        "Blocking the read loop on a tools/call response while a notification sits unread in the stream",
+        "Duplicate tool registrations",
+        "Zombie child processes"
+      ],
+      "correct": 1,
+      "explanation": "Notifications (like tools/list_changed) interleave with responses on the same stream. If the main thread blocks waiting for a specific response, queued notifications stall. A reader thread pushes every message onto a queue; the main thread dispatches by type."
+    },
+    {
+      "stage": "post",
+      "question": "How does a client detect that a stdio server session has died?",
+      "options": [
+        "A heartbeat endpoint returns 500",
+        "EOF on the server's stdout — the process identity is the session, so a closed pipe means a dead session",
+        "The Mcp-Session-Id header expires",
+        "The server sends a shutdown notification first"
+      ],
+      "correct": 1,
+      "explanation": "Stdio has no session id — the child process IS the session. EOF on stdout means crash or kill; the client marks the session dead and either silently restarts (fine for read-only servers) or surfaces the failure (right for stateful ones)."
+    }
+  ]
+}

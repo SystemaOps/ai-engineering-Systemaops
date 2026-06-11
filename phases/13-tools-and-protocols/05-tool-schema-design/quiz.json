@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "How much can naming and description quality alone move tool-selection accuracy?",
+      "options": [
+        "Under 1 percentage point — selection is dominated by model size",
+        "10-20 percentage points on benchmarks; one 50-tool registry went from 62% to 89% after a description rewrite",
+        "It only matters for registries with over 1,000 tools",
+        "Accuracy is fixed by the provider and cannot be influenced"
+      ],
+      "correct": 1,
+      "explanation": "Composio, Anthropic, and Databricks all report 10-20 point swings purely from renaming and rewriting descriptions. Description quality is the cheapest reliability lever you have."
+    },
+    {
+      "stage": "pre",
+      "question": "What are the two characteristic failures of tool selection in a large registry?",
+      "options": [
+        "Slow calls and expensive calls",
+        "Wrong tool picked (ambiguous descriptions) and no tool picked when one fits (the model hallucinates an answer instead)",
+        "Schema errors and network errors",
+        "Tools calling each other in loops"
+      ],
+      "correct": 1,
+      "explanation": "When two descriptions both say \"look up people,\" the model cannot disambiguate; when a description says \"retrieve financial data\" but the user says \"stock price,\" the model may answer with a hallucinated number instead of calling the tool."
+    },
+    {
+      "stage": "post",
+      "question": "What is the two-sentence description pattern that consistently improves selection accuracy?",
+      "options": [
+        "\"This tool is very useful. Please use it often.\"",
+        "\"Use when {condition}. Do not use for {close-but-wrong cases}.\"",
+        "\"Input: {schema}. Output: {schema}.\"",
+        "\"WARNING: read fully before calling. See documentation.\""
+      ],
+      "correct": 1,
+      "explanation": "The \"Use when X. Do not use for Y.\" pattern works because the negative line disambiguates against close-competitor tools in the registry — the main source of wrong-tool picks. Keep it under 1024 characters (OpenAI truncates beyond that in strict mode)."
+    },
+    {
+      "stage": "post",
+      "question": "Why are atomic tools (notes_list, notes_create, notes_delete) preferred over one monolithic do_everything(action, options) tool?",
+      "options": [
+        "Atomic tools run in parallel; monolithic ones cannot",
+        "Models select by name with typed schemas instead of parsing an action string — monolithic tools bench 15-30% worse",
+        "Monolithic tools exceed provider size limits",
+        "Atomic tools are cheaper per call"
+      ],
+      "correct": 1,
+      "explanation": "An action string plus untyped options dict is the worst possible selection surface. Rule of thumb: if the action argument has more than three values, split the tool."
+    },
+    {
+      "stage": "post",
+      "question": "Why should tool error messages be written for the model rather than for a developer log?",
+      "options": [
+        "Providers reject stack traces in tool results",
+        "The error reaches the model as context — a teaching error like \"Invalid input: 'city' is required. Example: {...}\" cuts retry counts in half",
+        "Models cannot read Python exceptions",
+        "Short errors save tokens, which is the only benefit"
+      ],
+      "correct": 1,
+      "explanation": "Tool errors are injected back into the conversation, so they are prompts. \"TypeError: NoneType has no attribute 'lower'\" teaches nothing; a typed error with an example shows the model exactly how to correct the call."
+    }
+  ]
+}

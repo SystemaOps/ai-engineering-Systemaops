@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What goes wrong when a server exposes everything — including plain reads — as tools?",
+      "options": [
+        "The server runs out of tool slots",
+        "Every data access becomes a model-driven call, content can't be subscribed to, and client UIs like resource pickers can't surface the data",
+        "Tools cannot return text content",
+        "Nothing — tools-only is the recommended design"
+      ],
+      "correct": 1,
+      "explanation": "Wrapping reads in tools forces the model to decide on a call for every query that might need context, and hides the data from host affordances like Claude Desktop's attachment panel or Cursor's file picker. Reads belong in resources."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the decision rule for tool vs resource vs prompt?",
+      "options": [
+        "Tools for Python servers, resources for TypeScript, prompts for both",
+        "Search/transform actions are tools; data the user attaches as context is a resource; a reusable multi-step workflow is a prompt",
+        "Anything under 1KB is a resource; larger is a tool",
+        "Use whichever primitive the SDK example uses"
+      ],
+      "correct": 1,
+      "explanation": "If the model benefits from calling it per-query, it's a tool. If the user benefits from attaching it to a conversation, it's a resource. If a whole templated workflow is the reusable unit, it's a prompt."
+    },
+    {
+      "stage": "post",
+      "question": "How do resource subscriptions work end to end?",
+      "options": [
+        "The client polls resources/read every second",
+        "Server declares resources.subscribe, client calls resources/subscribe {uri}, server emits notifications/resources/updated on change, client re-reads",
+        "The server pushes new content directly into the model's context",
+        "Subscriptions are managed by the LLM provider"
+      ],
+      "correct": 1,
+      "explanation": "Capability-gated push: a file watcher on the server triggers the updated notification, and the host re-pulls — e.g. Claude Desktop refreshing a file edited outside the app. Without subscribe capability, the client must not try."
+    },
+    {
+      "stage": "post",
+      "question": "What does prompts/get return, and how do hosts surface prompts?",
+      "options": [
+        "A single string; hosts paste it into the chat box",
+        "A filled message list ({role, content} sequence) from the template; hosts expose prompts as slash-commands with argument forms",
+        "A URL the user must open",
+        "A binary blob the model decodes"
+      ],
+      "correct": 1,
+      "explanation": "A prompt is a template that expands into messages the host feeds its model — e.g. /code_review filling a system + user + assistant-kickoff sequence. Clients without prompt support simply never show the slash-commands."
+    },
+    {
+      "stage": "post",
+      "question": "When must a dynamic resource URI include a timestamp or nonce?",
+      "options": [
+        "Always — URIs must be unique per read",
+        "When the computation is one-shot, so the client's URI-keyed cache doesn't serve stale content; stable URIs are for cacheable content",
+        "Only for binary resources",
+        "Never — URIs are required to be permanent"
+      ],
+      "correct": 1,
+      "explanation": "Resources can be computed (notes://recent, db://query/...). The caching contract is the rule: cache-by-URI requires a stable URI; one-shot computations need a nonce so caches don't stale out."
+    }
+  ]
+}

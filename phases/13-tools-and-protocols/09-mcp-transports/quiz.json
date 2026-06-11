@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What is the right mental model for choosing between stdio and Streamable HTTP?",
+      "options": [
+        "stdio for Python servers, HTTP for TypeScript servers",
+        "stdio for \"this machine\" (client spawns the server locally), Streamable HTTP for \"over the network\" — no cross-over",
+        "Always HTTP; stdio is deprecated",
+        "stdio for production, HTTP for development"
+      ],
+      "correct": 1,
+      "explanation": "Local IDE-shaped clients spawn servers via stdio (the child inherits the parent's trust boundary, no auth needed). Remote servers use Streamable HTTP. Tunneling stdio over SSH defeats the purpose — just use Streamable HTTP."
+    },
+    {
+      "stage": "pre",
+      "question": "Why was the original HTTP+SSE transport replaced by Streamable HTTP?",
+      "options": [
+        "SSE was too fast for most servers",
+        "Two endpoints per session were clumsy, some CDNs broke the caches, and WAFs aggressively killed long-lived SSE connections",
+        "SSE could not carry JSON",
+        "Licensing issues with the SSE specification"
+      ],
+      "correct": 1,
+      "explanation": "The 2024-11 HTTP+SSE design needed two endpoints and fragile long-lived streams. Streamable HTTP (2025-03-26) collapses to one endpoint; the legacy mode is being removed across major servers in mid-2026."
+    },
+    {
+      "stage": "post",
+      "question": "In Streamable HTTP, what do POST, GET, and DELETE to the /mcp endpoint each do?",
+      "options": [
+        "POST creates a tool, GET lists tools, DELETE removes a tool",
+        "POST sends a JSON-RPC message, GET opens the long-lived server-to-client SSE stream, DELETE terminates the session",
+        "All three send identical JSON-RPC payloads",
+        "POST is for auth, GET for data, DELETE is unused"
+      ],
+      "correct": 1,
+      "explanation": "One endpoint, three verbs: POST carries client requests (response may be JSON or a short SSE stream), GET establishes the channel for server-initiated messages (sampling, notifications), DELETE is the clean shutdown."
+    },
+    {
+      "stage": "post",
+      "question": "Why must a local MCP server validate the Origin header?",
+      "options": [
+        "To log which browser the user prefers",
+        "A malicious webpage can make the user's browser POST to localhost — DNS-rebinding-style — and an unchecked server would execute those requests",
+        "Origin validation is only needed for HTTPS",
+        "To enforce per-country licensing"
+      ],
+      "correct": 1,
+      "explanation": "The browser's same-origin policy doesn't stop a cross-origin POST from reaching localhost:1234/mcp. The 2025-11-25 spec requires an Origin allowlist precisely to defeat this attack on local servers."
+    },
+    {
+      "stage": "post",
+      "question": "What are the session-id rules in Streamable HTTP?",
+      "options": [
+        "The client invents any id it likes and the server accepts it",
+        "The server assigns a cryptographically random id (128+ bits) on first response; the client echoes it on every request; client-chosen ids are rejected",
+        "Session ids are sequential integers for easy debugging",
+        "There are no sessions in Streamable HTTP"
+      ],
+      "correct": 1,
+      "explanation": "The server mints the Mcp-Session-Id and the client echoes it (including on the GET stream and reconnects with last-event-id). Random server-minted ids prevent session-fixation attacks; revocation shows up as a 404 forcing re-initialization."
+    }
+  ]
+}

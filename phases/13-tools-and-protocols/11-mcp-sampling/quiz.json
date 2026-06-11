@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "A server needs LLM reasoning inside its workflow. Why is sampling better than the server calling its own LLM?",
+      "options": [
+        "Sampling is faster than direct API calls",
+        "The server keeps the algorithm but needs no API keys — the client retains billing and model choice",
+        "Provider terms forbid servers from calling LLMs",
+        "Sampling responses are higher quality"
+      ],
+      "correct": 1,
+      "explanation": "With sampling/createMessage, the server hosts the loop logic (which files to read, how many passes) while the client supplies the model and pays for it. The server holds zero credentials — the trust and billing boundaries stay where they belong."
+    },
+    {
+      "stage": "pre",
+      "question": "In MCP sampling, which direction does the request flow?",
+      "options": [
+        "Client to server, like every other MCP request",
+        "Server to client — the server sends sampling/createMessage and the client runs its LLM and responds",
+        "Server to the LLM provider directly",
+        "Client to a third-party sampling service"
+      ],
+      "correct": 1,
+      "explanation": "Sampling reverses the usual direction: the server becomes the requester. That's why it must be capability-gated — a server may only send sampling/createMessage if the client declared sampling at initialize."
+    },
+    {
+      "stage": "post",
+      "question": "What do modelPreferences express, and is the client bound by them?",
+      "options": [
+        "An exact model id the client must use",
+        "Cost/speed/intelligence priorities plus model hints — advisory only; the client's user config always wins",
+        "The temperature and top_p for the completion",
+        "Billing limits the server enforces"
+      ],
+      "correct": 1,
+      "explanation": "Three priority floats plus name hints guide the client's model selection, but the client may override — the user's configuration is authoritative. The server cannot force a specific model."
+    },
+    {
+      "stage": "post",
+      "question": "Why is includeContext: \"allServers\" soft-deprecated in the 2025-11-25 spec?",
+      "options": [
+        "It made responses too long",
+        "It leaks context across server boundaries — a security concern; prefer \"none\" and pass explicit context in the messages",
+        "Clients found it too expensive to compute",
+        "It conflicted with streaming"
+      ],
+      "correct": 1,
+      "explanation": "Letting one server read conversation context that involves other servers is a cross-tenant leak. The recommended pattern is includeContext: \"none\" with the server passing exactly the context it needs in its own messages."
+    },
+    {
+      "stage": "post",
+      "question": "What did SEP-1577 (sampling with tools) add?",
+      "options": [
+        "GPU sampling for image models",
+        "A tools array inside sampling requests, letting the client run a full tool-calling loop — so a server can host a ReAct-style agent through the client's model",
+        "Sampling from multiple models at once",
+        "Streaming partial completions to the server"
+      ],
+      "correct": 1,
+      "explanation": "With tools-in-sampling, the server's request can include tool definitions and the client executes the whole call loop. Note the lesson's drift warning: the shape was experimental through Q1 2026 and SDK APIs are still settling."
+    }
+  ]
+}

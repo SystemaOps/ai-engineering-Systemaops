@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What is the practical cost of provider-specific function-calling formats?",
+      "options": [
+        "Models refuse to call tools declared in another provider's format",
+        "Code written for one provider needs days of porting work for the plumbing alone when moving to another",
+        "Each provider charges extra for tool declarations",
+        "Tool calls run slower on translated schemas"
+      ],
+      "correct": 1,
+      "explanation": "All three providers implement the same loop with different field names, nesting, and conventions — a weather agent written on OpenAI pays roughly a two-day port to Anthropic and another day to Gemini just for plumbing. The fix is a canonical declaration translated at the edge."
+    },
+    {
+      "stage": "pre",
+      "question": "What five things does every provider's function-calling API need, regardless of format?",
+      "options": [
+        "Tool list, tool choice, call emission, call id, result injection",
+        "API key, model name, temperature, max tokens, system prompt",
+        "Schema, validator, retry policy, cache, logger",
+        "Declaration, compilation, deployment, monitoring, billing"
+      ],
+      "correct": 0,
+      "explanation": "The common structure across OpenAI, Anthropic, and Gemini: a tool list (name/description/schema), a tool-choice mode, structured call emission, a call id for correlation, and a way to inject results back into the conversation."
+    },
+    {
+      "stage": "post",
+      "question": "A key shape difference between OpenAI and Anthropic tool calls is:",
+      "options": [
+        "OpenAI supports tools only in streaming mode",
+        "OpenAI's arguments arrive as a stringified JSON you must parse; Anthropic's input is already a parsed object",
+        "Anthropic requires XML instead of JSON for tool declarations",
+        "OpenAI has no call ids; Anthropic generates them"
+      ],
+      "correct": 1,
+      "explanation": "OpenAI returns tool_calls with arguments as a JSON string that you must json.loads; Anthropic's tool_use blocks carry input as an already-parsed object. Both generate ids (call_... vs toolu_...)."
+    },
+    {
+      "stage": "post",
+      "question": "What does OpenAI's strict mode (strict: true) require of your schema?",
+      "options": [
+        "All properties must appear in required, with no $ref and no overlapping oneOf/anyOf/allOf",
+        "A maximum of 10 properties per object",
+        "That descriptions are written in English",
+        "Schemas must be uploaded ahead of time via the dashboard"
+      ],
+      "correct": 0,
+      "explanation": "Strict mode enforces schema compliance through constrained decoding, but demands a restricted schema dialect: every property listed in required, no $ref, and no overlapping union constructs. In exchange, invalid JSON becomes impossible."
+    },
+    {
+      "stage": "post",
+      "question": "Which provider limit pairing is correct?",
+      "options": [
+        "OpenAI: 8 tools per request; Anthropic: 256 tools",
+        "OpenAI: 128 tools per request; Anthropic: 64; Gemini: 64 functions",
+        "All providers: exactly 100 tools per request",
+        "Gemini: unlimited tools; OpenAI: 32"
+      ],
+      "correct": 1,
+      "explanation": "OpenAI allows 128 tools per request (schema depth 5, arguments ≤ 8192 bytes); Anthropic and Gemini allow 64. Gemini also uses an OpenAPI 3.0 schema subset rather than full JSON Schema 2020-12."
+    }
+  ]
+}

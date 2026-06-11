@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why is \"prompt the model to reply in JSON\" not enough for a production extraction pipeline?",
+      "options": [
+        "It fails 5-15% of the time even on frontier models — missing braces, wrong types, hallucinated fields, leaked prose",
+        "JSON output is against most providers' terms of service",
+        "Prompted JSON is always slower than constrained decoding",
+        "Models can only emit JSON through tool calls"
+      ],
+      "correct": 0,
+      "explanation": "Free-form JSON prompting works 85-95% of the time and fails in six characteristic ways, including truncation at the token limit and \"Here is your JSON:\" prose leaks. Production pipelines need a guarantee, not a probability."
+    },
+    {
+      "stage": "pre",
+      "question": "What is constrained decoding?",
+      "options": [
+        "Restricting the model to a smaller vocabulary to save memory",
+        "Masking tokens at decode time so the model literally cannot emit output that violates the schema",
+        "Truncating the output at a fixed token budget",
+        "Re-prompting the model until its output validates"
+      ],
+      "correct": 1,
+      "explanation": "Constrained decoding enforces the schema during generation: invalid next tokens are masked out of the sampling distribution, so the output is guaranteed to parse and validate. Retry-until-valid (approach two) pays for failures; constrained decoding prevents them."
+    },
+    {
+      "stage": "post",
+      "question": "Under OpenAI strict mode, which failure mode remains possible?",
+      "options": [
+        "Parse errors from truncated JSON",
+        "Schema violations from hallucinated fields",
+        "Refusal — the model decides the input cannot fit the schema",
+        "All three remain possible"
+      ],
+      "correct": 2,
+      "explanation": "Strict mode makes parse errors and schema violations impossible via constrained decoding. What remains is refusal — e.g. \"the email was a poem, not an invoice\" — which your code must handle as a first-class typed outcome, not an exception."
+    },
+    {
+      "stage": "post",
+      "question": "What do Pydantic (Python) and Zod (TypeScript) contribute to structured output?",
+      "options": [
+        "They host the model weights locally",
+        "They define the schema once in native types and translate it to each provider's format, returning typed, validated objects",
+        "They replace JSON with a binary format",
+        "They are required by OpenAI for all API calls"
+      ],
+      "correct": 1,
+      "explanation": "Pydantic's model_json_schema() and Zod's zodResponseFormat() generate JSON Schema from native type definitions, and parse provider output back into typed instances — declare the schema once, enforce it end to end."
+    },
+    {
+      "stage": "post",
+      "question": "Why do structured outputs matter especially for small models?",
+      "options": [
+        "Small models emit JSON natively without prompting",
+        "A 3B model with grammar enforcement can beat a 70B model with raw prompting on structured tasks — reliability decouples from model size",
+        "Constrained decoding only works below 7B parameters",
+        "Small models cannot be fine-tuned"
+      ],
+      "correct": 1,
+      "explanation": "Grammar-based enforcement (outlines, guidance, lm-format-enforcer) masks invalid tokens regardless of model quality, so a tiny model becomes reliable on structured tasks. This decoupling of reliability from size is why structured outputs are a production cornerstone."
+    }
+  ]
+}
