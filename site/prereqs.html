@@ -827,6 +827,13 @@
       }
 
       document.getElementById('resetBtn').addEventListener('click', clearSelection);
+
+      // On narrow viewports the scroll container opens at its empty left
+      // padding; start centered so the graph is immediately visible.
+      var wrap = document.querySelector('.graph-wrap');
+      if (wrap && wrap.scrollWidth > wrap.clientWidth) {
+        wrap.scrollLeft = (wrap.scrollWidth - wrap.clientWidth) / 2;
+      }
     }
 
     /* ===================================================
