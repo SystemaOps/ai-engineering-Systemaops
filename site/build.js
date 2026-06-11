@@ -652,7 +652,7 @@ function syncCounts(lessons, phaseCount, outputs, totalMinutes, phaseMinutes, ca
   const hoursOf = mins => Math.round(mins / 60).toLocaleString('en-US');
   const totalHours = hoursOf(totalMinutes);
 
-  const targets = ['index.html', 'catalog.html', 'lesson.html', 'prereqs.html', 'cmdpalette.js'];
+  const targets = ['index.html', 'catalog.html', 'lesson.html', 'prereqs.html', 'access.html', 'cmdpalette.js'];
   for (const f of targets) {
     const p = path.join(__dirname, f);
     if (!fs.existsSync(p)) continue;
@@ -660,7 +660,11 @@ function syncCounts(lessons, phaseCount, outputs, totalMinutes, phaseMinutes, ca
     let after = before
       .replace(/\b\d+( AI engineering)? lessons\b/g, `${lessons}$1 lessons`)
       .replace(/\b\d+ phases\b/g, `${phaseCount} phases`)
-      .replace(/\b\d+ outputs\b/g, `${outputs} outputs`);
+      .replace(/\b\d+ outputs\b/g, `${outputs} outputs`)
+      // Positioning copy: "503 tools you keep", "503 reusable artifacts" —
+      // one artifact per lesson, so both follow the lesson count.
+      .replace(/\b\d+ tools you keep\b/g, `${lessons} tools you keep`)
+      .replace(/\b\d+ reusable artifacts\b/g, `${lessons} reusable artifacts`);
     if (totalMinutes > 0) {
       after = after.replace(/~[\d,]+(?:\.\d+)? hours\b/g, `~${totalHours} hours`);
     }
