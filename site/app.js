@@ -26,7 +26,7 @@
     var icon = document.getElementById('themeIcon');
     if (!icon) return;
     var theme = root.getAttribute('data-theme');
-    icon.textContent = theme === 'light' ? 'N' : 'D';
+    icon.textContent = theme === 'light' ? '☾' : '☀';
   }
 
   function initThemeToggle() {
