@@ -4,7 +4,7 @@ Status tracker for every phase and lesson. The status glyphs in this file feed
 the website (`site/build.js` parses them into `site/data.js`); do not change
 their shape.
 
-Total estimated time: ~1,137 hours, at your own pace.
+Total estimated time: ~1,136 hours, at your own pace.
 
 **Legend:** ✅ Complete &nbsp;·&nbsp; 🚧 In Progress &nbsp;·&nbsp; ⬚ Planned
 
@@ -221,7 +221,7 @@ Total estimated time: ~1,137 hours, at your own pace.
 | 12 | [3D Generation](phases/08-generative-ai/12-3d-generation/) | ✅ | ~45 min |
 | 13 | [Flow Matching & Rectified Flows](phases/08-generative-ai/13-flow-matching-rectified-flows/) | ✅ | ~45 min |
 | 14 | [Evaluation — FID, CLIP Score, Human Preference](phases/08-generative-ai/14-evaluation-fid-clip-score/) | ✅ | ~45 min |
-| 19 | [Visual Autoregressive Modeling (VAR): Next-Scale Prediction](phases/08-generative-ai/19-visual-autoregressive-var) | ✅ | ~90 min |
+| 15 | [Visual Autoregressive Modeling (VAR): Next-Scale Prediction](phases/08-generative-ai/15-visual-autoregressive-var) | ✅ | ~90 min |
 
 ## Phase 9: Reinforcement Learning — ✅ (~14 hours)
 
@@ -240,7 +240,7 @@ Total estimated time: ~1,137 hours, at your own pace.
 | 11 | Sim-to-Real Transfer | ✅ | ~45 min |
 | 12 | RL for Games | ✅ | ~120 min |
 
-## Phase 10: LLMs from Scratch — ✅ (~33 hours)
+## Phase 10: LLMs from Scratch — ✅ (~32 hours)
 
 | # | Lesson | Status | Est. |
 |---|--------|--------|------|
@@ -266,8 +266,7 @@ Total estimated time: ~1,137 hours, at your own pace.
 | 20 | [DeepSeek-V3 Architecture Walkthrough](phases/10-llms-from-scratch/20-deepseek-v3-walkthrough) | ✅ | ~75 min |
 | 21 | [Jamba — Hybrid SSM-Transformer](phases/10-llms-from-scratch/21-jamba-hybrid-ssm-transformer) | ✅ | ~60 min |
 | 22 | [Async and Hogwild! Inference](phases/10-llms-from-scratch/22-async-hogwild-inference) | ✅ | ~60 min |
-| 25 | [Speculative Decoding and EAGLE](phases/10-llms-from-scratch/25-speculative-decoding) | ✅ | ~75 min |
-| 34 | [Gradient Checkpointing and Activation Recomputation](phases/10-llms-from-scratch/34-gradient-checkpointing) | ✅ | ~70 min |
+| 23 | [Gradient Checkpointing and Activation Recomputation](phases/10-llms-from-scratch/23-gradient-checkpointing) | ✅ | ~70 min |
 
 ## Phase 11: LLM Engineering — ✅ (~21 hours)
 
@@ -613,6 +612,6 @@ Total estimated time: ~1,137 hours, at your own pace.
 
 ---
 
-**Total: 20 phases, 503 lessons | 503 complete | ~1,137 hours estimated**
+**Total: 20 phases, 503 lessons | 503 complete | ~1,136 hours estimated**
 
 Want to help? Pick any ⬚ lesson and submit a PR. See [CONTRIBUTING.md](CONTRIBUTING.md).

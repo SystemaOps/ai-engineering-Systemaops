@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Proprietary-1a1a1a?style=flat-square&labelColor=fafaf5" alt="Proprietary License"></a>
-  <a href="ROADMAP.md"><img src="https://img.shields.io/badge/lessons-503-1C7F7F?style=flat-square&labelColor=fafaf5" alt="503 lessons"></a>
+  <a href="ROADMAP.md"><img src="https://img.shields.io/badge/lessons-502-1C7F7F?style=flat-square&labelColor=fafaf5" alt="502 lessons"></a>
   <a href="#contents"><img src="https://img.shields.io/badge/phases-20-1C7F7F?style=flat-square&labelColor=fafaf5" alt="20 phases"></a>
   <a href="https://aiengineeringfromsystemaops.com"><img src="https://img.shields.io/badge/web-aiengineeringfromsystemaops.com-1C7F7F?style=flat-square&labelColor=fafaf5" alt="Website"></a>
 </p>
@@ -16,7 +16,7 @@
 > **84% of students already use AI tools. Only 18% feel prepared to use them
 > professionally.** This curriculum closes that gap.
 >
-> 503 lessons. 20 phases. ~1,137 hours. Python, TypeScript, Rust, Julia. Every lesson ships
+> 502 lessons. 20 phases. ~1,136 hours. Python, TypeScript, Rust, Julia. Every lesson ships
 > a reusable artifact: a prompt, a skill, an agent, an MCP server.
 >
 > You don't just learn AI. You build it. End-to-end. By hand.
@@ -28,7 +28,7 @@ flashy agent demo somewhere else. The pieces rarely line up. You ship a chatbot 
 explain its loss curve. You hook a function to an agent but can't say what attention does
 inside the model that's calling it.
 
-This curriculum is the spine. 20 phases, 503 lessons, four languages: Python, TypeScript,
+This curriculum is the spine. 20 phases, 502 lessons, four languages: Python, TypeScript,
 Rust, Julia. Linear algebra at one end, autonomous swarms at the other. Every algorithm
 gets built from raw math first. Backprop. Tokenizer. Attention. Agent loop. By the time
 PyTorch shows up, you already know what it's doing under the hood.
@@ -172,7 +172,7 @@ Other curricula end with *"congratulations, you learned X."* Each lesson here en
 </table>
 
 > Install the lot with `python3 scripts/install_skills.py`. Real tools, not homework.
-> By the end of the curriculum, you have a portfolio of 503 artifacts you actually
+> By the end of the curriculum, you have a portfolio of 502 artifacts you actually
 > understand because you built them.
 
 ### FIG_002 · A worked sample
@@ -438,7 +438,7 @@ Twenty phases. Click any phase to expand its lesson list.
 </details>
 
 <details id="phase-7">
-<summary><b>Phase 7 — Transformers Deep Dive</b> &nbsp;<code>14 lessons</code>&nbsp; <em>The architecture that changed everything.</em></summary>
+<summary><b>Phase 7 — Transformers Deep Dive</b> &nbsp;<code>16 lessons</code>&nbsp; <em>The architecture that changed everything.</em></summary>
 <br/>
 
 | # | Lesson | Type | Lang |
@@ -463,7 +463,7 @@ Twenty phases. Click any phase to expand its lesson list.
 </details>
 
 <details id="phase-8">
-<summary><b>Phase 8 — Generative AI</b> &nbsp;<code>14 lessons</code>&nbsp; <em>Create images, video, audio, 3D, and more.</em></summary>
+<summary><b>Phase 8 — Generative AI</b> &nbsp;<code>15 lessons</code>&nbsp; <em>Create images, video, audio, 3D, and more.</em></summary>
 <br/>
 
 | # | Lesson | Type | Lang |
@@ -482,7 +482,7 @@ Twenty phases. Click any phase to expand its lesson list.
 | 12 | [3D Generation](phases/08-generative-ai/12-3d-generation/) | Build | Python |
 | 13 | [Flow Matching & Rectified Flows](phases/08-generative-ai/13-flow-matching-rectified-flows/) | Build | Python |
 | 14 | [Evaluation: FID, CLIP Score](phases/08-generative-ai/14-evaluation-fid-clip-score/) | Build | Python |
-| 19 | [Visual Autoregressive Modeling (VAR): Next-Scale Prediction](phases/08-generative-ai/19-visual-autoregressive-var/) | Build | Python |
+| 15 | [Visual Autoregressive Modeling (VAR): Next-Scale Prediction](phases/08-generative-ai/15-visual-autoregressive-var/) | Build | Python |
 
 </details>
 
@@ -508,7 +508,7 @@ Twenty phases. Click any phase to expand its lesson list.
 </details>
 
 <details id="phase-10">
-<summary><b>Phase 10 — LLMs from Scratch</b> &nbsp;<code>22 lessons</code>&nbsp; <em>Build, train, and understand large language models.</em></summary>
+<summary><b>Phase 10 — LLMs from Scratch</b> &nbsp;<code>23 lessons</code>&nbsp; <em>Build, train, and understand large language models.</em></summary>
 <br/>
 
 | # | Lesson | Type | Lang |
@@ -535,8 +535,7 @@ Twenty phases. Click any phase to expand its lesson list.
 | 20 | [DeepSeek-V3 Architecture Walkthrough](phases/10-llms-from-scratch/20-deepseek-v3-walkthrough/) | Learn | Python |
 | 21 | [Jamba — Hybrid SSM-Transformer](phases/10-llms-from-scratch/21-jamba-hybrid-ssm-transformer/) | Learn | Python |
 | 22 | [Async and Hogwild! Inference](phases/10-llms-from-scratch/22-async-hogwild-inference/) | Build | Python |
-| 25 | [Speculative Decoding and EAGLE](phases/10-llms-from-scratch/25-speculative-decoding/) | Build | Python |
-| 34 | [Gradient Checkpointing and Activation Recomputation](phases/10-llms-from-scratch/34-gradient-checkpointing/) | Build | Python |
+| 23 | [Gradient Checkpointing and Activation Recomputation](phases/10-llms-from-scratch/23-gradient-checkpointing/) | Build | Python |
 
 </details>
 
@@ -945,7 +944,7 @@ Real tools, not homework.
 
 ### Install every course skill into your agent
 
-The repo ships 388 skills and 99 prompts under `phases/**/outputs/`.
+The repo ships 387 skills and 99 prompts under `phases/**/outputs/`.
 
 **Recommended: install via [skills.sh](https://skills.sh).** No clone, no Python,
 detects your agent's skills directory automatically:
@@ -1060,10 +1059,10 @@ HEAD/GET).
 
 | Background | Start at | Estimated time |
 |---|---|---|
-| New to programming and AI | Phase 0 — Setup | ~510 hours |
-| Know Python, new to ML | Phase 1 — Math Foundations | ~502 hours |
-| Know ML, new to deep learning | Phase 3 — Deep Learning Core | ~444 hours |
-| Know deep learning, want LLMs and agents | Phase 10 — LLMs from Scratch | ~299 hours |
+| New to programming and AI | Phase 0 — Setup | ~509 hours |
+| Know Python, new to ML | Phase 1 — Math Foundations | ~501 hours |
+| Know ML, new to deep learning | Phase 3 — Deep Learning Core | ~443 hours |
+| Know deep learning, want LLMs and agents | Phase 10 — LLMs from Scratch | ~298 hours |
 | Senior engineer, only want agent engineering | Phase 14 — Agent Engineering | ~154 hours |
 
 Estimates sum the per-lesson time for the lesson phases (0–18). Phase 19 capstones are

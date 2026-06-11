@@ -222,6 +222,56 @@ def audit_lesson(audit: Audit, lesson: Path) -> None:
         check_internal_links(audit, lesson, text)
 
 
+# Historical numbering gaps that are cheaper to live with than to fix.
+# Phase 19's capstones jump 17 -> 20: closing the gap would renumber ~68
+# directories whose docs and shipped skills cross-reference each other by
+# lesson number. Any NEW gap still fails the audit.
+ALLOWED_NUMBERING_GAPS: dict[int, set[int]] = {
+    19: {18, 19},
+}
+
+
+def check_phase_numbering(audit: Audit, phase_filter: int | None) -> None:
+    """L011 — lesson numbers within each phase must be contiguous from 01.
+
+    Gaps and duplicates are how curriculum drift starts (deleted lessons
+    leaving holes, new lessons appended with arbitrary numbers), so the
+    audit fails on both, minus the explicitly documented exemptions above.
+    """
+    if not PHASES_DIR.is_dir():
+        return
+    for phase in sorted(PHASES_DIR.iterdir()):
+        if not phase.is_dir() or not PHASE_DIR_RE.match(phase.name):
+            continue
+        if phase_filter is not None:
+            try:
+                if int(phase.name.split("-", 1)[0]) != phase_filter:
+                    continue
+            except ValueError:
+                continue
+        numbers: list[int] = []
+        for lesson in sorted(phase.iterdir()):
+            if lesson.is_dir() and LESSON_DIR_RE.match(lesson.name):
+                numbers.append(int(lesson.name.split("-", 1)[0]))
+        if not numbers:
+            continue
+        seen: set[int] = set()
+        for n in numbers:
+            if n in seen:
+                audit.add("L011", phase, None, f"duplicate lesson number {n:02d}")
+            seen.add(n)
+        try:
+            phase_num = int(phase.name.split("-", 1)[0])
+        except ValueError:
+            phase_num = -1
+        allowed = ALLOWED_NUMBERING_GAPS.get(phase_num, set())
+        expected = list(range(1, max(numbers) + 1))
+        missing = [n for n in expected if n not in seen and n not in allowed]
+        if missing:
+            gaps = ", ".join(f"{n:02d}" for n in missing)
+            audit.add("L011", phase, None, f"non-contiguous lesson numbers; missing {gaps}")
+
+
 def render_report(audit: Audit) -> str:
     by_rule: dict[str, int] = {}
     for issue in audit.issues:
@@ -255,6 +305,7 @@ def main(argv: list[str]) -> int:
     audit = Audit()
     for lesson in iter_lesson_dirs(args.phase):
         audit_lesson(audit, lesson)
+    check_phase_numbering(audit, args.phase)
 
     if args.json:
         json.dump(
