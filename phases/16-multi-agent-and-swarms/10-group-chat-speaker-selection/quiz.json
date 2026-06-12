@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What problem does GroupChat solve that static graphs handle poorly?",
+      "options": [
+        "Graphs cannot contain more than 10 nodes",
+        "Real conversations aren't static — hardcoding every possible handoff causes edge explosion; GroupChat lets agents react to a shared pool with a selector picking the next speaker",
+        "Graphs cannot run on Windows",
+        "GroupChat removes the need for prompts"
+      ],
+      "correct": 1,
+      "explanation": "Sometimes the coder asks the reviewer, sometimes the researcher. A shared pool that everyone reads plus a per-turn selector function is the archetype of emergent multi-agent conversation."
+    },
+    {
+      "stage": "pre",
+      "question": "What are the three selector flavors and their trade-offs?",
+      "options": [
+        "Fast, medium, slow",
+        "Round-robin (deterministic but context-blind), LLM-selected (context-aware but adds an LLM call per turn), custom (e.g. LLM with fallback rules like 'verifier always follows coder')",
+        "Random, alphabetical, by seniority",
+        "Greedy, beam, sampling"
+      ],
+      "correct": 1,
+      "explanation": "Round-robin gives the coder a turn during legal review; LLM selection reads the pool but costs a call every turn (AutoGen's default); custom functions blend both — deterministic guarantees where they matter, LLM judgment elsewhere."
+    },
+    {
+      "stage": "post",
+      "question": "What are the three common termination patterns for a group chat?",
+      "options": [
+        "Timeout, crash, restart",
+        "Max rounds (hard cap), a TERMINATE sentinel any agent can emit, and a goal-reached check by a lightweight verifier each turn",
+        "User closes the window",
+        "The selector resigns"
+      ],
+      "correct": 1,
+      "explanation": "Without termination conditions a group chat is an unbounded loop with growing context. The verifier-driven stop is the strongest: the conversation ends when the goal is objectively met, not when patience runs out."
+    },
+    {
+      "stage": "post",
+      "question": "What happened in the AutoGen → AG2 → Microsoft Agent Framework lineage?",
+      "options": [
+        "AutoGen was deleted entirely",
+        "Microsoft rewrote AutoGen v0.4 as an event-driven actor model; the community forked v0.2's GroupChat semantics as AG2; in February 2026 AutoGen went to maintenance mode, merging with Semantic Kernel into Microsoft Agent Framework",
+        "AG2 is a Microsoft product; AutoGen is the fork",
+        "All three are unrelated projects"
+      ],
+      "correct": 1,
+      "explanation": "The GroupChat primitive survives in both tracks — AG2 for v0.2-compatible code, Microsoft Agent Framework for the actor-model future. Learn the primitive once and the implementation churn stops mattering."
+    },
+    {
+      "stage": "post",
+      "question": "In the GroupChat architecture, who actually holds the selector?",
+      "options": [
+        "Each agent votes on the next speaker",
+        "The GroupChatManager — after each turn it invokes the selector, which returns the next agent, looping until a termination condition",
+        "The first agent registered",
+        "The user picks every speaker manually"
+      ],
+      "correct": 1,
+      "explanation": "Agents just read the pool and speak when chosen; the manager owns turn-taking. This separation is what lets you swap round-robin for LLM selection or custom rules without touching the agents."
+    }
+  ]
+}

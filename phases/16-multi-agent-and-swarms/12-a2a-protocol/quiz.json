@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What problem does A2A solve for cross-system agent calls?",
+      "options": [
+        "It compresses agent traffic",
+        "Without it, every pair of agents becomes a bespoke HTTP+JSON integration — A2A standardizes discovery, task model, transport, and artifacts, like HTTP+REST with agents as first-class citizens",
+        "It replaces the need for authentication",
+        "It merges all agents into one process"
+      ],
+      "correct": 1,
+      "explanation": "Announced by Google in April 2025, backed by 150+ organizations by v1.0. Standard wire protocol means a code-review agent on one stack can serve a planning agent on another with zero custom glue."
+    },
+    {
+      "stage": "pre",
+      "question": "How do MCP and A2A divide the protocol landscape?",
+      "options": [
+        "MCP is for Python, A2A for TypeScript",
+        "MCP is vertical (agent ↔ tools via JSON-RPC); A2A is horizontal (agent ↔ agent, peer-to-peer where both sides reason) — production systems use both together",
+        "A2A replaces MCP entirely",
+        "MCP is open, A2A is proprietary"
+      ],
+      "correct": 1,
+      "explanation": "An A2A peer typically calls MCP tools on its own side. The split keeps concerns clean: tool access stays vertical, delegation between reasoning agents goes peer-to-peer."
+    },
+    {
+      "stage": "post",
+      "question": "What are A2A's four core elements?",
+      "options": [
+        "Models, prompts, tools, memory",
+        "Agent Card (discovery at /.well-known/agent.json), Task (async stateful unit with a lifecycle), Artifact (typed results — text, structured, image, video), and the opaque lifecycle",
+        "Client, server, broker, registry",
+        "Request, response, error, retry"
+      ],
+      "correct": 1,
+      "explanation": "Discovery by reading the card (name, skills, endpoints, auth, modalities); work via tasks transitioning submitted → working → completed/failed/canceled; results as typed artifacts; internals deliberately hidden."
+    },
+    {
+      "stage": "post",
+      "question": "What does the \"opaque lifecycle\" guarantee?",
+      "options": [
+        "Tasks are encrypted end-to-end",
+        "A2A never prescribes HOW the remote agent solves the task — the client sees only state transitions and artifacts, so any framework can implement either side",
+        "Task ids are unguessable",
+        "Clients cannot cancel tasks"
+      ],
+      "correct": 1,
+      "explanation": "Opacity is the interoperability lever: a CrewAI agent can call a LangGraph agent without either knowing the other's internals. It's also the privacy property — internal reasoning stays private."
+    },
+    {
+      "stage": "post",
+      "question": "How does a client track a long-running A2A task?",
+      "options": [
+        "It must keep the HTTP connection open",
+        "Poll GET /tasks/{id} for state and progress, or subscribe to SSE on /tasks/{id}/events for push updates",
+        "The remote agent emails when done",
+        "Tasks must complete within 30 seconds"
+      ],
+      "correct": 1,
+      "explanation": "The task model is async by design: POST returns a task id at state=submitted, then polling or SSE streaming carries the client through working (with progress) to terminal state and artifacts."
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What are the three components of the Smallville generative-agent architecture?",
+      "options": [
+        "Encoder, decoder, attention",
+        "Memory stream (append-only natural-language log), reflection (higher-order syntheses fed back into the stream), and plan (day-level decomposed to hour and action level, revisable)",
+        "Perception, action, reward",
+        "Database, cache, queue"
+      ],
+      "correct": 1,
+      "explanation": "Park et al. 2023 is the reference architecture for open-world agent simulation. Ablations show all three are required: no observation means stale beliefs, no reflection means shallow interactions, no plan means reactive noise."
+    },
+    {
+      "stage": "pre",
+      "question": "How does memory retrieval score entries in the Smallville architecture?",
+      "options": [
+        "Pure chronological order, newest first",
+        "A weighted combination of recency (exponential decay), importance (self-rated 1-10), and relevance (cosine similarity to the current query) — top-k enter the prompt",
+        "Random sampling for diversity",
+        "By entry length, longest first"
+      ],
+      "correct": 1,
+      "explanation": "score = w_recency·e^(−decay·age) + w_importance·importance + w_relevance·cos_sim. This three-factor retrieval is what lets a 25-agent simulation stay coherent without stuffing whole histories into context."
+    },
+    {
+      "stage": "post",
+      "question": "Why is the Valentine's Day party result a landmark?",
+      "options": [
+        "It was the first LLM to mention a holiday",
+        "One seeded agent's party intent spread through 24 unseeded agents via invitations becoming observations, reflections becoming beliefs, and plans incorporating attendance — system-level behavior from purely local interactions, no orchestrator",
+        "It proved agents can simulate cooking",
+        "The party was rendered in 3D"
+      ],
+      "correct": 1,
+      "explanation": "This is emergence in the technical sense: invitations propagated agent-to-agent, dates got coordinated, and agents converged at Hobbs Cafe at 5pm — with no central script beyond Isabella's initial goal."
+    },
+    {
+      "stage": "post",
+      "question": "Which failure modes did Park et al. document that production simulations still inherit?",
+      "options": [
+        "GPU overheating and disk corruption",
+        "Spatial-norm errors (entering closed stores, sharing one-person bathrooms), memory overflow as retrieval costs grow, and reflection hallucination inventing relationships absent from the stream",
+        "Agents refusing to speak English",
+        "Time running backwards in simulation"
+      ],
+      "correct": 1,
+      "explanation": "Mitigations are practical: periodic memory compaction with decay on low-importance entries, and source-memory ids inside reflection prompts so invented syntheses can be verified at retrieval time."
+    },
+    {
+      "stage": "post",
+      "question": "What distinguishes generative-agent simulation from scripted multi-agent teams?",
+      "options": [
+        "Simulation uses more expensive models",
+        "Scripted teams (planner/coder/reviewer) suit well-defined tasks; generative agents with memory, priorities, and an open world produce emergent unscripted behavior — needed for research, society simulation, and game AI",
+        "Simulations cannot use tools",
+        "There is no difference in practice"
+      ],
+      "correct": 1,
+      "explanation": "Since Park 2023, building an open-world agent simulation means either using the three Smallville components or explicitly justifying why not — it became the default pattern for the second kind of multi-agent system."
+    }
+  ]
+}

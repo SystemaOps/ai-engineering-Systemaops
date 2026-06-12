@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What are the four primitives that span the entire multi-agent design space?",
+      "options": [
+        "Model, prompt, dataset, evaluator",
+        "Agent (system prompt + tools), handoff (structured control transfer), shared state, and orchestrator (who decides who speaks next)",
+        "Client, server, gateway, registry",
+        "Plan, act, observe, reflect"
+      ],
+      "correct": 1,
+      "explanation": "Every shipping framework — AutoGen, LangGraph, CrewAI, OpenAI Agents SDK, Microsoft Agent Framework — is a point in this four-dimensional space. Learn the axes once and read any new release in a paragraph."
+    },
+    {
+      "stage": "pre",
+      "question": "Why does learning frameworks one at a time burn you out, per this lesson?",
+      "options": [
+        "The docs are all in different languages",
+        "Surface syntax differs wildly (blackboard vs message pool vs StateGraph) while the underlying primitives are stable — the churn is naming, not substance",
+        "Each framework requires its own GPU",
+        "Frameworks expire every six months"
+      ],
+      "correct": 1,
+      "explanation": "AutoGen 2023, CrewAI 2024, LangGraph/Swarm 2024, Google ADK 2025, Microsoft Agent Framework 2026 — each picks defaults on the same four axes. The comparison table is the whole story."
+    },
+    {
+      "stage": "post",
+      "question": "Which three checklist questions answer ~80% of framework selection?",
+      "options": [
+        "Price, license, GitHub stars",
+        "Does the orchestrator trust the LLM to route or pin routing in code? Is shared state full-history or projected? Can agents modify each other's prompts or only hand off?",
+        "Python or TypeScript? Cloud or local? Open or closed?",
+        "Token limit, latency, context window"
+      ],
+      "correct": 1,
+      "explanation": "Swarm trusts the LLM's next handoff call; LangGraph pins routing in a deterministic graph. GroupChat carries full history; StateGraph reduces. Those axes — not the marketing — decide fit."
+    },
+    {
+      "stage": "post",
+      "question": "What is the \"stateless insight,\" and where do the interesting bugs live?",
+      "options": [
+        "Everything in a multi-agent system is stateful",
+        "Agent, handoff, and orchestrator are all stateless functions — shared state is the only stateful thing, so memory poisoning, ordering, versioning, and write contention all live there",
+        "Bugs are evenly distributed across primitives",
+        "Stateless systems cannot have bugs"
+      ],
+      "correct": 1,
+      "explanation": "An agent is a function of (prompt, tools); two agents with the same prompt and tools are interchangeable. Frameworks that hide shared state (Swarm) push the problem to the caller; those that centralize it (LangGraph checkpoints) make it inspectable."
+    },
+    {
+      "stage": "post",
+      "question": "Mechanically, what IS a handoff in most 2026 frameworks?",
+      "options": [
+        "A network socket transfer between machines",
+        "A tool call that returns a new agent, or a graph edge that follows a condition — a structured (from, to, reason, payload) transfer of control",
+        "Copying one model's weights into another",
+        "An email between agent owners"
+      ],
+      "correct": 1,
+      "explanation": "OpenAI Swarm implements handoff as a tool returning an Agent; LangGraph as a conditional edge; CrewAI as a process ordering. Same primitive, three syntaxes."
+    }
+  ]
+}

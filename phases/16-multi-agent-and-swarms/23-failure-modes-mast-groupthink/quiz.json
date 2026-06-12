@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What did MAST find about multi-agent failure rates, and what are its three root categories?",
+      "options": [
+        "Failures under 5%; categorized by language",
+        "41-86.7% failure rates across 7 open-source MAS (1,642 traces) — rooted in Specification Problems (41.77%), Coordination Failures (36.94%), and Verification Gaps (21.30%)",
+        "Failures only in systems over 100 agents",
+        "All failures trace to GPU errors"
+      ],
+      "correct": 1,
+      "explanation": "Cemri et al.'s NeurIPS 2025 taxonomy turned arbitrary-looking failure numbers into structure. 2026 production practice: your architecture isn't done until you can name the deployed mitigation for each MAST category."
+    },
+    {
+      "stage": "pre",
+      "question": "Why are Specification Problems the largest failure category?",
+      "options": [
+        "Models are too small to parse specs",
+        "Role ambiguity (two agents both think they're the reviewer), underspecified tasks, and implicit success criteria — the agent literally cannot tell if it succeeded",
+        "Specs are written in legalese",
+        "Specification tooling is missing from frameworks"
+      ],
+      "correct": 1,
+      "explanation": "Mitigations are organizational, not model-level: explicit role contracts stating what each agent does AND doesn't do, per-task acceptance tests defining \"done,\" and a pre-flight spec check before dispatch."
+    },
+    {
+      "stage": "post",
+      "question": "What is a retry storm, and what stops it?",
+      "options": [
+        "A user clicking retry repeatedly; a debounce timer",
+        "A payment failure triggers order retries, which trigger inventory retries, overwhelming the service with 10x load in seconds — circuit breakers stop the cascade",
+        "Network packet retransmission; TCP tuning",
+        "Agents re-asking the same question; deduplication"
+      ],
+      "correct": 1,
+      "explanation": "Cascading reliability failure is the multi-agent version of a classic distributed-systems pathology: each layer's reasonable local retry policy multiplies into a system-wide flood. The breaker trips the offending path before the cascade compounds."
+    },
+    {
+      "stage": "post",
+      "question": "Which failures make up the Groupthink family?",
+      "options": [
+        "Slow consensus, fast consensus, no consensus",
+        "Monoculture collapse (shared base model → shared hallucinations), conformity bias, deficient theory of mind, mixed-motive drift to a compromise that satisfies no one, and cascading reliability failures",
+        "Overfitting, underfitting, and drift",
+        "Memory leaks in five flavors"
+      ],
+      "correct": 1,
+      "explanation": "All five arise when agents homogenize or mimic each other. The countermeasures thread back through the phase: heterogeneous ensembles, adversarial debate roles, ToM prompting, and independent verification."
+    },
+    {
+      "stage": "post",
+      "question": "How did STRATUS improve mitigation success?",
+      "options": [
+        "By doubling the model size",
+        "Specialized detection, diagnosis, and validation agents — treating failure handling itself as a multi-agent role decomposition, reporting 1.5x mitigation-success improvement",
+        "By disabling retries entirely",
+        "By switching all agents to temperature 0"
+      ],
+      "correct": 1,
+      "explanation": "The fix for multi-agent failure is, fittingly, specialized agents for the failure pipeline — the role-specialization insight applied to reliability engineering."
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why is an LLM manager fundamentally different from a human manager in a hierarchy?",
+      "options": [
+        "LLMs cannot delegate tasks",
+        "A human manager has stable priors about what reports know; an LLM manager re-reasons the whole org from its context every turn — tiny context drift misallocates the entire tree",
+        "LLM managers demand higher salaries",
+        "Human managers process more tokens"
+      ],
+      "correct": 1,
+      "explanation": "Hierarchy is supervisor-nested (managers over sub-managers over workers), which mirrors real org charts — but the stability assumption that makes human hierarchies work doesn't hold for context-dependent LLM reasoning."
+    },
+    {
+      "stage": "pre",
+      "question": "When does a hierarchical architecture genuinely shine?",
+      "options": [
+        "On every task with more than two steps",
+        "When the task IS a real org chart (legal + finance + engineering each review, then exec summary) — and each sub-manager locally summarizes so the top sees three summaries, not fifteen outputs",
+        "When latency must be minimized",
+        "When only one model is available"
+      ],
+      "correct": 1,
+      "explanation": "Clear departmental mapping and local summarization are the two real wins. The deciding question: does the task have independent sub-teams, or is it a linear flow pretending to be a tree?"
+    },
+    {
+      "stage": "post",
+      "question": "Why do task-assignment errors in a hierarchy surface so late?",
+      "options": [
+        "Logging is disabled in hierarchies",
+        "The sub-manager obediently works on whatever it was given — a hallucinated decomposition only becomes visible at top-level synthesis, one level removed from where a human could have caught it",
+        "Errors are encrypted between levels",
+        "Sub-managers hide their mistakes deliberately"
+      ],
+      "correct": 1,
+      "explanation": "Obedient precision on the wrong target is the signature failure. The other two 2026 post-mortem patterns: meaning drift at each summarization level (\"unable to verify\" becomes \"not confirmed\") and consensus loops between disagreeing sub-managers."
+    },
+    {
+      "stage": "post",
+      "question": "How do CrewAI and LangGraph differ in implementing hierarchy?",
+      "options": [
+        "CrewAI does not support hierarchy",
+        "CrewAI's Process.hierarchical wires a manager LLM that assigns, evaluates, and re-delegates (with step limits as loop guards); LangGraph nests create_supervisor calls, treating inner graphs as opaque nodes — cleaner to debug, harder to reshape dynamically",
+        "Both use identical implementations",
+        "LangGraph requires a paid license for hierarchy"
+      ],
+      "correct": 1,
+      "explanation": "CrewAI's manager dynamically delegates and validates; the consensus-loop guard becomes a hyperparameter. LangGraph's nesting lets you step through each graph separately but pins the tree shape."
+    },
+    {
+      "stage": "post",
+      "question": "What does the lesson conclude about sequential vs hierarchical?",
+      "options": [
+        "Hierarchical always wins given enough budget",
+        "Sequential often beats hierarchical — if step 2 needs step 1's output, the tree buys nothing but managerial looping; choose hierarchy only for genuinely independent sub-teams with explicit reconciliation rules",
+        "Sequential is deprecated in 2026",
+        "The two are equivalent in cost"
+      ],
+      "correct": 1,
+      "explanation": "Managerial looping — poor assignment, misinterpretation, consensus cycles — is the collapse mode. A linear flow pretending to be a tree should be a pipeline."
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What are the two main shared-memory topologies, and where does each win?",
+      "options": [
+        "SQL and NoSQL — SQL always wins",
+        "Full message pool (everyone reads everything — simple, inspectable, breaks past ~10 agents as contexts fill) vs blackboard with subscriptions (topic routing — scales to swarms but needs upfront schema design)",
+        "RAM and disk — RAM wins under 1GB",
+        "Local and global — local always wins"
+      ],
+      "correct": 1,
+      "explanation": "AutoGen GroupChat and MetaGPT use the pool; CA-MCP and Matrix use subscriptions. Production often mixes: a small full pool at the planning layer, blackboards below at the worker layer."
+    },
+    {
+      "stage": "pre",
+      "question": "Why is memory poisoning harder to debug than a crash?",
+      "options": [
+        "Logs are encrypted in shared memory",
+        "Nothing fails visibly — one agent's hallucinated \"fact\" gets adopted by every downstream reader, accuracy decays gradually, and the root cause is buried several reasoning steps back",
+        "Poisoning only happens in production",
+        "It crashes the debugger itself"
+      ],
+      "correct": 1,
+      "explanation": "In the canonical scenario, agent A misreads \"4.2%\" as \"42%\", B summarizes it as fact, C recommends adoption — no agent crashed, no test failed, and the final report cites a number that never existed."
+    },
+    {
+      "stage": "post",
+      "question": "Why is memory poisoning STRUCTURAL rather than incidental?",
+      "options": [
+        "It only affects badly-trained models",
+        "Without shared state a hallucination stays in one agent's context where downstream re-derivation might catch it; naive shared state launders one agent's context into everyone's as verified fact",
+        "It is caused by network packet loss",
+        "It only occurs with more than 50 agents"
+      ],
+      "correct": 1,
+      "explanation": "MAST ranks it the second-most-documented failure family. Any shared-memory design without provenance tracking and an unwritable verifier will exhibit it eventually — the substrate itself does the laundering."
+    },
+    {
+      "stage": "post",
+      "question": "Which mitigation set actually works against memory poisoning in production?",
+      "options": [
+        "Larger context windows",
+        "Provenance on every entry (who wrote it, from what source), verification before high-stakes reads, and a verifier role that shared state cannot overwrite",
+        "Encrypting the shared store",
+        "Restarting agents hourly"
+      ],
+      "correct": 1,
+      "explanation": "Provenance lets a reader distinguish \"retrieved from source X\" from \"asserted by agent A\"; verification gates the consequential reads; and keeping the verifier outside the writable surface mirrors the evaluator-firewall rule from the self-improvement lessons."
+    },
+    {
+      "stage": "post",
+      "question": "Why does the full message pool stop scaling around ~10 agents?",
+      "options": [
+        "Network bandwidth saturates",
+        "Each agent's context window fills with every other agent's work — token cost and context pollution grow with every member, drowning the agent's own task",
+        "Message ids overflow",
+        "Providers cap concurrent connections at 10"
+      ],
+      "correct": 1,
+      "explanation": "Transparency has a price: everyone-reads-everything means context grows with the whole team's chatter. Subscription routing exists precisely to spend tokens only on relevant messages."
+    }
+  ]
+}

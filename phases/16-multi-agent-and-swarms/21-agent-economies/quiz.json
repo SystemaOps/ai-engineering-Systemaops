@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What core problem do agent economies address?",
+      "options": [
+        "How to make agents run faster",
+        "Agents produce value jointly but must be rewarded individually — equal splits and last-contributor-takes-all are unfair or gameable, so credit attribution, mechanism design, and reputation become the problem family",
+        "How to tax AI systems",
+        "How to make agents speak the same language"
+      ],
+      "correct": 1,
+      "explanation": "Shapley values are fair by construction but expensive (N! permutations); the 2025-2026 literature pushes practical approximations: Shapley sampling, monotone-aggregation auctions, and DID-bound on-chain reputation."
+    },
+    {
+      "stage": "pre",
+      "question": "What are the five layers of the agent-economy reference stack?",
+      "options": [
+        "Hardware, OS, runtime, app, UI",
+        "DePIN (physical compute) → Identity (W3C DIDs + reputation) → Cognition (LLM + RAG + MCP) → Settlement (account abstraction) → Governance (Agentic DAOs)",
+        "Mine, validate, stake, vote, govern",
+        "Train, deploy, monitor, scale, retire"
+      ],
+      "correct": 1,
+      "explanation": "It's a reference map, not a requirement — Bittensor uses layers 1-2 and parts of 3-4 with no governance layer; OpenAI agents use essentially only cognition. DIDs make reputation portable across platforms."
+    },
+    {
+      "stage": "post",
+      "question": "How does Shapley-value credit attribution work, and why is sampling needed in practice?",
+      "options": [
+        "Each agent self-reports its contribution",
+        "Average each agent's marginal contribution across all orderings of the coalition — unique allocation satisfying efficiency, symmetry, linearity, and null axioms; but N=10 means 3.6M permutations, so you sample orderings",
+        "Split rewards by tokens consumed",
+        "The newest agent gets the largest share"
+      ],
+      "correct": 1,
+      "explanation": "For each permutation, record what agent i adds when joining the agents before it; average over permutations. AAMAS 2025's decentralized LaMAS applies exactly this to reward contributing agents fairly."
+    },
+    {
+      "stage": "post",
+      "question": "Why does a second-price token auction make agents bid truthfully?",
+      "options": [
+        "Lying is detected by a classifier",
+        "The winner pays the SECOND-highest value, so under monotone aggregation your bid only determines whether you win, not what you pay — misreporting can only hurt you",
+        "Bids are encrypted",
+        "All agents share the same value function"
+      ],
+      "correct": 1,
+      "explanation": "Google Research's mechanism-design work applies the classic Vickrey insight to LLM output aggregation: outsource completions to differently-priced agents, pick the best, pay fairly, and no one gains by misreporting."
+    },
+    {
+      "stage": "post",
+      "question": "How do Bittensor, Fetch.ai/ASI, and Gonka differ in what they pay for?",
+      "options": [
+        "All three pay per kilowatt-hour",
+        "Bittensor pays for task-specific output quality (validator-ranked subnet rewards), Fetch pays for utility measured by paying users (FET for inference), Gonka pays for verifiable transformer inference as resource-productive proof-of-work",
+        "They are three names for one network",
+        "All three pay only in US dollars"
+      ],
+      "correct": 1,
+      "explanation": "The shared economic lesson: pay for output quality or verified useful work, not raw compute consumed. All three are production-grade as of April 2026."
+    }
+  ]
+}

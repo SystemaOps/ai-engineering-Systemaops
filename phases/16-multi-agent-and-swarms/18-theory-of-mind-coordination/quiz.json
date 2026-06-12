@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What do zeroth-, first-, and second-order Theory of Mind mean for LLM agents?",
+      "options": [
+        "Three sizes of context window",
+        "Zeroth: no model of others; first: modeling another agent's beliefs (\"Alice believes X\"); second: recursive beliefs (\"Alice believes that Bob believes X\")",
+        "Three levels of API access",
+        "The number of agents in the system"
+      ],
+      "correct": 1,
+      "explanation": "The orders mirror developmental psychology (3-, 5-, and 7-year-old capabilities). Li et al. found first- and second-order ToM emerge in cooperative text games but degrade with long horizons and unreliable communication."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the practical 2026 state of LLMs on Sally-Anne-style false-belief tests?",
+      "options": [
+        "They fail all versions",
+        "They pass when posed plainly but fail when the narrative is long, the scene changes repeatedly, or the question is indirect",
+        "They pass all variants perfectly",
+        "The test cannot be administered to LLMs"
+      ],
+      "correct": 1,
+      "explanation": "ToM exists in frontier models but is fragile to exactly the conditions production multi-agent systems create: long contexts, state changes, and indirect phrasing."
+    },
+    {
+      "stage": "post",
+      "question": "What was Riedl's (2025) key finding about emergent coordination?",
+      "options": [
+        "Coordination emerges in any group of 3+ agents",
+        "Only the ToM-prompt condition produced identity-linked differentiation, goal-directed complementarity, and higher-order synergy above baseline — coordination emergence is prompt-conditional and model-dependent, not free",
+        "Coordination requires at least GPT-5",
+        "Coordination is purely random"
+      ],
+      "correct": 1,
+      "explanation": "Without ToM prompting, metrics hover near chance for moderate-capacity models; lower-capacity LLMs show only spurious emergence. Even large models coordinate measurably better with explicit ToM prompting."
+    },
+    {
+      "stage": "post",
+      "question": "What usually explains \"emergent coordination\" in demos that lack statistical controls?",
+      "options": [
+        "Genuine machine consciousness",
+        "Prompt engineering that bakes coordination in (\"work together\"), observer bias seeing expected patterns, and post-hoc selection of successful runs",
+        "Hardware-level synchronization",
+        "Shared random seeds"
+      ],
+      "correct": 1,
+      "explanation": "The coordination illusion: remove the prompt, remove the coordination. Production claims of emergent coordination without measurable signal — differentiation, complementarity, synergy — should be treated as marketing."
+    },
+    {
+      "stage": "post",
+      "question": "What state does a minimal ToM-aware agent maintain beyond its own beliefs?",
+      "options": [
+        "A copy of every other agent's weights",
+        "Per-agent belief attributions — a map from each other agent to the beliefs this agent attributes to them, updated from observed actions and messages",
+        "The other agents' API keys",
+        "A global truth table"
+      ],
+      "correct": 1,
+      "explanation": "own_beliefs plus other_models[agent_id] → attributed beliefs is the minimal structure. Acting on \"what does Alice believe?\" rather than only \"what do I observe?\" is what turns parallel workers into a coordinating team."
+    }
+  ]
+}

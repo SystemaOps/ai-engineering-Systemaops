@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why was the 2023-2024 era of multi-agent evaluation \"chaos\"?",
+      "options": [
+        "There were no multi-agent systems to evaluate",
+        "Everyone picked their own metrics, baselines, and task sets — claims of \"better\" could not be compared, and without hold-outs, training contamination inflated scores",
+        "Benchmarks were too expensive to run",
+        "Evaluation was illegal in some jurisdictions"
+      ],
+      "correct": 1,
+      "explanation": "The 2025-2026 benchmark wave (MARBLE, COMMA, MedAgentBoard, AgentArch, SWE-bench Pro) imposed structure. The skeptical reading skill — better than what, on what, measured how — is the lesson's core."
+    },
+    {
+      "stage": "pre",
+      "question": "What uncomfortable result did COMMA report?",
+      "options": [
+        "All models solved it perfectly",
+        "Frontier models including GPT-4o struggle to beat a RANDOM baseline on multimodal asymmetric-information coordination — multi-modality agent cooperation is under-trained and under-evaluated",
+        "The benchmark could not be reproduced",
+        "Only open-weights models passed"
+      ],
+      "correct": 1,
+      "explanation": "Agents with different observation modalities coordinating without full information sharing is where collaboration collapses. The null result is a warning: measure before claiming multimodal coordination works."
+    },
+    {
+      "stage": "post",
+      "question": "What did MedAgentBoard conclude about multi-agent vs single-LLM?",
+      "options": [
+        "Multi-agent dominates all medical tasks",
+        "Multi-agent does NOT dominate on most categories — decomposition helps when subtasks separate cleanly (diagnosis + treatment) and hurts when coordination overhead exceeds specialization gain (report generation)",
+        "Single LLMs are unsafe for medicine",
+        "Rule-based systems beat both everywhere"
+      ],
+      "correct": 1,
+      "explanation": "If this lesson generalizes, many proposed multi-agent systems are over-engineered. The benchmark's role: force a credible single-LLM baseline before paying the coordination tax."
+    },
+    {
+      "stage": "post",
+      "question": "What does the SWE-bench Verified vs Pro gap (~70%+ vs ~23% raw) signal?",
+      "options": [
+        "Pro's grader is broken",
+        "Contamination — Verified leaked into training corpora by mid-2025, so passing it is no longer evidence of capability; Pro (1,865 problems, 41 repos, later cutoffs) is the gating reality check",
+        "Pro tasks are in different languages",
+        "Verified is harder than Pro"
+      ],
+      "correct": 1,
+      "explanation": "The same models that ace Verified score ~23-35% raw on Pro. Notably, agent-team scaffolding produces a ~30-40 point delta on Pro — one of 2026's strongest empirical arguments FOR multi-agent coordination."
+    },
+    {
+      "stage": "post",
+      "question": "What does MARBLE's milestone-KPI design add over pass/fail scoring?",
+      "options": [
+        "Faster benchmark runs",
+        "Partial-progress tracking — coordination differences show up in how far systems get, not just whether they finish; it also quantified the graph-topology research win and the ~3% gain from cognitive planning",
+        "Automatic prompt optimization",
+        "Multi-language support"
+      ],
+      "correct": 1,
+      "explanation": "Binary success hides where coordination breaks down. Milestones expose it — which is how MARBLE measured topology effects and the ~4-agent coordination tax apples-to-apples."
+    }
+  ]
+}

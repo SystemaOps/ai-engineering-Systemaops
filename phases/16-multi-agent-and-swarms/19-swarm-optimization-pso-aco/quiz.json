@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why are PSO and ACO a natural fit for the LLM era?",
+      "options": [
+        "They run natively on GPUs",
+        "Prompts are discrete strings you cannot backprop through — bio-inspired optimization is gradient-free, population-based, and cheap per evaluation, exactly the regime prompt and routing optimization live in",
+        "They were invented by LLM researchers",
+        "They eliminate the need for evals"
+      ],
+      "correct": 1,
+      "explanation": "Manual prompt tweaking doesn't scale and RL needs reward plumbing and rollouts. PSO handles continuous-ish search (prompt/parameter space); ACO handles path selection (which agent for which task type)."
+    },
+    {
+      "stage": "pre",
+      "question": "In LMPSO, what plays the role of a particle's velocity?",
+      "options": [
+        "A learning-rate float",
+        "A prompt describing how to modify the current output toward the personal/global best — the LLM generates the next candidate from it; \"inertia\" is a prompt like \"make small incremental changes\"",
+        "The token-generation speed",
+        "A gradient vector"
+      ],
+      "correct": 1,
+      "explanation": "PSO's update rule is reinterpreted in language space. It works when outputs are structured and fitness is automatic (test runs, arithmetic checks) with small populations — and fails when fitness needs human review per iteration."
+    },
+    {
+      "stage": "post",
+      "question": "What is Model Swarms' key insight, and its reported result?",
+      "options": [
+        "Bigger swarms always beat smaller ones",
+        "Expert LLMs are nearby on a shared parameter manifold (adapters, LoRA deltas), so PSO on that low-dimensional subspace is cheap — 13.3% average gain over 12 baselines on 9 datasets with just 200 instances",
+        "Swarms only work with identical models",
+        "Weight averaging beats all fine-tuning"
+      ],
+      "correct": 1,
+      "explanation": "PSO moves from the output layer to the model layer: each particle IS an expert's parameters, and the swarm moves them gradient-free toward the collective best."
+    },
+    {
+      "stage": "post",
+      "question": "Why does AMRO-S gate pheromone updates behind quality checks?",
+      "options": [
+        "To save database writes",
+        "Without the gate, fast-but-wrong agents accrue pheromone and the router locks in on bad routes — quality-gated asynchronous updates decouple inference from learning",
+        "Quality gates are an EU AI Act requirement",
+        "To make pheromones decay faster"
+      ],
+      "correct": 1,
+      "explanation": "ACO-style routing strengthens agent-task routes that produce good outputs (4.7x speedup, human-readable pheromone evidence). The gate is the integrity condition — the same evaluator-rigor theme from the evolutionary-coding lessons."
+    },
+    {
+      "stage": "post",
+      "question": "When is PSO/ACO the WRONG tool for an LLM problem?",
+      "options": [
+        "Whenever a GPU is available",
+        "When fitness requires human review per iteration (cost explodes), when outputs are unstructured and unevaluable, or when the search space has a trainable gradient path that RL/fine-tuning exploits better",
+        "When the population exceeds 5 particles",
+        "Never — they always apply"
+      ],
+      "correct": 1,
+      "explanation": "These are evaluator-bound methods: automatic, cheap fitness is the precondition. The lesson's framing throughout — population search amplifies whatever the evaluator measures, good or bad."
+    }
+  ]
+}

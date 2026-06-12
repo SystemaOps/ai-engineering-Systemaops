@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What are Swarm's two primitives?",
+      "options": [
+        "Graphs and edges",
+        "Routines (instructions + tools as a system prompt) and handoffs (a tool that returns another Agent) — the runtime switches active agent on the Agent return value",
+        "Queues and workers",
+        "Crews and tasks"
+      ],
+      "correct": 1,
+      "explanation": "OpenAI Swarm (October 2024) distilled orchestration to its minimum: no state machine, no branching DSL. The triage agent's prompt makes it call the right transfer function, and the LLM's tool-calling does the routing."
+    },
+    {
+      "stage": "pre",
+      "question": "Why did the handoff pattern spread so fast?",
+      "options": [
+        "OpenAI required it for API access",
+        "Tiny API surface (two concepts), it reuses production-grade tool calling the model already does, and there is no state-machine or graph DSL to learn — the prompts describe who hands off to whom",
+        "It is the only pattern that supports GPT models",
+        "It eliminates the need for system prompts"
+      ],
+      "correct": 1,
+      "explanation": "\"Agent = prompt + tools; handoff = function returning agent\" fits in a sentence, and Swarm's entire source is a few hundred lines — the cleanest conceptual reference even after the production successor shipped."
+    },
+    {
+      "stage": "post",
+      "question": "What is the cost of Swarm's statelessness?",
+      "options": [
+        "Higher latency per call",
+        "Memory, continuity, and long-running tasks are the caller's problem — nothing persists between runs, parallelism needs external orchestration, and non-deterministic handoff choices make exact replay hard",
+        "It cannot call more than three agents",
+        "It requires a GPU per agent"
+      ],
+      "correct": 1,
+      "explanation": "The framework keeps message history only within a run. These exact gaps are what the OpenAI Agents SDK (March 2025) addressed: built-in session management, guardrails, and tracing — while keeping the handoff primitive."
+    },
+    {
+      "stage": "post",
+      "question": "Which task shapes fit the handoff pattern best?",
+      "options": [
+        "Multi-hour research syntheses",
+        "Triage (front-line agent routes to specialists), skill-based handoffs, and short bounded conversations like support flows",
+        "Massively parallel scraping",
+        "Anything requiring full audit replay"
+      ],
+      "correct": 1,
+      "explanation": "Routing-shaped problems are the sweet spot. Long shared-memory sessions, parallel execution, and audit/replay are where the stateless single-active-agent design struggles."
+    },
+    {
+      "stage": "post",
+      "question": "In Swarm, where does the \"state machine\" actually live?",
+      "options": [
+        "In a YAML config file",
+        "Implicitly in the agents' system prompts — each prompt describes when to hand off and to whom; the orchestrator is whichever agent currently holds the conversation",
+        "In a central database",
+        "In the LLM provider's servers"
+      ],
+      "correct": 1,
+      "explanation": "There is no explicit graph: \"you are a triage agent; if the user asks about refunds, hand off to the refund agent\" IS the routing table. That inversion — prompts as topology — is the pattern's defining idea."
+    }
+  ]
+}

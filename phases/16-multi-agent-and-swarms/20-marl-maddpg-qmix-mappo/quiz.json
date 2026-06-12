@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What problem does Centralized Training, Decentralized Execution (CTDE) solve?",
+      "options": [
+        "GPU memory fragmentation",
+        "Independent per-agent RL is non-stationary (everyone else is learning too), and fully centralized control doesn't scale or match deployment — CTDE trains with global information but deploys local-only policies",
+        "Slow network synchronization",
+        "Reward sparsity in single-agent RL"
+      ],
+      "correct": 1,
+      "explanation": "The three-way trade is the heart of MARL: independent learning sees a moving target, centralized control violates execution constraints, CTDE gets both — critics see everything at training time, actors see only their own observations at test time."
+    },
+    {
+      "stage": "pre",
+      "question": "In MADDPG, what do the actor and critic each see?",
+      "options": [
+        "Both see everything at all times",
+        "The actor maps only its own observation to action; the critic sees ALL agents' observations and actions during training to reduce variance — and is discarded at deployment",
+        "The critic sees nothing; the actor sees everything",
+        "Both see only local observations"
+      ],
+      "correct": 1,
+      "explanation": "That asymmetry IS CTDE. The known failure mode: critic input grows with N agents, so MADDPG doesn't scale past ~10 agents without approximation."
+    },
+    {
+      "stage": "post",
+      "question": "What does QMIX's monotonic mixing constraint buy?",
+      "options": [
+        "Faster wall-clock training",
+        "With df/dQ_i ≥ 0, argmax of the joint Q distributes — each agent independently maximizing its own Q maximizes the team Q, which is exactly the decentralized-execution property",
+        "Compatibility with continuous actions",
+        "Provable convergence to global optimum"
+      ],
+      "correct": 1,
+      "explanation": "Value decomposition with monotonic mixing is why QMIX dominated SMAC's cooperative micro-management. The cost: non-monotone reward structures (one agent sacrificing for the team) break the constraint — hence QTRAN/QPLEX extensions."
+    },
+    {
+      "stage": "post",
+      "question": "Why did MAPPO become the default 2026 cooperative-MARL baseline?",
+      "options": [
+        "It was the first MARL algorithm ever",
+        "PPO with a centralized value function matched or beat off-policy MARL across particle-world, SMAC, Football, and Hanabi with minimal tuning and stable, reproducible training — the community had underrated on-policy MARL",
+        "It requires no value function at all",
+        "It is the only one with a public implementation"
+      ],
+      "correct": 1,
+      "explanation": "Yu et al. 2022's \"surprisingly effective\" result reset the field's defaults: any new cooperative-MARL method now has to beat MAPPO, not just MADDPG/QMIX."
+    },
+    {
+      "stage": "post",
+      "question": "Why does MARL still matter for LLM-agent systems in 2026?",
+      "options": [
+        "LLMs are trained with QMIX internally",
+        "Teams increasingly train coordination policies — when to defer, when to act, which peer to call — and CTDE, value decomposition, and centralized critics are the pattern vocabulary for doing that with decentralized execution",
+        "MARL replaces prompting entirely",
+        "It doesn't — MARL is purely historical"
+      ],
+      "correct": 1,
+      "explanation": "The MARL literature predates the LLM wave but answers its coordination-training questions. Reading those papers without the CTDE vocabulary is painful; with it, the design space is three patterns."
+    }
+  ]
+}

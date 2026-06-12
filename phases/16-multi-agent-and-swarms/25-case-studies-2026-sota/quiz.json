@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What slice of multi-agent engineering does each of the three canonical 2026 case studies illustrate?",
+      "options": [
+        "Three vendors selling the same architecture",
+        "Anthropic Research: supervisor-worker at production scale; MetaGPT/ChatDev: SOP-encoded role decomposition; OpenClaw/Moltbook: population-scale emergence with millions of agents",
+        "Three sizes of the same chatbot",
+        "Cloud, on-prem, and edge deployments"
+      ],
+      "correct": 1,
+      "explanation": "Reading them as a set beats reading them alone: each covers a different region of the design space, and together they pin the common patterns the capstone distills."
+    },
+    {
+      "stage": "pre",
+      "question": "What are the four design lessons codified from Anthropic's Research system?",
+      "options": [
+        "Bigger models, more tokens, more agents, more rounds",
+        "Scale effort to query complexity, broad-then-narrow search, rainbow deployments for stateful agents, and verification is not optional — the system hallucinated without explicit verifier roles",
+        "Cache everything, retry everything, log everything, bill everything",
+        "One model, one prompt, one tool, one answer"
+      ],
+      "correct": 1,
+      "explanation": "Backed by the published numbers: +90.2% over single-agent Opus 4, 80% of BrowseComp variance from token usage alone, at 15x tokens per query — multi-agent pays when the task justifies it."
+    },
+    {
+      "stage": "post",
+      "question": "How does MacNet scale ChatDev-style role decomposition past 1,000 agents?",
+      "options": [
+        "By using a single giant group chat",
+        "DAGs: each node is a role specialization, edges encode handoff contracts — scale is possible because routing is explicit and offline-computable, not negotiated in chat",
+        "By giving every agent the same prompt",
+        "By removing all verification"
+      ],
+      "correct": 1,
+      "explanation": "The structural lesson generalizes: structure beats size (a tight 5-role SOP team beats 50 unstructured agents), written handoff schemas beat free-form chat, and when the flow is knowable you should encode it."
+    },
+    {
+      "stage": "post",
+      "question": "What did the Moltbook episode demonstrate about population-scale agent substrates?",
+      "options": [
+        "Nothing notable happened",
+        "~2.3M agent accounts within days, emergent economic activity, prompt-injection propagating through thousands of agent-to-agent interactions in hours, and state-level regulation within weeks (China's OpenClaw restriction)",
+        "Population scale eliminates security risks",
+        "Agent social networks are commercially unviable"
+      ],
+      "correct": 1,
+      "explanation": "Millions of agents on a shared substrate produced both emergent markets and viral attack surfaces — and drew a Meta acquisition plus government restriction in the same month. Scale changes the threat model qualitatively."
+    },
+    {
+      "stage": "post",
+      "question": "What is the April 2026 framework landscape in one pass?",
+      "options": [
+        "One framework won; all others died",
+        "LangGraph and CrewAI lead production; AG2 continues community AutoGen while Microsoft's merged into Agent Framework; OpenAI Agents SDK succeeds Swarm; Google ADK is the A2A-native entrant — and every major framework ships MCP support",
+        "All frameworks were deprecated in favor of raw API calls",
+        "Only proprietary frameworks remain"
+      ],
+      "correct": 1,
+      "explanation": "Protocol convergence is the quiet headline: MCP everywhere, A2A in most. Framework choice now reduces to the four-primitive axes from earlier in the phase, not protocol lock-in."
+    }
+  ]
+}

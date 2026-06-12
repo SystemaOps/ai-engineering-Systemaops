@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why does a single agent fail at broad research tasks?",
+      "options": [
+        "Single agents cannot use search tools",
+        "It reads sources sequentially, fills half its context with raw text, forgets early sources by the last one, and cannot parallelize",
+        "Research requires at least three GPUs",
+        "Single agents are rate-limited harder"
+      ],
+      "correct": 1,
+      "explanation": "The supervisor pattern fixes this: a lead plans and synthesizes while workers each get a fresh 200k window for one narrow sub-question, running in parallel. The lead never sees the raw papers — only worker summaries."
+    },
+    {
+      "stage": "pre",
+      "question": "What did Anthropic's measurements reveal about WHY multi-agent research wins?",
+      "options": [
+        "Larger models are always better",
+        "+90.2% over single-agent Opus 4 on research evals — and 80% of BrowseComp variance is explained by token usage alone, so fresh context per subagent is the main mechanism",
+        "It wins only because of better prompts",
+        "Parallelism alone explains everything"
+      ],
+      "correct": 1,
+      "explanation": "The headline mechanism isn't cleverness — it's context budget. Each Sonnet worker gets its own window instead of sharing the lead's. Specialized prompts and parallel wall-clock are the secondary mechanisms."
+    },
+    {
+      "stage": "post",
+      "question": "What does \"scale effort to query complexity\" mean operationally?",
+      "options": [
+        "Always use the maximum number of agents",
+        "The LEAD estimates: simple queries get one agent and 3-10 tool calls; complex ones get 10+ agents — and the caller shouldn't have to decide",
+        "Use bigger models for longer queries",
+        "Charge users by query length"
+      ],
+      "correct": 1,
+      "explanation": "Multi-agent costs ~15x the tokens of single-agent, so spawning workers for a simple lookup wastes money. The lead's first job is estimating whether decomposition pays — broad sub-questions first, deeper workers only where warranted."
+    },
+    {
+      "stage": "post",
+      "question": "Why does Anthropic use rainbow deployments for its Research system?",
+      "options": [
+        "For visual branding of release stages",
+        "Agents are long-running and stateful, so blue-green cutover would kill in-flight runs — rainbow gradually rolls in new versions while old ones drain",
+        "To A/B test seven model versions at once",
+        "Rainbow is cheaper than blue-green"
+      ],
+      "correct": 1,
+      "explanation": "Traditional deployment assumes stateless request handlers. A multi-hour research run can't be cut over mid-flight, so version rollout must let existing trajectories complete on their original version."
+    },
+    {
+      "stage": "post",
+      "question": "What is the worst synthesis failure mode when two workers return contradictory facts?",
+      "options": [
+        "Adding an extra round to re-ask",
+        "Silently picking one side — the user never learns a disagreement existed; the lead must re-ask or surface the conflict explicitly",
+        "Reporting both answers",
+        "Asking a third worker to vote"
+      ],
+      "correct": 1,
+      "explanation": "Re-asking costs a round; noting the disagreement costs honesty points; silent resolution destroys trust invisibly. The lesson also flags lead-hallucinated plans and worker over-exploration as the other production failure modes."
+    }
+  ]
+}

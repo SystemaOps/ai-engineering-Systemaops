@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why do raw LLMs close bargains at such low rates (~27%), and why doesn't scale fix it?",
+      "options": [
+        "They lack negotiation vocabulary",
+        "They conflate deciding the offer with narrating the offer — breaking bargaining rules, ignoring the ZOPA, anchoring poorly; bigger models just produce more-plausible language with similar strategic error",
+        "Providers block negotiation use cases",
+        "Context windows are too small for offers"
+      ],
+      "correct": 1,
+      "explanation": "\"Measuring Bargaining Abilities\" found GPT-4 isn't structurally better at bargaining than GPT-3.5 — better at the language of bargaining only. Buyer-side is measurably harder than seller-side."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the OG-Narrator decomposition, and what did it achieve?",
+      "options": [
+        "Two LLMs negotiating against each other",
+        "A deterministic offer generator computes numeric moves (Rubinstein/Zeuthen/tit-for-tat) while the LLM only narrates — deal rate jumped from 26.67% to 88.88%",
+        "An audio narrator for accessibility",
+        "A fine-tuned negotiation model"
+      ],
+      "correct": 1,
+      "explanation": "Decoupling mechanism from communication: prices stay in the bargaining zone, anchors are strategic not emotional, and the LLM does what it's good at — writing. The classical multi-agent lesson, rediscovered."
+    },
+    {
+      "stage": "post",
+      "question": "How does Contract Net Protocol work, and what is its modern relevance?",
+      "options": [
+        "It is a blockchain smart-contract standard",
+        "Manager broadcasts a call-for-proposals, bidders propose, manager accepts one and rejects the rest — Smith's 1980 mechanism, FIPA-codified, now the template for LLM-powered task markets with the LLM in the narration slot",
+        "A legal e-signature protocol",
+        "A network handshake for agents"
+      ],
+      "correct": 1,
+      "explanation": "cfp → propose → accept/reject-proposal is the reference task-market mechanism. Plug a deterministic auction core under LLM narration and you get the modern version of a 45-year-old design."
+    },
+    {
+      "stage": "post",
+      "question": "What did the ~180k-negotiation competition find about winning strategies?",
+      "options": [
+        "The largest model always won",
+        "Chain-of-thought-CONCEALING agents won — printing \"my reservation price is $70\" into a visible scratchpad hands the opponent your strategy; winners compute privately and emit only the offer plus minimal narration",
+        "Random offers beat all strategies",
+        "Politeness was the strongest predictor"
+      ],
+      "correct": 1,
+      "explanation": "Visible reasoning is exploitable reasoning. The competition result formalizes an operational rule: separate the private strategy channel from the public message channel."
+    },
+    {
+      "stage": "post",
+      "question": "What do NegotiationArena's findings imply about deploying cooperative agents?",
+      "options": [
+        "Cooperative agents always win on fairness metrics",
+        "Persona manipulation moves payoffs ~20%, fair agents get exploited by adversarial ones without explicit counter-posturing, and symmetric pairs still reach inequitable outcomes ~40% of the time",
+        "Negotiation between LLMs is always fair",
+        "Adversarial agents are banned by providers"
+      ],
+      "correct": 1,
+      "explanation": "LLMs negotiate too much like humans — including the exploitable parts. A deployed negotiating agent needs defensive structure, not just good intentions; Bhattacharya et al. even measured personality differences (Llama-3 most effective, Claude-3 aggressive, GPT-4 fairest)."
+    }
+  ]
+}

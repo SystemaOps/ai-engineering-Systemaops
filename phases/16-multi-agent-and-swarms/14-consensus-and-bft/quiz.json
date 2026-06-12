@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Which classical BFT assumptions do LLM agents violate?",
+      "options": [
+        "None — PBFT transfers directly",
+        "Independent faults (same-model agents share failure modes), honest-node correctness (honest LLMs still hallucinate), and external ground truth (on ambiguous questions, consensus IS the answer)",
+        "Only the network-timing assumptions",
+        "The requirement that nodes use cryptographic signatures"
+      ],
+      "correct": 1,
+      "explanation": "PBFT (Castro & Liskov 1999) tolerates f < n/3 arbitrary nodes — but it can't handle three honest agents sharing a hallucination because they share training data. Classical BFT is not wrong; it's incomplete for stochastic, correlated voters."
+    },
+    {
+      "stage": "pre",
+      "question": "What are the three LLM-specific attacks on consensus this lesson injects?",
+      "options": [
+        "DDoS, phishing, ransomware",
+        "Byzantine lie (deliberate wrong answer), sycophantic conformity (aligning with whoever spoke last), and correlated-error monoculture (same-base-model agents hallucinating identically)",
+        "Jailbreak, injection, exfiltration",
+        "Overfitting, underfitting, drift"
+      ],
+      "correct": 1,
+      "explanation": "Classical BFT handles the lie if f < n/3, but conformity passes every signature check, and a monoculture majority is \"honestly\" wrong — false majorities that no quorum machinery detects."
+    },
+    {
+      "stage": "post",
+      "question": "How does CP-WBFT counter sycophantic conformity?",
+      "options": [
+        "It bans agents from reading each other's answers",
+        "Votes are weighted by a confidence probe — conforming agents tend to report low confidence on positions they merely adopted, so their votes count less",
+        "It doubles the number of rounds",
+        "It removes the lowest-scoring agent each round"
+      ],
+      "correct": 1,
+      "explanation": "Confidence-Probed Weighted BFT scales each vote by self-reported (or calibration-model) confidence, reporting +85.71% BFT improvement on complete graphs. Conformity correlates with weak conviction, which the probe exposes."
+    },
+    {
+      "stage": "post",
+      "question": "Why does DecentLLMs use the geometric median for aggregation?",
+      "options": [
+        "It is the fastest statistic to compute",
+        "The geometric median is robust to outliers and pulls toward the dense cluster rather than a model-biased average — countering both Byzantine lies and correlated errors, leaderlessly, with f < n/2 tolerance",
+        "It always equals the majority vote",
+        "It requires no evaluator agents"
+      ],
+      "correct": 1,
+      "explanation": "Workers propose in parallel, evaluators score, and the geometric median of scored positions resists both a deliberate outlier and a biased cluster's pull — without any leader to compromise."
+    },
+    {
+      "stage": "post",
+      "question": "What is the uncomfortable finding of \"Can AI Agents Agree?\" (2026)?",
+      "options": [
+        "Agents agree too readily on everything",
+        "Even adversary-free scalar agreement fails >30% on many benchmarks, and a single deceptive persona can pull a Mixture-of-Agents consensus 40+ points off the honest baseline — BFT aligns outputs but can't certify they're right",
+        "Consensus is solved by using one big model",
+        "Disagreement only occurs in small models"
+      ],
+      "correct": 1,
+      "explanation": "Heterogeneous ensembles disagree more (good: uncorrelated errors) but converge slower. The takeaway: consensus machinery is necessary but not sufficient — combine with verification roles, diversity, and evaluator agents."
+    }
+  ]
+}

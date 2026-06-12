@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why does multi-agent debate break the saturation that self-consistency hits?",
+      "options": [
+        "Debate uses bigger models",
+        "Self-consistency samples are i.i.d. from one model so errors correlate; debating agents read and revise against each other's reasoning, decorrelating samples — converging where voting was confidently wrong",
+        "Debate runs more samples per second",
+        "Self-consistency is incompatible with reasoning tasks"
+      ],
+      "correct": 1,
+      "explanation": "Doubling i.i.d. samples stops helping because the model averages into its own correlated errors. Debate makes round r+1's context richer than round r's — agents must justify or update when exposed to disagreement."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the Du et al. (2023) debate algorithm?",
+      "options": [
+        "Two models argue until one concedes",
+        "N agents answer independently, then for R rounds each sees the others' previous answers and updates; majority vote at the end",
+        "A judge model scores all candidate answers",
+        "One agent role-plays both sides"
+      ],
+      "correct": 1,
+      "explanation": "The ICML 2024 paper's loop beat chain-of-thought and Self-Reflection on MMLU, GSM8K, MATH, biographies, and factuality tasks — Minsky's society-of-mind premise turned into a concrete, measurable procedure."
+    },
+    {
+      "stage": "post",
+      "question": "What did the ablations show about agent count vs round count?",
+      "options": [
+        "Only agent count matters",
+        "Agent count alone helps but plateaus; rounds alone (self-reflection) barely help; the big jumps need BOTH — multi-round exchange between multiple agents drives the gain",
+        "Only round count matters",
+        "Neither matters beyond 2"
+      ],
+      "correct": 1,
+      "explanation": "The two knobs contribute independently and compound. One-shot voting of N agents is weaker than the same N agents exchanging reasoning across rounds — the exchange is the mechanism, not the headcount."
+    },
+    {
+      "stage": "post",
+      "question": "What is the trade-off of heterogeneous debate (different base models per agent)?",
+      "options": [
+        "It is strictly better in all cases",
+        "Different model families decorrelate errors and reduce monoculture collapse — but a weak model in the debate can drag the consensus toward its wrong answer",
+        "It is impossible to implement across providers",
+        "It doubles the round count automatically"
+      ],
+      "correct": 1,
+      "explanation": "Llama + Claude + GPT debating avoids shared family errors, but \"Should we be going MAD?\" documents the downside: consensus mechanisms give weak participants real influence over the outcome."
+    },
+    {
+      "stage": "post",
+      "question": "What is a sycophancy cascade and its mitigation?",
+      "options": [
+        "Agents complimenting users excessively; ban praise words",
+        "All agents defer to whichever sounds most confident, collapsing the debate to the loudest voice — mitigated by prompting adversarial roles that must argue the counter-position",
+        "Agents agreeing with the most recent speaker; randomize order",
+        "A billing failure when too many agents run"
+      ],
+      "correct": 1,
+      "explanation": "Confidence-following defeats the purpose of debate. The other failure modes: topic drift over rounds (re-inject the question each round) and compute blowup — N×R growing-context calls can cost 10x a single CoT pass."
+    }
+  ]
+}

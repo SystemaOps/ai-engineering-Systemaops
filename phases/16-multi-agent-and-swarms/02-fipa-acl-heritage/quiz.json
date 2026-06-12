@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why study a faded 2000-era standard like FIPA-ACL in 2026?",
+      "options": [
+        "It is making a commercial comeback",
+        "The LLM agent-protocol wave is quietly reimplementing its ideas — knowing the heritage shows which \"innovations\" are reinventions and which old failure modes new specs will rediscover",
+        "It is required for regulatory compliance",
+        "MCP is a literal fork of FIPA-ACL"
+      ],
+      "correct": 1,
+      "explanation": "MCP's tools/call, A2A's task lifecycle, and shared context stores are softer, JSON-native rehashes of FIPA decisions — with JSON contracts standing in for performatives and natural language for ontologies."
+    },
+    {
+      "stage": "pre",
+      "question": "What insight from speech-act theory underlies agent communication languages?",
+      "options": [
+        "Speech must be converted to text before parsing",
+        "Some utterances don't describe the world — they change it (\"I promise\", \"I request\"); a message is therefore a performative (the action) plus content (what it's about)",
+        "All communication is ambiguous",
+        "Agents should communicate in formal logic only"
+      ],
+      "correct": 1,
+      "explanation": "Austin's performative utterances, formalized by Searle into five categories, became KQML's operational model (1993) and FIPA-ACL's twenty standardized performatives (2000) — inform, request, propose, cfp, subscribe, failure, and so on."
+    },
+    {
+      "stage": "post",
+      "question": "What do the non-content fields of a FIPA-ACL message (conversation-id, reply-with, protocol, ontology) represent for modern protocol designers?",
+      "options": [
+        "Obsolete bureaucracy with no modern equivalent",
+        "Exactly the envelope you reinvent every time you bolt threading, retries, and shared vocabulary onto a JSON protocol",
+        "Encryption parameters",
+        "Billing metadata"
+      ],
+      "correct": 1,
+      "explanation": "Seven envelope fields carry protocol concerns; one carries payload. Modern specs re-add these one at a time — correlation ids, reply threading, interaction protocols — rediscovering the same decision tree."
+    },
+    {
+      "stage": "post",
+      "question": "Why did FIPA-ACL fade despite IEEE ratification and reference platforms like JADE?",
+      "options": [
+        "A patent dispute killed it",
+        "Ontology overhead — parsing content required shared ontologies negotiated through years-long standards processes, while the web just used HTTP + JSON; its formal semantics also went unused in practice",
+        "Java became illegal in agent systems",
+        "It had no message format"
+      ],
+      "correct": 1,
+      "explanation": "Agreeing on ontologies couldn't keep pace with the web. LLMs dissolve that specific blocker — natural language is the ontology — which is precisely why the FIPA ideas are returning in softer form."
+    },
+    {
+      "stage": "post",
+      "question": "What is the relationship between FIPA's contract-net protocol and modern multi-agent patterns?",
+      "options": [
+        "Contract-net was never implemented",
+        "Call-for-proposals → propose → accept/reject is the same shape as modern task-auction and delegation patterns — an interaction protocol the 2000s standardized that LLM swarms now re-derive",
+        "Contract-net is a blockchain protocol",
+        "It applies only to physical robots"
+      ],
+      "correct": 1,
+      "explanation": "FIPA shipped interaction protocols (contract-net, subscribe-notify, request-when) as standard library items in JADE. The cfp/propose/accept-proposal performatives map directly onto how 2026 orchestrators auction work to specialist agents."
+    }
+  ]
+}

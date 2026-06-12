@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why doesn't adding more agents fix generic multi-agent output?",
+      "options": [
+        "More agents exceed rate limits",
+        "Three coders in a group chat write three flavors of the same mediocre code — the fix is DIFFERENT agents with distinct roles, tools, and grounded correction, not parallel guessing",
+        "Agents refuse to work in groups larger than three",
+        "More agents always means more hallucination"
+      ],
+      "correct": 1,
+      "explanation": "Specialization creates internal disagreement with grounded correction: give the critic tools the planner lacks, give the verifier an objective test suite. Homogeneous agents just vote on shared blind spots."
+    },
+    {
+      "stage": "pre",
+      "question": "What distinguishes the critic role from the verifier role?",
+      "options": [
+        "They are synonyms",
+        "The critic is subjective and LLM-based (reviews quality, can be fooled by plausible prose); the verifier is deterministic and code-based (test runner, type checker — pass/fail with evidence)",
+        "The critic runs first, so it is more important",
+        "Verifiers are only for security audits"
+      ],
+      "correct": 1,
+      "explanation": "Use both: the critic catches taste issues a verifier can't articulate; the verifier catches runtime bugs the critic can't see. Collapsing them into one LLM role is the classic anti-pattern."
+    },
+    {
+      "stage": "post",
+      "question": "What does MetaGPT's Code = SOP(Team) formulation mean?",
+      "options": [
+        "Code must follow company style guides",
+        "Software-engineering SOPs are encoded as role prompts (PM → Architect → Project Manager → Engineer → QA) with strict input/output schemas, turning a team of LLMs into a predictable pipeline",
+        "Teams should be sized by lines of code",
+        "Standard operating procedures replace all code"
+      ],
+      "correct": 1,
+      "explanation": "Each role prompt says what the role is and what it must produce. Determinism comes from the SOP structure, not from the models — the same insight ChatDev applies through its chat chain."
+    },
+    {
+      "stage": "post",
+      "question": "What is ChatDev's \"communicative dehallucination\"?",
+      "options": [
+        "A filter that deletes hallucinated tokens",
+        "When an executor needs a detail not in the plan, it explicitly asks the relevant role by name instead of plausibly inventing it",
+        "Running the same prompt twice and diffing",
+        "A fine-tuning method against hallucination"
+      ],
+      "correct": 1,
+      "explanation": "The role prompt includes \"when you need information you were not given, ask before producing output\" — directly preventing the classic failure where an LLM confidently fabricates the missing detail."
+    },
+    {
+      "stage": "post",
+      "question": "What evidence makes the verifier the load-bearing role?",
+      "options": [
+        "Verifiers are the cheapest agents to run",
+        "MAST traced 1,642 multi-agent failures with 21.3% being verification gaps and most others tracing to silent or missing checks; PwC measured 10% → 70% accuracy (7x) from adding a structured validation loop",
+        "Verifiers write the best documentation",
+        "No evidence — it is a design preference"
+      ],
+      "correct": 1,
+      "explanation": "Every multi-agent failure ultimately traces to missing or broken verification. The minimal fix for any system: at least one role whose pass/fail is decided by code, not by an LLM saying \"looks good to me.\""
+    }
+  ]
+}

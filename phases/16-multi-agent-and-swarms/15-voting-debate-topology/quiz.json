@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What is self-consistency's structural limit as the single-model baseline?",
+      "options": [
+        "It cannot exceed 10 samples",
+        "All N samples come from one base model, so errors are correlated by construction — a systematic bias is shared by every sample and survives the vote",
+        "It only works at temperature 0",
+        "It requires labeled training data"
+      ],
+      "correct": 1,
+      "explanation": "Wang et al. 2022 got big GSM8K gains with N=40 samples, but the i.i.d.-from-one-model design means majority voting can converge confidently on the model's own bias. Heterogeneous multi-agent voting exists to break that correlation."
+    },
+    {
+      "stage": "pre",
+      "question": "Which four structural choices determine whether debate helps or hurts?",
+      "options": [
+        "Model size, GPU count, batch size, learning rate",
+        "Topology (who talks to whom), round count, heterogeneity (different base models), and whether an adversarial voice is present",
+        "Token limit, temperature, top-p, seed",
+        "Language, framework, cloud, region"
+      ],
+      "correct": 1,
+      "explanation": "Teams that bolt \"run 5 agents and vote\" onto a task often regress versus a single agent — and the failures track these axes, not randomness. The MAD survey confirms: debate variants structurally similar to self-consistency underperform it at equal budget."
+    },
+    {
+      "stage": "post",
+      "question": "Per MultiAgentBench, which topology wins on which task type?",
+      "options": [
+        "Star wins everything",
+        "Graph wins research (any-to-any critique), star wins fast factual answers (hub consolidates), chain wins stepwise pipelines",
+        "Tree wins everything except coding",
+        "Topology has no measurable effect"
+      ],
+      "correct": 1,
+      "explanation": "The ACL 2025 benchmark (MARBLE) measured star/chain/tree/graph across research, coding, and planning. Match the information-flow shape to the task shape — there is no universal winner."
+    },
+    {
+      "stage": "post",
+      "question": "What is the \"coordination tax,\" and why does it bite past ~4 agents in graph topology?",
+      "options": [
+        "A licensing fee per agent",
+        "Wall-clock and token cost grow faster than quality — each agent's context fills with peers' outputs, so the marginal value of agent N+1 drops once everyone sees everyone",
+        "Network sockets cap at 4 connections",
+        "A regulatory limit on agent count"
+      ],
+      "correct": 1,
+      "explanation": "The 4-agent ceiling is empirical, not fundamental — it reflects 2026 context capacity. Fully-connected debate pays quadratic-ish context costs for diminishing critique value."
+    },
+    {
+      "stage": "post",
+      "question": "What two emergent behaviors did AgentVerse document, and why is one double-edged?",
+      "options": [
+        "Looping and crashing — both bad",
+        "Volunteer behaviors and conformity behaviors — conformity helps find consensus but is also the seed of groupthink",
+        "Lying and stealing — both attacks",
+        "Caching and batching — both optimizations"
+      ],
+      "correct": 1,
+      "explanation": "Conformity is a feature when it drives convergence and a risk when it suppresses dissent — the groupthink failure mode the later failure-modes lesson covers. Adversarial structure (one agent must argue against) is the standard counterweight."
+    }
+  ]
+}

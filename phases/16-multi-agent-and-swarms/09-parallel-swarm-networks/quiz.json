@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What bottleneck do swarm architectures eliminate, and at what cost?",
+      "options": [
+        "GPU memory limits, at the cost of accuracy",
+        "The central supervisor (every decision funnels through one agent; one slow plan step stalls everything) — traded for loss of determinism and traceability",
+        "Network latency, at the cost of security",
+        "Token costs, at the cost of speed"
+      ],
+      "correct": 1,
+      "explanation": "Workers pull from a shared queue instead of waiting for dispatch; coordination is baked into event-bus semantics. The system scales until the queue does — and debugging asynchronous, log-scattered runs becomes the new expensive thing."
+    },
+    {
+      "stage": "pre",
+      "question": "Which task profile fits a swarm, and which does not?",
+      "options": [
+        "Fits: anything with multiple agents; doesn't fit: single-agent tasks",
+        "Fits: many independent tasks with variable durations where throughput matters; doesn't fit: ordered workflows and global-plan tasks needing one coherent result",
+        "Fits: small tasks only; doesn't fit: large tasks",
+        "Swarms fit every workload better than supervisors"
+      ],
+      "correct": 1,
+      "explanation": "Scraping/transforming/classifying with automatic load balancing is the sweet spot. Step-3-needs-step-2 workflows risk firing out of order, and a swarm of researchers produces independent facts, not a coherent report."
+    },
+    {
+      "stage": "post",
+      "question": "What is Matrix's (arXiv:2511.21686) core architectural move?",
+      "options": [
+        "A matrix-multiplication accelerator for agents",
+        "Both control flow AND data flow become serialized messages on distributed queues — no central coordinator; fault tolerance comes from message durability, scalability from the broker",
+        "A single supervisor with matrix-organized workers",
+        "Embedding agents inside a database"
+      ],
+      "correct": 1,
+      "explanation": "Coordination becomes \"which topic does this agent subscribe to?\" rather than \"who does the supervisor pick next?\" — a pub/sub event mesh where the orchestrator bottleneck simply doesn't exist."
+    },
+    {
+      "stage": "post",
+      "question": "What is queue starvation in a swarm, and how is it mitigated?",
+      "options": [
+        "Workers running out of RAM; add more memory",
+        "Workers all pull the fastest tasks so long tasks wait until last — mitigated by priority aging, worker specialization for long tasks, and back-pressure on fast-task inflow",
+        "The queue server crashing; add replicas",
+        "Agents refusing tasks; raise their incentives"
+      ],
+      "correct": 1,
+      "explanation": "Classic queue pathology, inherited intact by agent swarms. Aging raises priority with wait time; dedicating some workers to long tasks and limiting fast-task entry keep the tail from starving."
+    },
+    {
+      "stage": "post",
+      "question": "How does content-based routing extend the basic swarm?",
+      "options": [
+        "It compresses message contents",
+        "One queue per message type with specialist workers subscribing only to their type — the basis of message-bus architectures that scale to thousands of agents",
+        "It routes based on message length",
+        "It encrypts queues per worker"
+      ],
+      "correct": 1,
+      "explanation": "The generic shared queue becomes a typed topic mesh. Specialists pull only what they can handle, which is how swarms grow from a handful of workers into large-scale agent meshes."
+    }
+  ]
+}

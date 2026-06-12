@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What production requirements break the prototype in-memory event loop?",
+      "options": [
+        "Unicode handling and time zones",
+        "Hours-long runs with human-input waits, worker crashes losing state, 10x peak load needing horizontal scale, and exactly-once semantics for per-run billing",
+        "Slow DNS resolution",
+        "Too many print statements"
+      ],
+      "correct": 1,
+      "explanation": "The four 2026 canonical answers: workflow engines with checkpoints (Temporal, LangGraph runtime), message queue + state store, actor-model per-agent queues (MegaAgent), or hand-rolled FastAPI + Postgres."
+    },
+    {
+      "stage": "pre",
+      "question": "What three properties must hold for durable execution to work?",
+      "options": [
+        "HTTPS, OAuth, rate limits",
+        "Serializable state (no live connections in closures), deterministic resume, and idempotent side effects (or deduplication keys)",
+        "Docker, Kubernetes, Helm",
+        "Logging, metrics, tracing"
+      ],
+      "correct": 1,
+      "explanation": "Crash → lease timeout → another worker resumes from the last checkpoint with no duplicate side effects. LangGraph checkpoints per super-step, Temporal per activity, Restate via event-sourced journals — same pattern, three implementations."
+    },
+    {
+      "stage": "post",
+      "question": "How does LangGraph's runtime handle an agent waiting days for human input?",
+      "options": [
+        "The worker thread blocks until input arrives",
+        "interrupt() persists the state and releases the worker — when input arrives, ANY worker can resume the thread_id from its checkpoint",
+        "The run is cancelled after one hour",
+        "A dedicated VM stays allocated per waiting agent"
+      ],
+      "correct": 1,
+      "explanation": "Sleeping agents cost nothing: state lives in the checkpoints table (Postgres by default), keyed by thread_id. This is the reference production design as of April 2026."
+    },
+    {
+      "stage": "post",
+      "question": "Why does async/fiber concurrency beat thread-per-job for LLM workloads?",
+      "options": [
+        "Threads cannot make HTTP requests",
+        "Threads sit idle ~99% of the time waiting for tokens to stream — fibers cooperatively yield on I/O, so one process multiplexes thousands of streaming calls",
+        "Async code is easier to write",
+        "Fibers run on the GPU"
+      ],
+      "correct": 1,
+      "explanation": "LLM calls are extreme I/O-bound waits. MegaAgent's per-agent producer-consumer queues (Idle/Processing/Response states, two-layer chat coordination) scaled to thousands of concurrent agents on the same insight."
+    },
+    {
+      "stage": "post",
+      "question": "What is Bedi's counterpoint to elaborate scaling architectures?",
+      "options": [
+        "Always start with Kubernetes",
+        "FastAPI + Postgres + nothing else until load proves otherwise — simple architectures go further than expected, and premature infrastructure is its own failure mode",
+        "Never use a relational database for agents",
+        "Buy a workflow engine on day one"
+      ],
+      "correct": 1,
+      "explanation": "The pragmatic \"start simple\" rule closes the lesson: the durable-execution patterns matter, but adopting them before load demands it trades real simplicity for speculative scale."
+    }
+  ]
+}
