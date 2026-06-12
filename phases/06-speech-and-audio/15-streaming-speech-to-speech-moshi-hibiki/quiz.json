@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why can't a pipelined voice agent ever match Moshi's latency?",
+      "options": [
+        "Pipelines can't run on GPUs",
+        "The pipeline SHAPE caps you: VAD, STT, LLM, and TTS each have their own minimum latency, flooring at ~300-500ms — Moshi removes the pipeline entirely (theoretical 160ms = 80ms Mimi frame + 80ms acoustic delay, ~200ms practical on one L4)",
+        "Pipeline components can't stream",
+        "Moshi uses a faster programming language"
+      ],
+      "correct": 1,
+      "explanation": "You can tune and parallelize a cascade, but a single model with audio in and audio out — text as optional inner monologue rather than a required stage — halves what best-in-class pipelines achieve."
+    },
+    {
+      "stage": "pre",
+      "question": "What streams does Moshi's 7B Temporal Transformer process each 80ms step?",
+      "options": [
+        "One mono audio stream only",
+        "Three in parallel: the user's incoming Mimi tokens, Moshi's own generated Mimi tokens, and Moshi's text inner monologue — so it can hear while speaking, handle interruptions, and back-channel (\"mhm\") without breaking its utterance",
+        "Video, audio, and subtitles",
+        "Separate streams per language"
+      ],
+      "correct": 1,
+      "explanation": "That's what full-duplex means: both audio directions live in the model simultaneously, both at 12.5 Hz × 8 codebooks."
+    },
+    {
+      "stage": "post",
+      "question": "Why does the inner-monologue text stream help an audio-to-audio model?",
+      "options": [
+        "It's only for debugging logs",
+        "Without explicit text the model must implicitly learn language inside the acoustic stream — forcing text tokens alongside audio improves semantic coherence, eases swapping the LM head, and yields transcripts for free",
+        "Text tokens are faster to generate",
+        "It enables subtitles legally required in the EU"
+      ],
+      "correct": 1,
+      "explanation": "The text stream is essentially Moshi's live transcript of itself — language structure gets an explicit channel instead of hiding in codec tokens."
+    },
+    {
+      "stage": "post",
+      "question": "What is the depth transformer's job?",
+      "options": [
+        "Estimating speaker distance from the mic",
+        "The 8 Mimi codebooks per frame have inter-codebook dependencies, so a small 2-layer transformer predicts them SEQUENTIALLY within the 80ms frame — the standard factorization for AR codec LMs (also VALL-E, VibeVoice)",
+        "Compressing the model for edge devices",
+        "Adding reverb to the output"
+      ],
+      "correct": 1,
+      "explanation": "The temporal transformer handles time; the depth transformer handles the RVQ hierarchy within each step — splitting the two axes keeps both tractable."
+    },
+    {
+      "stage": "post",
+      "question": "What is Hibiki, and what did Hibiki-Zero change?",
+      "options": [
+        "A Japanese-only TTS engine",
+        "Moshi's architecture trained for streaming speech-to-speech TRANSLATION (source audio in, target-language audio out, chunk-by-chunk); Hibiki-Zero (Feb 2026) drops the need for word-aligned data, using sentence-level pairs + GRPO reinforcement learning for latency — a new language takes ≈1000 hours",
+        "A watermark detection model",
+        "A music remixing system"
+      ],
+      "correct": 1,
+      "explanation": "Same full-duplex codec-LM design, different task. The broader Kyutai stack (Kyutai STT, Pocket TTS, Unmute) runs 64 concurrent sessions at 3x realtime on one L40S."
+    }
+  ]
+}

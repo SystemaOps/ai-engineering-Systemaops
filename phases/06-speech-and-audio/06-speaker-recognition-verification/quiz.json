@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What distinguishes verification, identification, and open-set speaker recognition?",
+      "options": [
+        "They are three names for the same task",
+        "Verification is 1:1 (is this the claimed person?), identification is 1:N (which enrolled speaker?), open-set adds the option that it's an unknown speaker not in the bank",
+        "Verification requires video input",
+        "Identification only works on passphrases"
+      ],
+      "correct": 1,
+      "explanation": "Same math underneath — embeddings plus cosine — but the task framing changes thresholds, evaluation, and what an error costs."
+    },
+    {
+      "stage": "pre",
+      "question": "What is EER and why does the field standardize on it?",
+      "options": [
+        "Energy Efficiency Rating of the GPU",
+        "Equal Error Rate — the threshold point where False Accept Rate equals False Reject Rate; one number summarizing the trade-off, used in every paper, leaderboard, and procurement call",
+        "Encoder Error Residual from training",
+        "The average of WER and CER"
+      ],
+      "correct": 1,
+      "explanation": "Production systems rarely operate AT the EER threshold (a bank weights false accepts heavier), but the crossover gives a single comparable number across models."
+    },
+    {
+      "stage": "post",
+      "question": "What is the enrollment-verification pipeline?",
+      "options": [
+        "Transcribe both clips and compare text",
+        "Enroll with 5-30 seconds of the target speaker → fixed-dimension embedding (192-d ECAPA-TDNN, 256-d WavLM-large); verify by embedding the test utterance, computing cosine similarity, and thresholding",
+        "Fine-tune a model per enrolled user",
+        "Compare raw waveforms sample by sample"
+      ],
+      "correct": 1,
+      "explanation": "ECAPA-TDNN (squeeze-excitation 1D convs + attentive pooling, trained on VoxCeleb with AAM-softmax) has dominated since 2020: 0.87% EER at just 15M params."
+    },
+    {
+      "stage": "post",
+      "question": "What does AAM-softmax (additive angular margin) do for speaker embeddings?",
+      "options": [
+        "Speeds up training convergence only",
+        "Adds a margin m in angular space — cos(θ + m) for the correct class — forcing inter-class angular separation so embeddings of different speakers spread apart (typical m=0.2, scale s=30)",
+        "Removes the need for labels",
+        "Normalizes audio volume"
+      ],
+      "correct": 1,
+      "explanation": "Cosine scoring only works if training explicitly shaped the angular geometry. Score normalization (S-norm/AS-norm against an imposter cohort) is the other essential for cross-domain evaluation."
+    },
+    {
+      "stage": "post",
+      "question": "What is speaker diarization and its modern pipeline?",
+      "options": [
+        "Removing background music from a clip",
+        "\"Who spoke when\" in multi-speaker audio: VAD → segment → embed each segment → cluster (agglomerative/spectral) → smooth boundaries — pyannote.audio 3.1 bundles it all; 2026 SOTA DER on AMI is ~15%",
+        "Converting speech to a diary entry",
+        "Detecting whether audio is synthetic"
+      ],
+      "correct": 1,
+      "explanation": "Diarization composes the verification primitives: the same embeddings that answer \"is this Alice?\" get clustered to answer \"who spoke when\" — down from 23% DER in 2022."
+    }
+  ]
+}

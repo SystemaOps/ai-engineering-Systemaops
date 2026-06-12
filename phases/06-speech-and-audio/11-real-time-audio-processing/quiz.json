@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What latency makes a voice assistant feel alive vs broken?",
+      "options": [
+        "Anything under 5 seconds is fine",
+        "Human turn-taking is ~230ms; above 500ms feels robotic, above 1500ms feels broken — the 2026 hear→understand→respond→speak budget totals ~400ms with streaming ASR at 150ms as the biggest line item",
+        "Latency is irrelevant if quality is high",
+        "Exactly 1000ms is the sweet spot"
+      ],
+      "correct": 1,
+      "explanation": "The 10x improvement from 2022's 2500ms cascades came from three techniques: streaming everywhere, asynchronous pipelining with partial results, and interruptible generation."
+    },
+    {
+      "stage": "pre",
+      "question": "What is a ring buffer and why does real-time audio need one?",
+      "options": [
+        "A circular microphone array",
+        "A fixed-size circular buffer where the producer thread writes frames and the consumer reads — preventing allocations in the hot path; size ≈ max-latency × sample-rate (a 2s ring at 16 kHz = 32,000 samples)",
+        "A buffer shaped like the Opus logo",
+        "An unbounded queue with backpressure"
+      ],
+      "correct": 1,
+      "explanation": "Real-time audio flows as fixed 20ms blocks (320 samples at 16 kHz), and everything downstream must keep that cadence — allocation pauses or GC in the hot path become audible glitches."
+    },
+    {
+      "stage": "post",
+      "question": "What does VAD contribute to the pipeline, and what's the 2026 default?",
+      "options": [
+        "It amplifies quiet speakers",
+        "It gates downstream work when nobody is speaking — Silero VAD 4.0 runs under 1ms per 30ms frame on CPU, so the expensive ASR/LLM stages only fire on actual speech",
+        "It translates voice to commands directly",
+        "It removes the need for a microphone"
+      ],
+      "correct": 1,
+      "explanation": "VAD is also the interruption trigger: barge-in detection, TTS stop, and LLM-output discard must all complete within ~100ms or the user perceives a deaf assistant."
+    },
+    {
+      "stage": "post",
+      "question": "What is the jitter buffer's trade-off in networked voice?",
+      "options": [
+        "Bigger is always better",
+        "Packets arrive out of order or late; the jitter buffer reorders and smooths — too small causes audible gaps, too large adds latency; 60-80ms is typical over WebRTC Opus transport",
+        "It compresses audio for storage",
+        "It only matters for video calls"
+      ],
+      "correct": 1,
+      "explanation": "WebRTC Opus (20ms frames, 48 kHz, adaptive 8-128 kbps) is the browser/mobile standard, with LiveKit, Daily.co, and Pion as the 2026 voice-app stacks."
+    },
+    {
+      "stage": "post",
+      "question": "Which gotchas bite Python real-time audio pipelines?",
+      "options": [
+        "Python cannot play audio at all",
+        "GIL thread contention starving the audio thread (use C-callback libraries, keep Python off the hot path), resampling latency mid-pipeline, TTS cold-start (warm Kokoro with a dummy run), and missing echo cancellation letting TTS re-trigger ASR on the bot's own voice",
+        "Only file-format mismatches",
+        "Excessive RAM usage from numpy"
+      ],
+      "correct": 1,
+      "explanation": "The echo problem is the sneakiest: without AEC (WebRTC AEC3 is the open default), the assistant hears itself talk and transcribes it as user input."
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What separates an audio-language model (LALM) from pure ASR?",
+      "options": [
+        "LALMs run faster on the same hardware",
+        "LALMs produce free-form natural-language ANSWERS, not just transcripts — joint reasoning over speech, environmental sound, and music (\"is the person in danger?\" from a bark + yell + silence)",
+        "ASR supports more languages",
+        "LALMs only process music"
+      ],
+      "correct": 1,
+      "explanation": "One model, one prompt, multiple axes: transcription, semantic reasoning, music understanding, and long-audio retrieval (\"where in this 90-minute lecture...\")."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the three-component template every 2026 LALM follows?",
+      "options": [
+        "Tokenizer, retriever, generator",
+        "Audio encoder (Whisper/BEATs/CLAP/WavLM) → projector (linear or MLP into the LLM's token-embedding space) → LLM decoder consuming interleaved text + audio tokens and generating text",
+        "Three stacked Whisper models",
+        "VAD, diarizer, and transcriber"
+      ],
+      "correct": 1,
+      "explanation": "Same skeleton as vision-language models, swapped frontend. Stage 1 trains only the projector on ASR/captioning; stage 2 instruction-tunes; optional stage 3 adds a speech decoder for voice-out."
+    },
+    {
+      "stage": "post",
+      "question": "How closed is the open-vs-closed gap for audio-language models in 2026?",
+      "options": [
+        "Closed models lead by 30+ points everywhere",
+        "Essentially closed: Qwen2.5-Omni-7B matches GPT-4o Audio on MMAU-Pro and Audio Flamingo Next beats Gemini 2.5 Pro on LongAudioBench — EXCEPT multi-audio tasks, where everyone is near random (~21-22%)",
+        "Open models lead everywhere by far",
+        "No benchmarks exist to compare them"
+      ],
+      "correct": 1,
+      "explanation": "The multi-audio column is the universal weakness: even Gemini 2.5 Pro scores ~22% on MMAU-Pro's multi-audio subset — reasoning across multiple separate clips remains unsolved."
+    },
+    {
+      "stage": "post",
+      "question": "What does MMAU-Pro measure?",
+      "options": [
+        "Pure transcription accuracy",
+        "1800 QA pairs spanning speech, sound, music, and mixed categories — including a multi-audio subset — with per-category breakdowns (e.g., Gemini 2.5 Pro: 73.4% speech but 51.9% sound)",
+        "Audio codec compression ratios",
+        "Latency of streaming pipelines"
+      ],
+      "correct": 1,
+      "explanation": "The category spread matters: models cluster much higher on speech than on environmental sound, exposing where the Whisper-style speech-dominant pretraining shows through."
+    },
+    {
+      "stage": "post",
+      "question": "Which open LALMs should you know, and what differs across them?",
+      "options": [
+        "Only one open LALM exists",
+        "Qwen2.5-Omni/Qwen3-Omni (Apache-2.0, text + speech out), SALMONN (Whisper + BEATs dual encoder), LTU and GAMA (Llama-based, text out), and Audio Flamingo 3/Next (AF-CLAP encoder, NVIDIA non-commercial) — differing in encoder, output modality, and license",
+        "They all share the same encoder",
+        "All open models are English-only"
+      ],
+      "correct": 1,
+      "explanation": "Encoder choice (Whisper vs BEATs vs CLAP variants) tracks the target distribution, output modality decides whether the model can talk back, and license decides what you can ship."
+    }
+  ]
+}

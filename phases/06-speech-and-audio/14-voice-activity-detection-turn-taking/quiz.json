@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What three decisions does a voice agent make on every 20ms chunk?",
+      "options": [
+        "Volume, pitch, and tempo",
+        "Is this frame speech (VAD), has the user started a new utterance (onset detection), and has the user finished (end-pointing / turn-end)",
+        "Language, speaker, and emotion",
+        "Encode, compress, and transmit"
+      ],
+      "correct": 1,
+      "explanation": "Get either of the big two wrong and the assistant either cuts users off or never shuts up. Naive energy thresholds fail on traffic, keyboards, and crowd babble."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the three-tier VAD cascade?",
+      "options": [
+        "Three identical VADs voting",
+        "Tier 1: cheap energy gate (RMS threshold ~-40 dBFS); tier 2: Silero VAD (1M params, 6000+ languages, ~1ms per chunk, 87.7% TPR at 5% FPR); tier 3: a semantic turn detector that distinguishes \"pause mid-sentence\" from \"done talking\" using linguistic context",
+        "Hardware, firmware, and software gates",
+        "Low-, mid-, and high-frequency filters"
+      ],
+      "correct": 1,
+      "explanation": "Each tier filters for the next: energy removes obvious silence cheaply, Silero removes noise, and the turn detector handles the genuinely hard linguistic judgment of turn-completion."
+    },
+    {
+      "stage": "post",
+      "question": "What does the pre-roll buffer fix?",
+      "options": [
+        "Speaker echo on playback",
+        "Keeping 300-500ms of audio from BEFORE the VAD fires prevents the user's first word (\"hey\") from being clipped — VAD detection inherently lags speech onset",
+        "Network packet reordering",
+        "GPU warm-up time"
+      ],
+      "correct": 1,
+      "explanation": "Pairs with the other defaults: minimum speech 250ms rejects coughs, silence hangover 500-800ms avoids cutting off mid-sentence pauses, and a 0.3 threshold trades false positives for fewer first-word clips."
+    },
+    {
+      "stage": "post",
+      "question": "How does the Kyutai flush trick cut end-of-turn latency?",
+      "options": [
+        "It skips transcription entirely",
+        "Streaming STT has a look-ahead delay (500ms for Kyutai STT-1B); when VAD fires end-of-speech, a flush signal forces immediate STT output — since STT processes ~4x realtime, the 500ms buffer drains in ~125ms",
+        "It pre-generates likely transcripts",
+        "It lowers the audio sample rate"
+      ],
+      "correct": 1,
+      "explanation": "Without the flush you'd wait the full look-ahead after the user stops. With it: ~125ms VAD + flush = conversational latency."
+    },
+    {
+      "stage": "post",
+      "question": "How do the 2026 VAD options compare?",
+      "options": [
+        "All VADs perform identically",
+        "WebRTC VAD (2013) manages only 50% TPR at 5% FPR; Silero hits 87.7% at ~1ms and is the open default; Cobra (commercial) reaches 98.9%; energy-only VAD has no place in 2026 production",
+        "Energy thresholds beat neural VADs",
+        "Only commercial VADs run in real time"
+      ],
+      "correct": 1,
+      "explanation": "Silero is the right default; Cobra is the accuracy/compliance upgrade. The TPR-at-fixed-FPR framing matters because false positives wake the whole expensive pipeline."
+    }
+  ]
+}

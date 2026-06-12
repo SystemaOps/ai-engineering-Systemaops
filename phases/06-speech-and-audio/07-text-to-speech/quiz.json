@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What are the three parts of the classical TTS pipeline?",
+      "options": [
+        "Microphone, amplifier, speaker",
+        "Text frontend (normalize dates/numbers, phonemize, predict prosody) → acoustic model (text to mel spectrogram) → vocoder (mel to waveform)",
+        "Encoder, retriever, reranker",
+        "Tokenizer, embedder, classifier"
+      ],
+      "correct": 1,
+      "explanation": "By 2026 end-to-end diffusion/flow-matching blurs the acoustic+vocoder split, but the three-part mental model still holds for debugging — each stage has its own failure signatures."
+    },
+    {
+      "stage": "pre",
+      "question": "What did FastSpeech 2 change versus Tacotron 2?",
+      "options": [
+        "It added a bigger LSTM",
+        "Non-autoregressive generation: a duration predictor decides how many mel frames each phoneme gets, enabling one-pass synthesis 10x faster than Tacotron's wobbly autoregressive decoding — trading a little naturalness for monotonic-alignment reliability",
+        "It moved synthesis to the cloud",
+        "It output waveforms directly from text"
+      ],
+      "correct": 1,
+      "explanation": "Tacotron 2's location-sensitive attention was slow and unstable on long text. Explicit durations fixed the alignment failure mode and shipped everywhere."
+    },
+    {
+      "stage": "post",
+      "question": "What distinguishes F5-TTS and Kokoro at the 2026 open-source frontier?",
+      "options": [
+        "Both are 10B-parameter cloud models",
+        "F5-TTS (335M): diffusion transformer over flow matching with zero-shot cloning from 5 seconds of reference, topping open leaderboards; Kokoro (82M): CPU-runnable, best-in-class real-time English-only TTS under Apache-2.0",
+        "Both only support singing voices",
+        "They are forks of Tacotron 2"
+      ],
+      "correct": 1,
+      "explanation": "Different design points: F5 for quality and cloning, Kokoro for latency and footprint. VITS (jointly trained encoder + flow durations + HiFi-GAN) dominated the era between, 2022-2024."
+    },
+    {
+      "stage": "post",
+      "question": "How did vocoders evolve from WaveNet to 2024?",
+      "options": [
+        "Quality dropped as speed rose",
+        "WaveNet (2016, offline-only SOTA) → WaveRNN (~realtime) → HiFi-GAN (2020, 100x realtime, near-human) → BigVGAN (2022, generalizes across speakers/languages) → neural codecs like SNAC/DAC integrated with autoregressive models",
+        "Vocoders were abandoned for MIDI",
+        "Nothing changed since WaveNet"
+      ],
+      "correct": 1,
+      "explanation": "The end state: discrete, bit-efficient codec tokens that let TTS become token prediction — the bridge to the codec-LM speech models later in this phase."
+    },
+    {
+      "stage": "post",
+      "question": "How is TTS quality evaluated without slow human MOS panels?",
+      "options": [
+        "Only by waveform MSE",
+        "Reference-free neural MOS predictors (UTMOS, DNSMOS) for leaderboards, CER via running the output through Whisper as an intelligibility proxy, and SECS (speaker-embedding cosine similarity) for cloning fidelity",
+        "Counting samples per second",
+        "Spectrogram file size"
+      ],
+      "correct": 1,
+      "explanation": "Human MOS (1-5 crowd ratings) remains the gold standard and CMOS (A-vs-B) tightens confidence per annotation — but automated proxies are what iterate daily."
+    }
+  ]
+}

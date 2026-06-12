@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What is Whisper's basic architecture and input contract?",
+      "options": [
+        "A decoder-only LLM over raw waveforms",
+        "A transformer encoder-decoder pinned to a 30-second window: 80-mel log spectrogram at 10ms hop (3000 frames), conv-downsampled into the encoder; the decoder cross-attends and emits BPE tokens over a 51,865-token vocab",
+        "A CNN classifier with a CTC head",
+        "An RNN-T with a streaming joiner"
+      ],
+      "correct": 1,
+      "explanation": "Shorter clips are zero-padded, longer ones chunked. Large-v3 is 1.55B params (32 layers, 1280-dim); everything in the pipeline is pinned to that 30-second window."
+    },
+    {
+      "stage": "pre",
+      "question": "How does one Whisper model do transcription, translation, and 99 languages?",
+      "options": [
+        "99 separate fine-tuned checkpoints",
+        "Special tokens in the decoder prompt steer the task: <|en|> sets language, <|transcribe|> vs <|translate|> picks the task, <|notimestamps|> skips timestamps — change <|en|> to <|fr|> and it transcribes French",
+        "An external language detector reroutes audio",
+        "Language-specific encoders share a decoder"
+      ],
+      "correct": 1,
+      "explanation": "Whisper is a multitask model steered by its prompt format — the same mechanism that later VLMs and omni models reuse for task routing."
+    },
+    {
+      "stage": "post",
+      "question": "What did the Turbo variant change, and what did it cost?",
+      "options": [
+        "It quantized weights to 4-bit",
+        "It cut the decoder from 32 layers to 4, reducing latency 8x with under 1% WER hit (1.58% on LibriSpeech-clean at 809M params vs Large-v3's 1.8% at 1.55B)",
+        "It shrank the encoder to 2 layers",
+        "It dropped multilingual support"
+      ],
+      "correct": 1,
+      "explanation": "The asymmetry is the lesson: most of Whisper's intelligence lives in the encoder; the decoder is mostly rendering text, so it can be radically shrunk."
+    },
+    {
+      "stage": "post",
+      "question": "Why must you use Whisper's own preprocessing instead of librosa's mel spectrogram?",
+      "options": [
+        "librosa is too slow for production",
+        "Whisper normalizes log-mels with mean/std statistics from ITS OWN training corpus — mismatched preprocessing silently degrades output even though shapes and code all work",
+        "librosa outputs a different dtype",
+        "Licensing forbids mixing libraries"
+      ],
+      "correct": 1,
+      "explanation": "A classic silent failure: whisper.audio.log_mel_spectrogram bakes in the training-time convention. This is the Phase 6 theme — convention violations don't crash, they just quietly double your WER."
+    },
+    {
+      "stage": "post",
+      "question": "When does Whisper need help (chunking tools or fine-tuning)?",
+      "options": [
+        "Never — it's robust to everything",
+        "Domain shift kills it: technical jargon, accents, proper nouns, short clips, and silence; long-form and streaming need external tooling (WhisperX, Whisper-Streaming, faster-whisper) because the 30s window isn't natively streamed",
+        "Only on non-English audio",
+        "Only when the GPU has under 8GB"
+      ],
+      "correct": 1,
+      "explanation": "Whisper ships as a commodity but isn't a black box forever — knowing what's inside tells you when to chunk differently, when to prompt, and when to fine-tune."
+    }
+  ]
+}

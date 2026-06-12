@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why does picking the wrong metric matter so much in audio?",
+      "options": [
+        "Metrics only affect paper acceptance",
+        "Each audio task has multiple metrics measuring different axes — the wrong one ships a model that looks great on your dashboard and terrible in production (e.g., great WER but unusable first-token latency for streaming)",
+        "All audio metrics correlate perfectly",
+        "Metrics are interchangeable above 90%"
+      ],
+      "correct": 1,
+      "explanation": "The canonical 2026 pairing: ASR → WER (+CER, RTFx, latency), TTS → MOS/UTMOS (+SECS, round-trip WER, TTFA), speaker → EER (+minDCF), diarization → DER, music → FAD, LALMs → MMAU-Pro."
+    },
+    {
+      "stage": "pre",
+      "question": "Before computing WER, what normalization is required, and when does CER replace it?",
+      "options": [
+        "No normalization — raw strings only",
+        "Lowercase, strip punctuation, normalize numbers (jiwer or whisper_normalizer) — and use character-level CER for tone languages like Mandarin where word segmentation is ambiguous",
+        "Translate everything to English first",
+        "Round all numbers to integers"
+      ],
+      "correct": 1,
+      "explanation": "Un-normalized scoring inflates WER with formatting differences that no listener would call errors. Under 5% WER is human parity for read speech."
+    },
+    {
+      "stage": "post",
+      "question": "What do RTFx and first-token latency measure, and why track both?",
+      "options": [
+        "They are the same number inverted",
+        "RTFx is throughput (audio seconds per wall-clock second — Parakeet-TDT: 3380x, Whisper-large-v3: ~30x); first-token latency is responsiveness (audio-in to first transcript token, ~150ms for Deepgram Nova-3) — batch jobs care about the first, streaming about the second",
+        "Both measure GPU memory",
+        "Both only matter for TTS"
+      ],
+      "correct": 1,
+      "explanation": "A model can have superb throughput and terrible streaming latency (or vice versa). The deployment shape decides which one is your primary metric."
+    },
+    {
+      "stage": "post",
+      "question": "Why evaluate voice cloning with SECS + MOS + CER as a triple?",
+      "options": [
+        "Three metrics look better in reports",
+        "Each catches a different failure: high SECS but low MOS = right timbre but unnatural speech; high MOS but low SECS = natural voice but wrong speaker; CER (via ASR round-trip) catches intelligibility regressions",
+        "Only SECS actually matters",
+        "Regulation requires three numbers"
+      ],
+      "correct": 1,
+      "explanation": "SECS > 0.75 means a recognizable clone (ECAPA cosine). UTMOS substitutes for human MOS at ~0.9 correlation; running Whisper over the output and scoring against the input text closes the loop."
+    },
+    {
+      "stage": "post",
+      "question": "How is Diarization Error Rate (DER) composed?",
+      "options": [
+        "Word errors divided by speaker count",
+        "(False alarm + missed speech + speaker confusion) / total speaker time — AMI-meeting DER of 10-20% is realistic, with pyannote 3.1 and commercial stacks under 10% on well-recorded audio",
+        "The percentage of unidentified speakers",
+        "EER averaged across speakers"
+      ],
+      "correct": 1,
+      "explanation": "DER decomposes \"who spoke when\" errors into three named failure modes — which one dominates tells you whether to fix VAD (miss/FA) or clustering (confusion)."
+    }
+  ]
+}

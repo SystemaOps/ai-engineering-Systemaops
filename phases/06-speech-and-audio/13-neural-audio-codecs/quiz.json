@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why does LLM-style audio generation need a neural codec at all?",
+      "options": [
+        "To reduce file sizes for storage",
+        "Language models predict discrete tokens but audio is continuous — a learned encoder discretizes waveforms into a small token vocabulary, and a matching decoder reconstructs audio; MusicGen, Moshi, Sesame CSM, and Orpheus all build on this",
+        "Codecs add copyright protection",
+        "GPUs cannot process float audio"
+      ],
+      "correct": 1,
+      "explanation": "The codec is the bridge that turned audio generation into next-token prediction — by 2026 almost all audio generation is tokens."
+    },
+    {
+      "stage": "pre",
+      "question": "How does Residual Vector Quantization (RVQ) achieve a huge effective vocabulary with small codebooks?",
+      "options": [
+        "One giant codebook of a billion codes",
+        "A cascade: the first codebook quantizes the encoder output, the second quantizes the RESIDUAL, and so on — 8 codebooks of 1024 codes give an effective vocabulary of 1024⁸ ≈ 10²⁴; the decoder sums the chosen codes per frame",
+        "Hashing the waveform into 16 bits",
+        "Storing raw samples as integers"
+      ],
+      "correct": 1,
+      "explanation": "A single codebook would need millions of codes for acceptable quality. The residual cascade is the core trick shared by EnCodec, DAC, SNAC, and Mimi."
+    },
+    {
+      "stage": "post",
+      "question": "What is the semantic-acoustic split, and why does it matter?",
+      "options": [
+        "Splitting stereo into two channels",
+        "Pure reconstruction codecs give blurry speech when generating from text because the LM must learn language AND acoustics in the same codebook — Mimi distills codebook 0 from WavLM to carry linguistic content, with codebooks 1-7 as acoustic residual; this split is what makes Moshi and Sesame CSM work",
+        "Separating music from speech files",
+        "Encoding loud and quiet parts separately"
+      ],
+      "correct": 1,
+      "explanation": "The lesson calls it the most important audio architecture shift since the Transformer: semantic token = what was said; acoustic tokens = how it sounded (speaker, timbre, noise)."
+    },
+    {
+      "stage": "post",
+      "question": "Why do codec frame rates matter for language modeling?",
+      "options": [
+        "Higher frame rates always sound better",
+        "Lower frame rate = shorter sequence = faster LM: at Mimi's 12.5 Hz a 10-second utterance is just 125 frames, versus 750+ at EnCodec's 75 Hz — easily within a transformer's comfortable prediction range",
+        "Frame rate only affects file extension",
+        "LMs require exactly 100 Hz inputs"
+      ],
+      "correct": 1,
+      "explanation": "SNAC takes a hierarchical route: coarse codebooks at ~12 Hz sketch the audio while fine ones at 50 Hz add detail — a structure that maps well onto LM generation (used by Orpheus-3B)."
+    },
+    {
+      "stage": "post",
+      "question": "How do the four 2026 codecs divide the design space?",
+      "options": [
+        "They are interchangeable forks of MP3",
+        "EnCodec (2022) is the general-purpose baseline used by MusicGen; DAC has the highest open reconstruction fidelity at 44.1 kHz full-band; SNAC is multi-scale/hierarchical for efficient AR generation; Mimi is the low-frame-rate semantic+acoustic codec for streaming speech",
+        "All four are closed commercial products",
+        "Only one supports stereo"
+      ],
+      "correct": 1,
+      "explanation": "Choose by downstream job: music fidelity → DAC, LM efficiency → SNAC, streaming conversational speech → Mimi, general baseline → EnCodec."
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What are the three defense layers for synthetic voice, and what does each handle?",
+      "options": [
+        "Firewall, antivirus, and VPN",
+        "Anti-spoofing detection (is this clip synthetic? — handles non-cooperating adversaries), audio watermarking (imperceptible embedded signal — handles compliance for your own generated audio), and authenticated provenance (C2PA cryptographic signing + metadata)",
+        "Encryption, hashing, and salting",
+        "Volume limits, rate limits, and CAPTCHAs"
+      ],
+      "correct": 1,
+      "explanation": "The lesson's rule: ship both detection and watermarking, or don't ship voice cloning. Detection is for content you didn't make; watermarking is for content you did."
+    },
+    {
+      "stage": "pre",
+      "question": "What changed in ASVspoof 5 versus earlier editions?",
+      "options": [
+        "It only tests studio recordings",
+        "Crowdsourced (not studio-clean) data, ~2000 speakers (vs ~100), 32 attack algorithms spanning TTS + voice conversion + adversarial perturbation, and two tracks: standalone countermeasure and spoofing-robust ASV",
+        "It removed voice conversion attacks",
+        "It shrank to a toy dataset"
+      ],
+      "correct": 1,
+      "explanation": "The realism jump shows in the numbers: SOTA is ~7.23% EER on ASVspoof 5 versus 0.42% on the older, cleaner 2019 LA set. Expect 5-10% EER on in-the-wild clips."
+    },
+    {
+      "stage": "post",
+      "question": "What are the main detection model families?",
+      "options": [
+        "Decision trees on MP3 headers",
+        "AASIST (graph-attention over spectral features, current SOTA on ASVspoof 5), RawNet2 (conv front-end on raw waveform + TDNN, simpler but competitive), and 2025 SSL-feature variants (ECAPA-style + WavLM + focal loss hitting 0.42% on 2019 LA)",
+        "Regex matching on transcripts",
+        "Human listening panels only"
+      ],
+      "correct": 1,
+      "explanation": "The architecture trend mirrors speaker verification: self-supervised speech features (WavLM) layered under a discriminative head buy the biggest gains."
+    },
+    {
+      "stage": "post",
+      "question": "What makes AudioSeal the 2024+ watermark default over WavMark?",
+      "options": [
+        "It's the only one that's open source",
+        "Per-frame localized detection at sample resolution, jointly-trained generator + detector, robustness to MP3/AAC, EQ, ±10% speed-shift, and +10dB-SNR noise, a 485x-realtime detector (1000x faster than WavMark), and a 16-bit payload for model ID / timestamp / user ID",
+        "It embeds audible disclosure beeps",
+        "It works only on speech, not music"
+      ],
+      "correct": 1,
+      "explanation": "WavMark's weaknesses — slow brute-force synchronization, removable by Gaussian noise or MP3 compression, not real-time friendly — are exactly what AudioSeal's design fixed."
+    },
+    {
+      "stage": "post",
+      "question": "Why do you need BOTH detection and watermarking rather than either alone?",
+      "options": [
+        "Regulators require redundant systems",
+        "Watermarks only mark audio from cooperating generators — an adversary's cloner won't embed one; detectors catch uncooperative fakes but have 5-10% real-world EER — together they cover compliance AND adversaries",
+        "They are the same technology",
+        "Detection only works on watermarked audio"
+      ],
+      "correct": 1,
+      "explanation": "Complementary threat models: the watermark provides provenance for your own pipeline's output, while anti-spoofing classifies arbitrary clips where no cooperation can be assumed."
+    }
+  ]
+}

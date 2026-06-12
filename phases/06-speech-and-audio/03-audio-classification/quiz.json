@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What is the REAL difficulty in audio classification, per the lesson?",
+      "options": [
+        "Choosing between CNN and Transformer",
+        "Data: brutal class imbalance, domain shift (clean vs noisy), and label noise — 80% of the problem is curation, augmentation, and evaluation, not architecture",
+        "Writing fast FFT kernels",
+        "Getting GPU access"
+      ],
+      "correct": 1,
+      "explanation": "The 2026 baseline architecture is mature (log-mel → CNN or Transformer → softmax). AudioSet's 100,000:1 long tail across 632 classes is where projects actually live or die."
+    },
+    {
+      "stage": "pre",
+      "question": "What does the architecture ladder for audio classification look like across the decades?",
+      "options": [
+        "It has always been Transformers",
+        "k-NN on flattened MFCCs (1990s, surprisingly strong on small clean sets) → 2D CNN on log-mels treated as images (2015-2019) → AST patchifying the spectrogram into a ViT (2021-2024) → self-supervised BEATs/WavLM (2024-2026)",
+        "Decision trees → SVMs → nothing else",
+        "Raw-waveform MLPs at every stage"
+      ],
+      "correct": 1,
+      "explanation": "The features stayed mels throughout; only the model moved. BEATs-iter3 beats AST by 1-2 mAP on AudioSet at a quarter of the compute, making self-supervised pretraining the 2026 default."
+    },
+    {
+      "stage": "post",
+      "question": "What is the \"free lunch\" baseline for language ID and simple event classification?",
+      "options": [
+        "Training a 70B audio model from scratch",
+        "Whisper's encoder frozen with the decoder dropped and a linear classifier attached — near-SOTA with zero audio augmentation",
+        "Random forest on raw samples",
+        "GPT-4 reading spectrogram screenshots"
+      ],
+      "correct": 1,
+      "explanation": "Whisper's 680k hours of pretraining already encode the discriminative structure; you just read it out. Always try this before training anything."
+    },
+    {
+      "stage": "post",
+      "question": "Which techniques actually work against class imbalance?",
+      "options": [
+        "Deleting the rare classes",
+        "Balanced sampling during training (never in evaluation), mixup (linearly interpolating two clips AND their labels), and SpecAugment (masking random time and frequency bands)",
+        "Doubling the learning rate",
+        "Sorting the batches alphabetically"
+      ],
+      "correct": 1,
+      "explanation": "SpecAugment is described as \"simple; critical.\" Note the asymmetry: rebalance what the model sees in training, but evaluate on the true distribution."
+    },
+    {
+      "stage": "post",
+      "question": "How should you pick an evaluation metric for an audio classifier?",
+      "options": [
+        "Always use top-1 accuracy",
+        "Match the task structure: top-1/top-5 accuracy for exclusive multiclass (Speech Commands), mAP for multi-label (AudioSet), and per-class recall + macro F1 when heavily imbalanced",
+        "WER works for all audio tasks",
+        "Use loss value on the training set"
+      ],
+      "correct": 1,
+      "explanation": "Reference numbers worth knowing: ESC-50 SOTA 97.0% (BEATs-iter3), AudioSet mAP 0.548, Speech Commands v2 at 99.0% (Audio-MAE)."
+    }
+  ]
+}

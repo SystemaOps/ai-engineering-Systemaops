@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What three questions trace back to nearly every bug in speech systems?",
+      "options": [
+        "GPU model, batch size, and learning rate",
+        "What sample rate was the data recorded at vs what the model expects, is the signal aliased, and are you operating on raw samples or a frequency representation",
+        "Codec, container format, and file extension",
+        "Microphone brand, room acoustics, and cable quality"
+      ],
+      "correct": 1,
+      "explanation": "Violating these conventions produces SILENT bugs: training runs fine but WER doubles, TTS ships a hiss, or a voice-cloning system memorizes the microphone instead of the speaker."
+    },
+    {
+      "stage": "pre",
+      "question": "What does the Nyquist-Shannon theorem say, and what happens above the Nyquist frequency?",
+      "options": [
+        "Higher sample rates always sound worse",
+        "A sample rate sr can unambiguously represent frequencies up to sr/2; energy above that gets ALIASED — folded down into lower frequencies, corrupting the signal — so always low-pass filter before downsampling",
+        "Frequencies above sr/2 are simply silent",
+        "Nyquist only applies to analog signals"
+      ],
+      "correct": 1,
+      "explanation": "This is why 8 kHz telephony audio (Nyquist at 4 kHz) kills consonants and should be avoided for ASR, while 16 kHz is the ASR standard consumed by Whisper, Parakeet, and SeamlessM4T."
+    },
+    {
+      "stage": "post",
+      "question": "In a DFT of N samples at sample rate sr, what frequency does bin k represent?",
+      "options": [
+        "k Hz exactly",
+        "k · sr / N Hz — magnitude gives the amplitude at that frequency, the complex angle gives the phase",
+        "sr / k Hz",
+        "k² / N Hz"
+      ],
+      "correct": 1,
+      "explanation": "Example from the lesson: a 1024-sample FFT at 16 kHz gives 512 usable bins spanning 0-8 kHz at 15.6 Hz resolution. The FFT computes this in O(N log N)."
+    },
+    {
+      "stage": "post",
+      "question": "Why do we frame and window audio instead of FFT-ing the whole clip?",
+      "options": [
+        "Whole-clip FFTs are illegal in most libraries",
+        "Speech changes over time, so we chop into overlapping ~25ms frames (10ms hop), multiply by a window (Hann/Hamming) to kill edge discontinuities, and FFT each frame — the Short-Time Fourier Transform",
+        "Frames compress the file size",
+        "GPUs can only process 1024 samples"
+      ],
+      "correct": 1,
+      "explanation": "One FFT over a 10-second clip would tell you which frequencies occurred but not WHEN. The STFT preserves time-frequency structure — the foundation lesson 02's spectrograms build on."
+    },
+    {
+      "stage": "post",
+      "question": "Which sample rates do modern speech systems standardize on?",
+      "options": [
+        "Everything uses 44.1 kHz",
+        "16 kHz for ASR (Whisper, Parakeet), 24 kHz for modern TTS (Kokoro, F5-TTS, xTTS v2), 48 kHz for high-fidelity TTS and pro audio — with 16-bit PCM as the universal exchange format",
+        "8 kHz for everything to save bandwidth",
+        "Sample rate doesn't matter to models"
+      ],
+      "correct": 1,
+      "explanation": "Feeding a model audio at the wrong rate is the classic silent failure: the tensor shapes work, the model runs, and the output is garbage."
+    }
+  ]
+}

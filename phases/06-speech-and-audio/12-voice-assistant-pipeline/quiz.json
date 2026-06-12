@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What are the seven components of the capstone voice-assistant pipeline?",
+      "options": [
+        "One end-to-end neural network",
+        "Audio capture (16 kHz mono, 20ms chunks) → VAD → streaming STT → LLM with tool calling → streaming TTS → playback → interruption handler",
+        "Mic, mixer, equalizer, and speaker",
+        "Recorder, uploader, and transcriber"
+      ],
+      "correct": 1,
+      "explanation": "Everything from lessons 01-11 stitched together. The latency target: first TTS audio byte within 800ms of the user finishing, on a laptop CPU."
+    },
+    {
+      "stage": "pre",
+      "question": "Why start TTS after ~20 LLM tokens instead of waiting for the full response?",
+      "options": [
+        "TTS crashes on long inputs",
+        "Pipelining: streaming the LLM's first sentence into TTS while the rest generates overlaps the two slowest stages — waiting for the complete response would blow the latency budget",
+        "The first 20 tokens are the most accurate",
+        "TTS engines bill per request"
+      ],
+      "correct": 1,
+      "explanation": "The same streaming-everywhere principle from lesson 11: no stage may batch-and-wait. Kokoro-82M (fastest open) or Cartesia Sonic (commercial) handle the synthesis side."
+    },
+    {
+      "stage": "post",
+      "question": "What are the three failure modes you will hit, and their fixes?",
+      "options": [
+        "GPU OOM, disk full, network down",
+        "First-word clip (VAD starts late — lower the start threshold to 0.3), mid-response interrupt confusion (wire VAD directly to cancel-LLM), and silence hallucination (Whisper emits \"Thanks for watching\" on silence — always VAD-gate)",
+        "Wrong language, wrong voice, wrong volume",
+        "All three are licensing problems"
+      ],
+      "correct": 1,
+      "explanation": "Whisper's silence hallucination comes from its YouTube-heavy training data — subtitle-like phantom text on empty audio is a known signature, and VAD-gating is the standard defense."
+    },
+    {
+      "stage": "post",
+      "question": "What do the recommended VAD settings (threshold 0.5, min speech 250ms, hang-over 500ms) accomplish?",
+      "options": [
+        "They maximize CPU usage",
+        "Min-speech filters out coughs and clicks from triggering the pipeline; the 500ms silence hang-over avoids cutting the user off at natural mid-sentence pauses; the threshold balances sensitivity vs false triggers",
+        "They are arbitrary library defaults",
+        "They control speaker volume"
+      ],
+      "correct": 1,
+      "explanation": "These three knobs encode turn-taking behavior. Too aggressive a hang-over makes the assistant interrupt the user; too long makes it feel sluggish to respond."
+    },
+    {
+      "stage": "post",
+      "question": "How do the 2026 production stacks differ?",
+      "options": [
+        "They're identical except for pricing",
+        "LiveKit + Deepgram + GPT-4o + Cartesia is the commercial default (350-500ms); Pipecat + Whisper-streaming + Kokoro is DIY-friendly (500-800ms); Moshi is single-model full-duplex (200-300ms); Whisper.cpp + llama.cpp + Kokoro-ONNX runs fully offline for privacy/edge",
+        "Only one stack works in production",
+        "All require a datacenter GPU"
+      ],
+      "correct": 1,
+      "explanation": "The axis is latency vs control vs privacy. Moshi's full-duplex single-model design is architecturally different — covered in lesson 15."
+    }
+  ]
+}

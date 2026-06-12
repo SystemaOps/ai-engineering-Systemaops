@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What structural problem makes ASR harder than per-clip classification?",
+      "options": [
+        "Audio files are larger than images",
+        "Audio frames don't align one-to-one with characters — \"okay\" might take 200ms or 1200ms, silence punctuates, phoneme durations vary, and the number of output tokens isn't known in advance",
+        "Microphones add too much noise",
+        "Text has no numeric representation"
+      ],
+      "correct": 1,
+      "explanation": "The three formulations — CTC, RNN-T, and attention encoder-decoder — are three different answers to this alignment problem."
+    },
+    {
+      "stage": "pre",
+      "question": "How does CTC handle alignment, and what is its known weakness?",
+      "options": [
+        "It forces one character per frame",
+        "Per-frame distributions over V+1 tokens including a blank; any alignment that collapses (repeats merged, blanks removed) to the target counts toward the loss — but the conditional independence assumption means no internal language model",
+        "It uses dynamic programming over words only",
+        "It requires hand-labeled frame alignments"
+      ],
+      "correct": 1,
+      "explanation": "Non-autoregressive, streamable, zero lookahead — used by wav2vec 2.0 and MMS. The missing LM is fixed externally via beam search or shallow fusion."
+    },
+    {
+      "stage": "post",
+      "question": "What does RNN-T add over CTC, and at what cost?",
+      "options": [
+        "Nothing — it's CTC with a new name",
+        "A predictor network embedding token history plus a joiner combining it with the encoder frame — an internal LM while staying streamable; the cost is complex, memory-hungry training (a 3D loss lattice with specialized kernels)",
+        "Bidirectional attention over the future",
+        "A diffusion decoder for text"
+      ],
+      "correct": 1,
+      "explanation": "RNN-T explicitly models the conditional dependence CTC ignored, which is why Google's on-device ASR and NVIDIA Parakeet use it for streaming."
+    },
+    {
+      "stage": "post",
+      "question": "Why isn't attention encoder-decoder (Whisper-style) streamable by default?",
+      "options": [
+        "It runs only on TPUs",
+        "The decoder cross-attends ANYWHERE in the audio with no alignment constraint and generates autoregressively — highest offline quality, but latency scales with output length and streaming requires restricting attention (e.g., chunked Whisper-Streaming)",
+        "It outputs all tokens simultaneously",
+        "Its encoder cannot process partial audio"
+      ],
+      "correct": 1,
+      "explanation": "The 2026 SOTA WERs are nearly tied (Parakeet-TDT 1.40% vs Whisper-Large-v3-turbo 1.58% on test-clean) — the formulation choice is really a deployment choice."
+    },
+    {
+      "stage": "post",
+      "question": "How is Word Error Rate computed, and what are the usability thresholds?",
+      "options": [
+        "Percentage of perfectly transcribed clips",
+        "(S + D + I) / N — substitutions, deletions, insertions over reference word count, i.e., word-level Levenshtein; above 20% is generally unusable, below 5% is human parity for read speech",
+        "BLEU score against the reference",
+        "Character accuracy divided by duration"
+      ],
+      "correct": 1,
+      "explanation": "Note N is the REFERENCE length, so WER can exceed 100% with enough insertions. Pure CTC systems sit around 1.8-2.1% on test-clean vs ~1.4-1.6% for RNN-T/attention SOTA."
+    }
+  ]
+}

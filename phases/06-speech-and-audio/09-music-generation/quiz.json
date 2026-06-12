@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What are the three sub-problems of music generation?",
+      "options": [
+        "Recording, mixing, mastering",
+        "Instrumental generation (text → audio, MusicGen/Stable Audio), full song generation with vocals + lyrics (Suno, Udio, ACE-Step), and conditional/controllable generation (extend, inpaint a bridge, swap genre, stem-separate)",
+        "Tempo, key, and time-signature detection",
+        "MIDI, sheet music, and tablature export"
+      ],
+      "correct": 1,
+      "explanation": "By 2026 the technical problem is mostly solved — the legal problem (Warner's $500M Suno settlement, UMG's Udio settlement) is what reshaped the field."
+    },
+    {
+      "stage": "pre",
+      "question": "How does MusicGen's token-LM approach work?",
+      "options": [
+        "It diffuses raw waveforms directly",
+        "Condition on text/melody embeddings and autoregressively predict EnCodec tokens (32 kHz, 4 codebooks), then decode with EnCodec — a strong MIT-licensed baseline that struggles past 30 seconds",
+        "It samples from a MIDI database",
+        "It splices loops from a licensed library"
+      ],
+      "correct": 1,
+      "explanation": "The codec-token LM is one of two open families. ACE-Step (4B, April 2026, Apache-2.0) extends the pattern to full-song lyric-conditioned generation — the open community's closest thing to Suno."
+    },
+    {
+      "stage": "post",
+      "question": "Where does latent diffusion (Stable Audio, AudioLDM) excel and fall short?",
+      "options": [
+        "It excels at 4-minute structured songs",
+        "Excels at loops, sound design, and ambient textures; not great at structured full songs — while production systems (Suno v5, Udio v4) are likely hybrids of an AR codec LM with diffusion-based decoding",
+        "It can only generate speech",
+        "It beats every token-LM at all lengths"
+      ],
+      "correct": 1,
+      "explanation": "The two open families split by structure: token LMs hold musical structure better over time; diffusion gives texture quality. Udio v4's inpainting + stem separation is the 2026 feature bar."
+    },
+    {
+      "stage": "post",
+      "question": "How is generated music evaluated?",
+      "options": [
+        "Only by human listening",
+        "FAD (Fréchet Audio Distance over VGGish/PANNs embeddings, lower better — SOTA ~3.0 on MusicCaps), CLAP score for text-audio alignment, human ELO for musicality, plus artifact checks like off-beat transitions and structure loss past 30s",
+        "Spectral flatness alone",
+        "Waveform correlation with real songs"
+      ],
+      "correct": 1,
+      "explanation": "Suno v5's ELO 1293 leads subjective quality. The characteristic AR failure mode — vocal-phrase drift and structure loss past 30 seconds — is why length columns matter in the model map."
+    },
+    {
+      "stage": "post",
+      "question": "What did the 2025-2026 legal settlements change for music AI?",
+      "options": [
+        "Nothing — lawsuits were dismissed",
+        "Warner's $500M settlement with Suno (and UMG's with Udio) gave labels oversight of AI likeness, music rights, and user-generated tracks — licensing, not architecture, became the moat",
+        "All music generation became illegal",
+        "Models must now be open-sourced"
+      ],
+      "correct": 1,
+      "explanation": "The earthquake reshaped who can train on what: open models (ACE-Step, YuE under Apache-2.0) compete on permissively-licensed data while commercial leaders operate under label agreements."
+    }
+  ]
+}

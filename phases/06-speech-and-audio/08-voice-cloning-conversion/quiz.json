@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What decomposition do both voice cloning and voice conversion depend on?",
+      "options": [
+        "Splitting audio into left/right channels",
+        "Factoring a waveform into (content, speaker, prosody) and recombining — cloning takes text + a reference voice; conversion takes person A's speech + person B's voice and outputs B saying A's words",
+        "Separating vowels from consonants",
+        "Splitting audio into 30-second chunks"
+      ],
+      "correct": 1,
+      "explanation": "Same factorization, different input side: cloning is TTS-side (text in), conversion is speech-side (audio in). In 2026 a 5-second clip suffices for a high-quality clone on consumer hardware."
+    },
+    {
+      "stage": "pre",
+      "question": "What legal constraints does a 2026 cloning pipeline ship under?",
+      "options": [
+        "None — voice isn't protected anywhere",
+        "The EU AI Act (enforceable August 2026) and California AB 2905 (effective 2025) require inaudible watermarking and consent gates — the pipeline must refuse non-consensual clones",
+        "A global ban on all voice synthesis",
+        "Only a copyright notice in the metadata"
+      ],
+      "correct": 1,
+      "explanation": "Watermarking (PerTh, SilentCipher embed ~16-32 imperceptible bits surviving re-encoding) and tamper-evident consent records are pipeline requirements, not bolt-ons."
+    },
+    {
+      "stage": "post",
+      "question": "What separates zero-shot cloning from few-shot fine-tuning?",
+      "options": [
+        "Zero-shot needs no reference audio at all",
+        "Zero-shot conditions a multi-speaker-trained TTS on a speaker embedding from a 5-second clip (F5-TTS, XTTS v2, OpenVoice v2); few-shot LoRA-fine-tunes on 5-30 minutes of the target for about an hour, jumping from \"okay\" to \"indistinguishable\"",
+        "Few-shot requires retraining from scratch",
+        "They differ only in output sample rate"
+      ],
+      "correct": 1,
+      "explanation": "SECS above ~0.70 is generally indistinguishable from the target for most listeners — zero-shot F5-TTS already hits 0.72; fine-tuning buys consistency."
+    },
+    {
+      "stage": "post",
+      "question": "What are the two voice-conversion families?",
+      "options": [
+        "Pitch shifting and time stretching",
+        "Recognition-synthesis (extract content via ASR-like representations such as PPGs, resynthesize with the target speaker embedding — robust across language/accent, e.g. KNN-VC) and disentanglement (autoencoder bottleneck separating content/speaker/prosody — faster, lower quality, e.g. AutoVC)",
+        "Frequency-domain and time-domain EQ",
+        "Supervised and unsupervised diffusion"
+      ],
+      "correct": 1,
+      "explanation": "Recognition-synthesis routes through a content representation that has already discarded speaker identity; disentanglement asks the bottleneck to do the separation."
+    },
+    {
+      "stage": "post",
+      "question": "How well do synthetic-voice detectors work against modern cloners?",
+      "options": [
+        "Detection is impossible",
+        "ASVspoof 2025 published EERs of 0.8-2.3% for state-of-the-art detectors (AASIST, RawNet2, Wav2Vec2-AASIST) against ElevenLabs, VALL-E 2, and Bark outputs",
+        "Detectors are 50/50 coin flips",
+        "Only humans can detect clones"
+      ],
+      "correct": 1,
+      "explanation": "Detection, watermarking, and consent records form the defensive triad — the same neural-codec advances that made cloning easy (VALL-E 2, VoiceBox at SECS 0.77-0.78) made detection benchmarks essential."
+    }
+  ]
+}

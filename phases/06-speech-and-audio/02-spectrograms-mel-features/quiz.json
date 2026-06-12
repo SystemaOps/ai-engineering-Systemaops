@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why don't neural nets consume raw waveforms well?",
+      "options": [
+        "Floats can't be fed to neural nets",
+        "160,000 floats of a 10s clip are almost uncorrelated with the label — two identical phonemes 100ms apart have completely different raw samples; spectrograms collapse perceptually irrelevant jitter and keep the energetic-frequencies-over-time structure",
+        "Waveforms are too short for convolutions",
+        "Raw audio is always copyrighted"
+      ],
+      "correct": 1,
+      "explanation": "The information is there but in the wrong form. The spectrogram aligns the representation with what perception (and the label) actually depends on."
+    },
+    {
+      "stage": "pre",
+      "question": "Why warp the frequency axis to the mel scale?",
+      "options": [
+        "It makes the FFT faster",
+        "Humans perceive pitch logarithmically — 100 vs 200 Hz sounds the same distance apart as 1000 vs 2000 Hz; mel (m = 2595·log10(1 + f/700)) matches that, roughly linear below 1 kHz and logarithmic above",
+        "Mel removes background noise",
+        "It's required by the WAV format"
+      ],
+      "correct": 1,
+      "explanation": "80 mel bins covering 0-8 kHz is the standard ASR input. The mel-scaled spectrogram has been the single most important feature in speech ML from 2010 through 2026."
+    },
+    {
+      "stage": "post",
+      "question": "How is a mel spectrogram computed from the STFT?",
+      "options": [
+        "By resampling the waveform twice",
+        "A bank of triangular filters spaced equally on the mel scale, each a weighted sum of adjacent FFT bins — multiplying the STFT magnitude by the filterbank matrix gives the mel spectrogram in one matmul, then log(mel + 1e-10)",
+        "By transposing the spectrogram",
+        "Through a learned neural projection only"
+      ],
+      "correct": 1,
+      "explanation": "Log-mel is the universal 2026 audio frontend — Whisper's input, Parakeet's input, SeamlessM4T's input. The log compresses 5-6 orders of magnitude of raw STFT dynamics."
+    },
+    {
+      "stage": "post",
+      "question": "What are MFCCs, and where are they still used?",
+      "options": [
+        "A lossless audio codec from the 90s",
+        "DCT (type II) of the log-mel spectrogram keeping the first 13 coefficients — decorrelates and compresses; dominant until ~2015, still used in speaker recognition (x-vectors, ECAPA)",
+        "The phase component of the STFT",
+        "A GPU kernel for spectrograms"
+      ],
+      "correct": 1,
+      "explanation": "CNNs/Transformers on raw log-mels caught up after 2015, but the compact decorrelated form survives where small, robust speaker embeddings matter."
+    },
+    {
+      "stage": "post",
+      "question": "What is the time-frequency resolution trade in STFT parameters?",
+      "options": [
+        "There is no trade — bigger is always better",
+        "Larger FFT windows give better frequency resolution but worse time resolution: 25ms/10ms is the audio-ML default, 50ms/12.5ms suits music, 5ms/2ms suits transient detection like drum hits and plosives",
+        "Hop length only affects file size",
+        "Resolution is fixed by the sample rate alone"
+      ],
+      "correct": 1,
+      "explanation": "Window choice matters too: the Hann window (multiplied per frame before the FFT) removes the spectral leakage caused by truncating at non-zero endpoints."
+    }
+  ]
+}
