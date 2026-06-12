@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why is pixel-space diffusion at 512² prohibitively expensive?",
+      "options": [
+        "GPUs can't hold 512x512 tensors",
+        "Each sampling step is ~100 GFLOPS for a 500M U-Net, 50 steps is 5 TFLOPS per image — and most FLOPs go to perceptually unimportant high-frequency texture a lossy VAE could compress away",
+        "Pixel data can't be noised properly",
+        "512² requires 1000+ sampling steps"
+      ],
+      "correct": 1,
+      "explanation": "Rombach's 2022 insight: you don't need all 786k dimensions for semantic structure. Run diffusion in a VAE's 64×64×4 latent space — 1/16th the values, ~64x fewer FLOPs, comparable quality. That IS Stable Diffusion."
+    },
+    {
+      "stage": "pre",
+      "question": "What are latent diffusion's two separately trained stages?",
+      "options": [
+        "A generator then a discriminator",
+        "Stage 1: a VAE (8x spatial downsample, L1 + LPIPS + light KL + often adversarial loss for sharp decodes), trained once and frozen; stage 2: standard diffusion treating z = E(x) as the data, decoding the sampled z₀ back to pixels",
+        "Two diffusion models at different sizes",
+        "Pretraining then RLHF"
+      ],
+      "correct": 1,
+      "explanation": "The KL weight is kept small because z doesn't need to be exactly Gaussian — diffusion will handle sampling. The diffusion loss itself is identical to plain DDPM; only the data domain changes."
+    },
+    {
+      "stage": "post",
+      "question": "How does text get into the image during generation?",
+      "options": [
+        "The prompt is rendered as pixels first",
+        "A frozen text encoder produces tokens, and every U-Net/DiT block runs cross-attention with Q = image features and K = V = text tokens — those tokens are the ONLY channel through which text influences the image",
+        "Text is concatenated to the latent",
+        "A separate captioning model verifies output"
+      ],
+      "correct": 1,
+      "explanation": "Encoder choice matters: CLIP-L for SD 1.x, dual CLIP for SDXL, and T5-XXL for SD3/Flux — T5 beats CLIP for prompt adherence, which is why newer models carry a full language encoder."
+    },
+    {
+      "stage": "post",
+      "question": "What are the three architecture trends from SD 1.5 to Flux?",
+      "options": [
+        "Smaller models, fewer tokens, less data",
+        "Replace the U-Net with a DiT (transformer over latent patches), scale up the text encoder (T5-XXL), and increase latent channels from 4 to 16 for more detail headroom",
+        "Move from latents back to pixels",
+        "Drop text conditioning for image prompts"
+      ],
+      "correct": 1,
+      "explanation": "SD3 made the switch to MMDiT with flow matching; Flux.1-dev scales it to 12B. Turbo/schnell variants distill to 1-4 sampling steps for real-time use."
+    },
+    {
+      "stage": "post",
+      "question": "Why does the same diffusion code work unchanged on latents?",
+      "options": [
+        "Latents are secretly pixels",
+        "Diffusion only assumes its data is a continuous tensor it can noise and denoise — it doesn't care whether values are raw pixels or VAE encodings, which is why the toy lesson can swap in encode/decode and rerun the identical DDPM loss",
+        "The VAE retrains the U-Net automatically",
+        "It doesn't — latents need a new loss"
+      ],
+      "correct": 1,
+      "explanation": "That domain-independence is the deep point of the two-stage recipe: the expensive perceptual work lives in the frozen VAE, and the generative work happens wherever it's cheapest."
+    }
+  ]
+}

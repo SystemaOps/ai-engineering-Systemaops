@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What four requirements make video generation much harder than images?",
+      "options": [
+        "Codecs, containers, framerates, audio",
+        "Spatiotemporal compression (a 3D VAE encoding videos, not frames), temporal coherence (consistent content/lighting/identity over seconds), a 10-100x compute budget, and multi-signal conditioning (text, first-frame image, audio, video)",
+        "Only more VRAM",
+        "Lawyers, licenses, GPUs, and patience"
+      ],
+      "correct": 1,
+      "explanation": "A 10s 1080p clip is ~1.5GB raw — pixel-space diffusion is infeasible. The architecture that solved it: a Diffusion Transformer over spatiotemporal patches with the same DDPM loss."
+    },
+    {
+      "stage": "pre",
+      "question": "How does a video become a token sequence for the DiT?",
+      "options": [
+        "Each pixel becomes one token",
+        "A 3D VAE compresses to a [T, H, W, C] latent, split into patches with 3D positional embeddings (time + y + x) — a 10-second 1080p video becomes roughly 20,000-100,000 patches",
+        "Frames are captioned then tokenized as text",
+        "Audio waveforms are interleaved per frame"
+      ],
+      "correct": 1,
+      "explanation": "The 3D VAE is the video analog of the image VAE in latent diffusion: learned spatiotemporal compression that makes the transformer's sequence length tractable."
+    },
+    {
+      "stage": "post",
+      "question": "Why is attention usually factorized into spatial + temporal?",
+      "options": [
+        "Full attention is mathematically wrong",
+        "Spatial attention within each frame plus temporal attention across frames at the same location is far cheaper — full 3D attention costs 16-100x more and is reserved for low resolutions or research",
+        "Factorization improves quality",
+        "GPUs only support 2D attention"
+      ],
+      "correct": 1,
+      "explanation": "With up to 100k patches, full pairwise attention explodes. Factorization is the standard compute compromise, same spirit as separable convolutions."
+    },
+    {
+      "stage": "post",
+      "question": "Why did dense re-captioning matter so much for Sora-class models?",
+      "options": [
+        "Captions were legally required",
+        "Training used GPT-generated dense captions averaging ~200 tokens per clip — rich text supervision via a large encoder (T5-XXL) is what makes long, specific prompts actually steer the video",
+        "Captions reduced storage costs",
+        "Short captions caused crashes"
+      ],
+      "correct": 1,
+      "explanation": "The same lesson as DALL-E 3: caption quality is a first-order training variable. Compute is the other gate — even small research runs need 10,000+ GPU hours; Sora-scale is 100,000+."
+    },
+    {
+      "stage": "post",
+      "question": "What did the 2024-2025 open-weights video stack look like?",
+      "options": [
+        "No open video models existed",
+        "CogVideoX (first open 5B-scale), HunyuanVideo (13B, open SOTA late 2024), Mochi-1 (most permissive license), and WAN 2.2 (strongest open model mid-2025) — roughly 12 months behind the closed frontier (Sora, Veo, Kling, Runway)",
+        "Open models led the closed ones",
+        "Only 480p GIF generators"
+      ],
+      "correct": 1,
+      "explanation": "The closed-open gap in video mirrors early text-to-image: capability arrives closed (Sora proved it Feb 2024), and open weights follow about a year later at smaller scale."
+    }
+  ]
+}

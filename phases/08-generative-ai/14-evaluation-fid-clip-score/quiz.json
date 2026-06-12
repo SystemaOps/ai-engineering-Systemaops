@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What two axes is a generative image model judged on, and by which metrics?",
+      "options": [
+        "Speed and model size",
+        "Sample quality (FID: distribution distance in Inception feature space, lower better) and conditioning adherence (CLIP score: image-text embedding cosine, higher better) — plus human preference aggregated to Elo as ground truth",
+        "Loss value and gradient norm",
+        "Resolution and color depth"
+      ],
+      "correct": 1,
+      "explanation": "Neither axis has a closed-form measure, so all three surviving metrics are proxies — and each has failure modes a determined researcher can game."
+    },
+    {
+      "stage": "pre",
+      "question": "How is FID computed?",
+      "options": [
+        "Pixel-wise MSE between image sets",
+        "Extract Inception-v3 features (2048-D) for N real and N generated images, fit a Gaussian to each pool, then FID = ||μ_r − μ_g||² + Tr(Σ_r + Σ_g − 2(Σ_rΣ_g)^0.5) — the Fréchet distance between the two Gaussians",
+        "A CNN classifies real vs fake",
+        "Counting duplicate images"
+      ],
+      "correct": 1,
+      "explanation": "Heusel et al. 2017. It measures distribution similarity, not individual image quality — which is both its strength and the root of its gaming surface."
+    },
+    {
+      "stage": "post",
+      "question": "What are FID's known failure modes?",
+      "options": [
+        "It has none — FID is reliable",
+        "Small-N bias (under-estimated covariance gives falsely LOW FID — use N ≥ 10,000), Inception-dependence (meaningless on domains far from ImageNet like faces or text images), and gameability by overfitting to the Inception prior",
+        "It only works on 299px images",
+        "It requires paired image sets"
+      ],
+      "correct": 1,
+      "explanation": "CMMD (2024) addresses several: CLIP features instead of Inception, maximum-mean discrepancy instead of Fréchet — better at detecting subtle quality differences."
+    },
+    {
+      "stage": "post",
+      "question": "How can CLIP score be gamed or misled?",
+      "options": [
+        "It can't — cosine similarity is robust",
+        "CLIP has weak compositional reasoning (\"a red cube on a blue sphere\" often fails), short prompts mechanically score higher, and stuffing \"high quality, 4k, masterpiece\" into prompts inflates the score without improving image-text binding",
+        "Only by hacking the eval server",
+        "By using larger image resolutions"
+      ],
+      "correct": 1,
+      "explanation": "A model can rank well on CLIP score without genuinely following complex prompts — the metric inherits every blind spot of the CLIP encoder it's built on."
+    },
+    {
+      "stage": "post",
+      "question": "Why does human preference remain the ground truth despite its cost?",
+      "options": [
+        "Humans are cheaper than GPUs",
+        "Head-to-head comparisons on shared prompts, aggregated to Elo/Bradley-Terry, capture the quality judgments automated proxies miss — benchmarks like PartiPrompts (1,600 prompts, 12 categories) standardize the prompt pool",
+        "Regulators mandate human evaluation",
+        "Preference scores never disagree with FID"
+      ],
+      "correct": 1,
+      "explanation": "The full eval stack in practice: FID/CMMD for distribution health, CLIP score for adherence, preference arenas for the final ranking — knowing each metric's failure mode is what separates real improvements from gaming runs."
+    }
+  ]
+}

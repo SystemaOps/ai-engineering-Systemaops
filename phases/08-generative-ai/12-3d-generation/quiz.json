@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why is 3D generation harder than 2D?",
+      "options": [
+        "3D files are larger to download",
+        "Competing representations (mesh, voxel, SDF, NeRF, Gaussians) each with trade-offs, data scarcity (~10M mostly low-quality Objaverse-XL objects vs billions of images), memory explosion (512³ = 128M voxels), and supervision usually limited to a few 2D views",
+        "GPUs cannot rasterize triangles",
+        "There are no 3D file formats"
+      ],
+      "correct": 1,
+      "explanation": "The 2026 answer separates the problems: generate consistent 2D multi-view images with a diffusion model, then fit a 3D representation (usually Gaussian splatting) to them — leveraging 2D model strength."
+    },
+    {
+      "stage": "pre",
+      "question": "What is 3D Gaussian Splatting?",
+      "options": [
+        "A paint-simulation technique",
+        "A scene as a cloud of ~1M 3D Gaussians, each with 59 parameters (position, covariance, opacity, spherical-harmonics color), rendered by projection + alpha-compositing — differentiable, ~100 fps at 1080p, fit by gradient descent in 5-30 minutes on consumer hardware",
+        "Voxel grids with blur filters",
+        "A compression format for meshes"
+      ],
+      "correct": 1,
+      "explanation": "Kerbl et al. 2023. The combination of speed AND differentiability is what made it the default substrate — NeRF beats it slightly on quality but renders 100-1000x slower."
+    },
+    {
+      "stage": "post",
+      "question": "What does multi-view diffusion contribute to the pipeline?",
+      "options": [
+        "It renders the final 3D asset directly",
+        "A pretrained image diffusion model is fine-tuned to generate 4-16 CONSISTENT views around an object from a prompt or single image (Zero123, MVDream, SV3D, CAT3D) — those views are then lifted to 3D via splatting or NeRF",
+        "It detects camera poses in photos",
+        "It upscales low-resolution textures"
+      ],
+      "correct": 1,
+      "explanation": "Cross-view consistency is the hard part the fine-tune buys. The multi-view intermediate step remains the best-performing recipe for general objects in 2026."
+    },
+    {
+      "stage": "post",
+      "question": "How did text/image-to-3D speed evolve from DreamFusion to 2024-2025?",
+      "options": [
+        "Times stayed constant at ~1 hour",
+        "DreamFusion (2022) took ~1 hour per asset via SDS optimization; feed-forward models collapsed that — LRM ~5s, InstantMesh ~10s, TripoSR ~1s — and 2025 commercial tools (Meshy 4, Hunyuan3D 2.0) ship PBR meshes in ~30s",
+        "Generation got slower as quality rose",
+        "All 3D generation still takes hours"
+      ],
+      "correct": 1,
+      "explanation": "The shift from per-asset optimization (SDS against a frozen diffusion model) to direct feed-forward prediction is the same arc as image generation's move from optimization to learned generators."
+    },
+    {
+      "stage": "post",
+      "question": "Where does NeRF stand relative to Gaussian splatting in 2026?",
+      "options": [
+        "NeRF is faster but lower quality",
+        "NeRF (an MLP mapping position + view direction to color and density, integrated along rays) still wins on novel-view quality and dominates research, but renders 100-1000x slower — splatting superseded it for most real-time use",
+        "They are the same technique",
+        "NeRF is fully obsolete everywhere"
+      ],
+      "correct": 1,
+      "explanation": "The trade is quality-per-compute: implicit MLP integration vs explicit primitive rasterization. Production pipelines splat; papers still often NeRF."
+    }
+  ]
+}

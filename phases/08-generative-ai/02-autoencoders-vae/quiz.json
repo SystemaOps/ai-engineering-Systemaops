@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why can't a plain autoencoder generate new samples?",
+      "options": [
+        "It has too few parameters",
+        "It aces reconstruction but its code space is a lumpy mess — decode a random point and you get noise; it's a compression model with no sampler",
+        "Its decoder is too small",
+        "It can only process MNIST"
+      ],
+      "correct": 1,
+      "explanation": "Generation needs three things at once: a code space matching a clean samplable distribution, plausible decodes from any sample, and good compression — the VAE gets all three from one loss."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the reparameterization trick and why is it needed?",
+      "options": [
+        "Renaming variables for readability",
+        "Sampling z from q(z|x) isn't differentiable — rewriting the sample as z = μ + σ·ε with ε ~ N(0,I) makes z a deterministic function of (μ, σ) plus external noise, so gradients flow through the encoder",
+        "Re-initializing weights between epochs",
+        "Replacing the decoder with a lookup table"
+      ],
+      "correct": 1,
+      "explanation": "This single trick is why every latent-diffusion image model in 2026 has a VAE at the input — it made training stochastic encoders by backprop possible."
+    },
+    {
+      "stage": "post",
+      "question": "What are the two terms of the VAE loss (ELBO) and how do they trade off?",
+      "options": [
+        "Accuracy and precision, always aligned",
+        "Reconstruction (||x - x̂||²) pushes outputs toward inputs; the KL term pulls q(z|x) toward the N(0,I) prior — small β gives sharper samples but a less Gaussian code space, large β gives a cleaner code space but blurrier samples",
+        "Two identical MSE terms summed",
+        "Generator loss and discriminator loss"
+      ],
+      "correct": 1,
+      "explanation": "β-VAE (Higgins 2017) made this knob famous and kicked off disentanglement research. The KL penalty is precisely what forces the code space to be structured enough to sample from."
+    },
+    {
+      "stage": "post",
+      "question": "Why does the encoder output log σ² instead of σ directly?",
+      "options": [
+        "Logarithms are faster to compute",
+        "So the network's output is unconstrained — predicting σ via softplus is a trap because gradients die as σ approaches 0",
+        "To save memory on the GPU",
+        "It's an arbitrary convention with no effect"
+      ],
+      "correct": 1,
+      "explanation": "A small numerical choice with real consequences: the unconstrained parameterization keeps gradients alive across the whole range of variances."
+    },
+    {
+      "stage": "post",
+      "question": "Where do VAEs live in the 2026 generative stack?",
+      "options": [
+        "They ship standalone as the top image models",
+        "Rarely standalone (outclassed by diffusion on raw quality) but as the encoder of choice for every latent-diffusion model — SD 1/2/XL/3, Flux, AudioCraft all run diffusion inside a VAE's latent space",
+        "Only in tutorials, never production",
+        "As discriminators inside GANs"
+      ],
+      "correct": 1,
+      "explanation": "The VAE is the invisible first layer of every image pipeline you use: it compresses pixels into the latent space where diffusion is cheap, and decodes the result back."
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why isn't a text prompt enough to control image generation?",
+      "options": [
+        "Text encoders are too small",
+        "Text pins down only ~10% of an image's specification — pose, layout, perspective, and spatial relations are visual signals that can't be described efficiently in words",
+        "Prompts are limited to 77 characters",
+        "Text only works in English"
+      ],
+      "correct": 1,
+      "explanation": "Hence the toolkit: ControlNet for spatial structure, LoRA for new concepts/styles, IP-Adapter for image-as-reference — production pipelines layer several of each over an SDXL/SD3/Flux base."
+    },
+    {
+      "stage": "pre",
+      "question": "How does ControlNet steer a frozen diffusion model?",
+      "options": [
+        "It fine-tunes the whole U-Net",
+        "Clone the U-Net's encoder half, train the clone to read an extra conditioning input (depth, pose, edges), and feed its features into the frozen original's decoder via zero-convolutions — 1×1 convs initialized to zero so it starts as a no-op",
+        "It edits the text prompt automatically",
+        "It post-processes generated images"
+      ],
+      "correct": 1,
+      "explanation": "Zero-init means no harm before training; the clone learns a pure delta. Per-modality ControlNets are small side models (~360M for SDXL) and compose additively at inference with per-control weights."
+    },
+    {
+      "stage": "post",
+      "question": "How does LoRA shrink fine-tuning by orders of magnitude?",
+      "options": [
+        "By training on fewer images",
+        "Freeze each weight matrix W and learn a low-rank delta ΔW = B@A with rank r << d — 2·d·r new params instead of d²; for SDXL attention (d=640, r=16) that's 20k per adapter vs 410k, and a whole LoRA is 20-200MB vs the 5GB base",
+        "By quantizing the base to 4-bit",
+        "By caching attention maps"
+      ],
+      "correct": 1,
+      "explanation": "Rank 4-16 is standard for attention, 64-128 for heavy fine-tunes. At inference the delta scales with α (0.5-1.5 typical) and multiple LoRAs stack additively — with nonlinear interactions as the caveat."
+    },
+    {
+      "stage": "post",
+      "question": "What does IP-Adapter add that ControlNet and LoRA don't?",
+      "options": [
+        "Faster sampling steps",
+        "IMAGE-as-conditioning without training: a ~20MB adapter encodes a reference image via CLIP into tokens injected alongside text in cross-attention — \"generate in the style of this reference\" with no LoRA training",
+        "Higher output resolution",
+        "Automatic watermark removal"
+      ],
+      "correct": 1,
+      "explanation": "The division of labor: ControlNet controls WHERE (spatial structure), LoRA controls WHAT/WHO (learned concepts), IP-Adapter controls LOOK (reference style) — composable on one frozen base."
+    },
+    {
+      "stage": "post",
+      "question": "Why is the zero-convolution initialization critical to ControlNet?",
+      "options": [
+        "It halves the parameter count",
+        "Starting as an exact identity means the pretrained model's behavior is untouched at step zero — training can only learn a useful delta, never destabilize the frozen backbone it nudges",
+        "Zero convs run faster on GPUs",
+        "It prevents license violations"
+      ],
+      "correct": 1,
+      "explanation": "It's the same safety pattern as Flamingo's tanh-gated cross-attention: bolt new machinery onto a frozen giant in a way that provably starts as a no-op."
+    }
+  ]
+}

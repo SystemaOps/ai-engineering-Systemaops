@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What problem with DCGAN's latent space did StyleGAN solve?",
+      "options": [
+        "The latent vector was too short",
+        "z controlled everything — pose, lighting, identity, background — entangled together; moving along one axis changed all four, so you couldn't ask for \"same person, different pose\"",
+        "z had to be an integer vector",
+        "DCGAN couldn't output color"
+      ],
+      "correct": 1,
+      "explanation": "The fix: stop feeding z into the conv stack. Map z through an 8-layer MLP to an intermediate w, start synthesis from a learned constant 4×4×512 tensor, and inject w at every resolution."
+    },
+    {
+      "stage": "pre",
+      "question": "How does AdaIN inject style into the synthesis network?",
+      "options": [
+        "By concatenating w to every feature map",
+        "Normalize each conv feature map (subtract mean, divide std), then scale and shift it by affine projections of w — \"style\" is literally the first- and second-order statistics of the feature map",
+        "By replacing convolution kernels entirely",
+        "Through attention over the latent bank"
+      ],
+      "correct": 1,
+      "explanation": "Per-layer single-channel noise (with learned scaling) adds the stochastic detail — skin pores, hair strands — without touching global structure."
+    },
+    {
+      "stage": "post",
+      "question": "What does W-space disentanglement enable?",
+      "options": [
+        "Faster training only",
+        "Roughly orthogonal axes for high-level style (pose, identity) vs fine style (lighting, color) — you can mix image A's w at low resolutions with image B's at high, unlocking editing, stylization, and the whole StyleGAN-inversion research line",
+        "Lossless image compression",
+        "Automatic dataset labeling"
+      ],
+      "correct": 1,
+      "explanation": "W isn't forced to be Gaussian — the mapping network learns a data-adapted shape, which is exactly what lets the axes factor more cleanly than in Z."
+    },
+    {
+      "stage": "post",
+      "question": "What is the truncation trick?",
+      "options": [
+        "Cutting the network to fewer layers",
+        "At inference, pull each w toward the mean ŵ via w' = ŵ + ψ·(w − ŵ); ψ < 1 trades diversity for quality — nearly every StyleGAN demo uses ψ ≈ 0.7",
+        "Truncating gradients during training",
+        "Cropping output images to squares"
+      ],
+      "correct": 1,
+      "explanation": "Samples near the latent mean are more typical and higher quality; samples far out are diverse but riskier. ψ is the dial between them."
+    },
+    {
+      "stage": "post",
+      "question": "What did StyleGAN2 and StyleGAN3 each fix?",
+      "options": [
+        "Both just added more parameters",
+        "StyleGAN2 replaced AdaIN with weight demodulation (fixing droplet artifacts) and added path-length regularization; StyleGAN3 made convolutions alias-free and equivariant, eliminating textures sticking to the pixel grid",
+        "They added text conditioning",
+        "They switched to diffusion sampling"
+      ],
+      "correct": 1,
+      "explanation": "StyleGAN3 remains the 2026 default for narrow-domain photorealism at high FPS, few-shot domain adaptation, and inversion-based editing — but for open-domain text-to-image, diffusion is the tool."
+    }
+  ]
+}

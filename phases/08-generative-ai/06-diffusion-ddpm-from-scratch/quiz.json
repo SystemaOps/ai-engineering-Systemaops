@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What does DDPM offer that GANs and VAEs each lack?",
+      "options": [
+        "Faster sampling than both",
+        "A single stable loss (no minimax saddle point like GANs) that bounds log p(x) (likelihoods, unlike GANs) while producing SOTA-quality samples (unlike blurry VAEs)",
+        "Smaller models than both",
+        "Training without any data"
+      ],
+      "correct": 1,
+      "explanation": "Sohl-Dickstein (2015) had the theory; Ho, Jain, Abbeel (2020) simplified the loss to one line — predict the noise — and by 2022 it became Stable Diffusion. In 2026 it is the substrate."
+    },
+    {
+      "stage": "pre",
+      "question": "What closed form makes the forward noising process tractable?",
+      "options": [
+        "Noise must be added one step at a time",
+        "The cumulative noising step is itself Gaussian: q(x_t | x_0) = N(√ᾱ_t · x_0, (1−ᾱ_t)·I) — so you can jump from clean data to ANY noise level t in one shot during training",
+        "The noise is uniform, not Gaussian",
+        "x_t equals x_0 scaled by t"
+      ],
+      "correct": 1,
+      "explanation": "With β_t from 1e-4 to 0.02 over T=1000 steps, x_T is approximately N(0, I). This one-shot property is why each training step is cheap: sample x_0, pick random t, add noise, regress."
+    },
+    {
+      "stage": "post",
+      "question": "What is the DDPM training loss in practice?",
+      "options": [
+        "A weighted sum of 1000 KL terms",
+        "L_simple = E[||ε − ε_θ(√ᾱ_t·x_0 + √(1−ᾱ_t)·ε, t)||²] — sample data, timestep, and noise; predict the noise; MSE. No minimax, no reparameterization machinery",
+        "Cross-entropy on pixel classes",
+        "An adversarial discriminator score"
+      ],
+      "correct": 1,
+      "explanation": "The full ELBO's per-timestep KL terms reduce to noise-prediction MSE with specific coefficients; Ho dropped the coefficients (\"simple\" loss) and quality actually improved."
+    },
+    {
+      "stage": "post",
+      "question": "Why does training one denoiser across all noise levels work so well?",
+      "options": [
+        "Denoising is harder than generating",
+        "At t=T the task is trivial, at t=0 only minor cleanup remains, and intermediate steps share gradients through the same weights from every noise level — denoising is easy while one-shot generating is hard",
+        "Each timestep gets its own network",
+        "Noise levels are independent problems"
+      ],
+      "correct": 1,
+      "explanation": "Generation is decomposed into a thousand easy denoising problems. The reverse chain just iterates from pure noise to a clean sample."
+    },
+    {
+      "stage": "post",
+      "question": "What is the score-matching connection?",
+      "options": [
+        "Diffusion models compute FID during training",
+        "Vincent (2011) proved noise prediction is equivalent to estimating the score ∇_x log q(x_t|x_0) — the reverse process walks up the density gradient, a guided random walk toward high-probability regions",
+        "Scores refer to discriminator outputs",
+        "There is no connection to scores"
+      ],
+      "correct": 1,
+      "explanation": "This equivalence is what links DDPM to the score-based SDE view (Song & Ermon) and ultimately to flow matching — same gradient field, different path."
+    }
+  ]
+}

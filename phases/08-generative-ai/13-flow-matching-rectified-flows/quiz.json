@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why do diffusion models need 20-50 sampling steps, and what's flow matching's answer?",
+      "options": [
+        "GPUs require batched iterations",
+        "The reverse-process ODE follows a CURVED path from noise to data, making it stiff to integrate — flow matching trains on a straight-line interpolation instead, and straighter paths need fewer integration steps",
+        "More steps always improve quality",
+        "The noise schedule legally requires it"
+      ],
+      "correct": 1,
+      "explanation": "If the path were perfectly straight, a single Euler step from t=1 to t=0 would suffice. SD3, Flux.1, and AudioCraft 2 all switched to flow matching in 2024 for exactly this."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the conditional flow matching loss?",
+      "options": [
+        "Adversarial loss on trajectory ends",
+        "Define x_t = t·x_1 + (1−t)·x_0 between noise x_1 and data x_0; the time derivative along this line is the constant (x_1 − x_0), so train v_θ(x_t, t) to regress it: L = E||v_θ(x_t,t) − (x_1−x_0)||²",
+        "KL divergence between two flows",
+        "Cross-entropy over discretized positions"
+      ],
+      "correct": 1,
+      "explanation": "Training is simulation-free — you never unroll the ODE, just sample (x_0, x_1, t) and regress. Sampling integrates the learned field backwards with Euler steps."
+    },
+    {
+      "stage": "post",
+      "question": "Why aren't the learned paths actually straight, and how does reflow fix it?",
+      "options": [
+        "Floating-point errors curve them",
+        "With random pairings, many x_0s map toward the same x_1, forcing curved learned paths — reflow integrates the trained flow to produce ODE-matched (x_1, x_0) pairs, then retrains on those pairs, making the interpolant genuinely flatter",
+        "The loss function is non-convex",
+        "Straight paths are impossible in theory"
+      ],
+      "correct": 1,
+      "explanation": "Rectified flow (Liu 2022): after two reflow iterations, a 2-step sampler matches 50-step DDPM quality — the iterative straightening is the key extra ingredient."
+    },
+    {
+      "stage": "post",
+      "question": "How does flow-matching sampling work at inference?",
+      "options": [
+        "Sample 1000 stochastic steps like DDPM",
+        "Start at x_1 ~ N(0,I) and integrate the learned vector field backwards in time with Euler steps: x_{t−Δt} = x_t − Δt·v_θ(x_t, t) — fewer, deterministic steps down to t=0",
+        "A single discriminator pass",
+        "Beam search over latent tokens"
+      ],
+      "correct": 1,
+      "explanation": "Deterministic ODE integration replaces the stochastic reverse walk. The step count becomes a tunable quality-speed dial, with straightness deciding how low you can go."
+    },
+    {
+      "stage": "post",
+      "question": "How does flow matching relate to DDPM conceptually?",
+      "options": [
+        "They are unrelated methods",
+        "Both learn a vector field that transports noise to data — DDPM parameterizes it via noise prediction along a curved stochastic path; flow matching regresses the velocity of a straight deterministic interpolation, trading path shape for sampling efficiency",
+        "Flow matching is DDPM with more steps",
+        "DDPM is a special case of GANs"
+      ],
+      "correct": 1,
+      "explanation": "Same destination, different road geometry. The score-matching equivalence (lesson 06) is the bridge: both estimate how to walk from N(0,I) to p_data."
+    }
+  ]
+}

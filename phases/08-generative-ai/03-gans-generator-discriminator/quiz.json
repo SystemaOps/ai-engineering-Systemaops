@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why do VAEs produce blurry samples, and how do GANs escape that?",
+      "options": [
+        "VAEs have too few layers",
+        "MSE decoder loss is Bayes-optimal for the MEAN image, and the mean of many plausible digits is fuzzy — GANs instead LEARN a plausibility signal: a discriminator's judgment of \"looks real\" is sharp where pixel-wise proximity is not",
+        "VAEs use the wrong activation function",
+        "GANs train on higher-resolution data"
+      ],
+      "correct": 1,
+      "explanation": "There's no closed-form for plausibility, so Goodfellow's 2014 move was to learn it adversarially: G fools D, D catches G, the loss signal chases a moving target."
+    },
+    {
+      "stage": "pre",
+      "question": "Why does GAN training use the non-saturating generator loss -log D(G(z))?",
+      "options": [
+        "It's mathematically identical to the original",
+        "The original log(1 - D(G(z))) saturates and kills gradients exactly when D is confident the fake is fake — early in training, when G most needs signal",
+        "It trains the discriminator simultaneously",
+        "It guarantees convergence"
+      ],
+      "correct": 1,
+      "explanation": "Goodfellow used this form from the start. At equilibrium, if G matches p_data perfectly, D can't beat chance (outputs 0.5 everywhere) and G receives no further gradient."
+    },
+    {
+      "stage": "post",
+      "question": "What are the classic GAN failure modes?",
+      "options": [
+        "Overfitting and underfitting only",
+        "Mode collapse (G finds one mode D can't classify and mints it forever), vanishing gradients (D learns too fast and saturates), and general training instability sensitive to learning rates and batch sizes",
+        "Exploding memory usage",
+        "Label leakage from the dataset"
+      ],
+      "correct": 1,
+      "explanation": "The variant history is a list of fixes: WGAN-GP's Wasserstein distance fixed vanishing gradients, spectral normalization Lipschitz-bounds D (still used in 2026), Progressive GAN enabled megapixel training."
+    },
+    {
+      "stage": "post",
+      "question": "Where does adversarial training matter in the 2026 stack, with diffusion dominant?",
+      "options": [
+        "Nowhere — GANs are fully retired",
+        "StyleGAN 2/3 remain the sharpest face models shipped; GAN discriminators serve as perceptual losses in diffusion training; and adversarial objectives power the 1-step distillations (SDXL-Turbo, SD3-Turbo, LCM) behind real-time diffusion",
+        "Only in academic reproductions",
+        "Only for text generation"
+      ],
+      "correct": 1,
+      "explanation": "The minimax game lost the SOTA-generator crown but survived as infrastructure: \"looks real\" remains the best learnable loss for sharpening and for collapsing many sampling steps into one."
+    },
+    {
+      "stage": "post",
+      "question": "Which architectural innovations made GANs trainable at scale?",
+      "options": [
+        "Bigger batch sizes alone",
+        "DCGAN's conv/batch-norm/LeakyReLU recipe (first stable architecture), WGAN-GP's gradient penalty, spectral normalization, Progressive GAN's low-res-first growth, and StyleGAN's mapping network + adaptive instance norm",
+        "Switching to recurrent generators",
+        "Quantizing weights to int8"
+      ],
+      "correct": 1,
+      "explanation": "Each fix targeted a specific instability. StyleGAN3 (alias-free, translation-equivariant) is still the face gold standard in 2026; R3GAN (2024) showed strong regularization works at 1024² without tricks."
+    }
+  ]
+}

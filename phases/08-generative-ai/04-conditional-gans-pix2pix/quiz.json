@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why does image-to-image translation need an adversarial loss rather than MSE?",
+      "options": [
+        "MSE is too slow to compute",
+        "There are many plausible outputs y per input x — mean-squared error flattens them into mush, while \"looks real\" is a sharp criterion that picks one plausible output instead of averaging them all",
+        "MSE can't handle color images",
+        "Adversarial losses need less data"
+      ],
+      "correct": 1,
+      "explanation": "Sketch→photo, map→aerial, colorization — all one-to-many mappings. Pix2Pix's recipe still beats generic text-to-image models on narrow paired tasks in 2026 because paired data gives exactly the needed signal."
+    },
+    {
+      "stage": "pre",
+      "question": "What makes the discriminator in Pix2Pix \"conditional\"?",
+      "options": [
+        "It only trains on alternate batches",
+        "D receives the PAIR (condition x, output y) — it must judge whether y is CONSISTENT with x, not merely whether y looks real in isolation",
+        "It has a conditional branch in its code",
+        "It is trained before the generator"
+      ],
+      "correct": 1,
+      "explanation": "Without conditioning D, the generator could emit any realistic image regardless of the input. The pair-judging discriminator is what enforces semantic correspondence."
+    },
+    {
+      "stage": "post",
+      "question": "Why is the generator a U-Net, and what is PatchGAN?",
+      "options": [
+        "U-Net is just a fashionable name",
+        "Skip connections carry shared low-level structure (edges, silhouettes) across the bottleneck — without them high-frequency detail vanishes; PatchGAN outputs an N×N grid where each cell judges a ~70×70 receptive field, assuming realism is LOCAL",
+        "U-Net halves the parameter count",
+        "PatchGAN classifies entire datasets at once"
+      ],
+      "correct": 1,
+      "explanation": "The patch-based Markov-random-field assumption makes D faster to train with fewer parameters and produces sharper output than one global real/fake score."
+    },
+    {
+      "stage": "post",
+      "question": "Why add an L1 term (λ=100) to the Pix2Pix generator loss, and why L1 over L2?",
+      "options": [
+        "L1 is the only differentiable choice",
+        "L1 stabilizes training and pulls G toward the known paired target; L1 produces sharper edges than L2 because it corresponds to medians rather than means",
+        "It replaces the adversarial loss entirely",
+        "L2 cannot be computed on images"
+      ],
+      "correct": 1,
+      "explanation": "Interesting detail: Pix2Pix has no input noise z — Isola found explicit noise got ignored, so stochasticity comes from dropout inside G."
+    },
+    {
+      "stage": "post",
+      "question": "How does CycleGAN remove the paired-data requirement?",
+      "options": [
+        "By generating its own pairs with GPT",
+        "Two generators G: X→Y and F: Y→X trained with cycle-consistency losses F(G(x)) ≈ x and G(F(y)) ≈ y — enabling horse→zebra or summer→winter translation with no paired examples",
+        "By training twice as long on one domain",
+        "It doesn't — it needs pairs too"
+      ],
+      "correct": 1,
+      "explanation": "In 2026 unpaired image-to-image mostly runs through diffusion (ControlNet, IP-Adapter), but cycle consistency survives in nearly every unpaired domain-adaptation paper."
+    }
+  ]
+}

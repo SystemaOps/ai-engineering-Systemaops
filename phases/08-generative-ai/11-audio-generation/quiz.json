@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why can't a transformer generate raw audio waveforms directly?",
+      "options": [
+        "Waveforms contain negative numbers",
+        "A 5-second clip at 16-48 kHz is 80-240k samples — no transformer attends to that sequence; instead a neural codec (Encodec, SoundStream, DAC) compresses audio to discrete tokens at 50-75 Hz and the generator models tokens",
+        "Audio requires complex numbers",
+        "Transformers only process text"
+      ],
+      "correct": 1,
+      "explanation": "This codec-plus-generator substrate underlies every production audio model in 2026 — TTS, music, and sound design all run on it."
+    },
+    {
+      "stage": "pre",
+      "question": "How does a neural codec turn waveforms into tokens?",
+      "options": [
+        "Direct FFT bucketing",
+        "A convolutional encoder compresses the waveform to per-timestep vectors; residual vector quantization converts each into a cascade of K codebook indices (e.g., 8 RVQ codebooks at 75 Hz = 600 tokens/sec at 2 kbps for 24 kHz audio); a decoder reverses it",
+        "MP3 frames become tokens directly",
+        "Each sample is rounded to 8 bits"
+      ],
+      "correct": 1,
+      "explanation": "RVQ's residual cascade is what achieves usable quality at low bitrate — each successive codebook refines the previous level's error."
+    },
+    {
+      "stage": "post",
+      "question": "What are the two generative paradigms on top of codec tokens?",
+      "options": [
+        "Both are GAN variants",
+        "Token-autoregressive (decoder-only transformer over flattened RVQ streams — MusicGen's delayed-parallel pattern, VALL-E's text + 3s voice sample) and latent diffusion / flow matching over continuous audio latents (Stable Audio 2.5, AudioLDM 2)",
+        "Beam search and greedy decoding",
+        "Supervised and reinforcement learning"
+      ],
+      "correct": 1,
+      "explanation": "MusicGen's \"delayed parallel\" trick emits the K codebook streams simultaneously with per-stream offsets, sidestepping the cost of fully flattening 600 tokens/sec."
+    },
+    {
+      "stage": "post",
+      "question": "Why does token-AR dominate speech while flow matching wins for music?",
+      "options": [
+        "Speech tokens are smaller files",
+        "Token-AR is naturally causal and streams well — essential for conversational TTS latency (~200-300ms first token); flow matching gives faster batch inference and cleaner samples for music, where streaming matters less",
+        "Music has no temporal structure",
+        "It's historical accident only"
+      ],
+      "correct": 1,
+      "explanation": "The deployment shape picks the paradigm: ElevenLabs and GPT-4o audio stream token-by-token; Stable Audio 2.5 renders a minute of music in ~10s offline."
+    },
+    {
+      "stage": "post",
+      "question": "What do the three audio-generation task families share?",
+      "options": [
+        "Nothing — each has unique infrastructure",
+        "TTS (VALL-E, NaturalSpeech 3), music (MusicGen, Suno, Stable Audio), and sound design / Foley (AudioGen, AudioLDM 2) all run on the same substrate: neural codec + token-AR or diffusion generator",
+        "They share only the sample rate",
+        "All require labeled phoneme data"
+      ],
+      "correct": 1,
+      "explanation": "The differences are distributional: clean speech is narrow-band with strong phonetic structure (easy for token-AR); music's far broader distribution rewards diffusion's mode coverage."
+    }
+  ]
+}

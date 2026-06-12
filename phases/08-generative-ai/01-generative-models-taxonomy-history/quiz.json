@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What is the one job of a generative model, and why is it fundamentally hard?",
+      "options": [
+        "Classifying samples into categories",
+        "Given samples from an unknown distribution p_data(x), output new samples from the same distribution — hard because the space has millions of dimensions (a 512x512 RGB image is ~786k), real data sits on a thin manifold, and you have maybe 10M examples",
+        "Compressing data losslessly",
+        "Predicting the next label in a stream"
+      ],
+      "correct": 1,
+      "explanation": "Brute-forcing the density is hopeless, so every generative family is a compromise that trades one hard problem for a slightly less hard one."
+    },
+    {
+      "stage": "pre",
+      "question": "What are the five surviving families of generative models?",
+      "options": [
+        "CNN, RNN, LSTM, GRU, Transformer",
+        "Explicit-tractable density (autoregressive, flows), explicit-approximate (VAE, diffusion via ELBO), implicit (GANs), score-based/continuous-time (score matching, flow matching), and token-based autoregressive over discrete codes (VQ tokenizer + Transformer)",
+        "Supervised, unsupervised, semi-supervised, self-supervised, reinforcement",
+        "Linear, polynomial, kernel, tree, ensemble"
+      ],
+      "correct": 1,
+      "explanation": "Each bucket's compromise predicts its strengths: exact likelihood but slow sampling (bucket 1), unstable training but one-pass inference (GANs), dominant quality but iterative sampling (diffusion)."
+    },
+    {
+      "stage": "post",
+      "question": "Why did flow matching become the 2024-2026 default for new image models?",
+      "options": [
+        "It was the first method invented",
+        "Simulate-free training with straighter probability paths gives 4-10x faster sampling than DDPM — Stable Diffusion 3, Flux, and AudioCraft 2 all use it",
+        "It requires no training data",
+        "It produces exact likelihoods"
+      ],
+      "correct": 1,
+      "explanation": "Flow matching (Lipman 2023) sits in the score-based/continuous-time bucket — the SDE generalization of diffusion with better training dynamics and fewer sampling steps."
+    },
+    {
+      "stage": "post",
+      "question": "Where do GANs still win in 2026, despite diffusion's dominance?",
+      "options": [
+        "They don't — GANs are fully obsolete",
+        "Fixed-domain photorealism: StyleGAN 1/2/3 remain state of the art for faces and similar narrow domains, and one-forward-pass inference stays unbeatable for speed",
+        "Long-form text generation",
+        "Protein structure prediction"
+      ],
+      "correct": 1,
+      "explanation": "The implicit-density compromise — no likelihood, adversarial training instability — bought sharpness and speed. On a narrow manifold like faces, that trade still pays."
+    },
+    {
+      "stage": "post",
+      "question": "What is the five-question triage for reading a new generative-model paper?",
+      "options": [
+        "Authors, venue, citations, code, demo",
+        "What is being modeled (pixels/latents/tokens/Gaussians)? Explicit or implicit density? One-shot or iterative sampling? What conditioning (none/class/text/image)? Which evaluation (FID/CLIP/human) — each with known failure modes?",
+        "Parameters, FLOPs, dataset, GPU, epochs",
+        "Loss, optimizer, scheduler, batch size, seed"
+      ],
+      "correct": 1,
+      "explanation": "Answering these before the method section places the paper in the taxonomy — and the bucket tells you what will be easy, slow, unstable, or impossible about it."
+    }
+  ]
+}

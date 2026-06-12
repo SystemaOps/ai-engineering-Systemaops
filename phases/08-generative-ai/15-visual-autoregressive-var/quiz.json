@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What is the generation-order problem that doomed earlier autoregressive image models?",
+      "options": [
+        "GPUs process pixels in random order",
+        "Pixels/tokens live on a 2D grid but AR models visit them in 1D raster order — an early corner pixel has no idea what the image eventually becomes, so quality scaled worse than GPT-on-text and never matched diffusion at equal compute",
+        "Images have no natural ordering at all",
+        "Raster order is too fast to learn from"
+      ],
+      "correct": 1,
+      "explanation": "PixelCNN went pixel-by-pixel; DALL-E 1 and Parti went token-by-token over VQ codes. Both inherited the same flawed 1D ordering of inherently 2D data."
+    },
+    {
+      "stage": "pre",
+      "question": "How does VAR change what is being predicted?",
+      "options": [
+        "It predicts pixels in spiral order",
+        "Next-SCALE prediction: predict a 1x1 token (image summary), then 2x2, then 4x4, up to the full grid — each scale conditions causally on all previous scales while all positions WITHIN a scale are predicted in parallel",
+        "It predicts the image caption first",
+        "It predicts noise like diffusion"
+      ],
+      "correct": 1,
+      "explanation": "The order problem disappears: the whole image at scale k arrives in one transformer pass, coarse-to-fine, like progressive JPEG rendering but generative."
+    },
+    {
+      "stage": "post",
+      "question": "How does the multi-scale VQ tokenizer work?",
+      "options": [
+        "A separate codebook per resolution",
+        "One shared codebook (4096-16384 codes) tokenizes the latent at every scale, trained so the upsampled scale embeddings SUM to reconstruct the latent — a residual-VQ variant where scale k captures what scales 1..k−1 missed",
+        "JPEG coefficients become tokens",
+        "Each scale crops a different region"
+      ],
+      "correct": 1,
+      "explanation": "Trained once like VQGAN, then frozen — all generative work happens in the autoregressive transformer on top, exactly mirroring the two-stage latent-diffusion recipe."
+    },
+    {
+      "stage": "post",
+      "question": "What did the VAR paper demonstrate about scaling?",
+      "options": [
+        "Scaling laws don't apply to images",
+        "VAR matches GPT-style scaling laws for image generation — predictable quality gains with compute — and beats DiT at the same compute budget",
+        "VAR only works below 64x64",
+        "It scales but loses to PixelCNN"
+      ],
+      "correct": 1,
+      "explanation": "That's the headline: the predictable-scaling property that made AR dominate language finally transferred to images once the generation order respected image structure."
+    },
+    {
+      "stage": "post",
+      "question": "How does VAR's attention structure differ from a standard GPT?",
+      "options": [
+        "It uses no attention at all",
+        "Causality applies in SCALE order, not token order: a token at scale k attends to all tokens at scales 1..k, position embeddings encode both scale index and spatial position, and intra-scale prediction is fully parallel",
+        "Every token attends only to neighbors",
+        "Attention is replaced by convolution"
+      ],
+      "correct": 1,
+      "explanation": "The loss is still GPT-style cross-entropy on discrete codes — the sequence is just scale-structured rather than linearly ordered, which is the entire trick."
+    }
+  ]
+}

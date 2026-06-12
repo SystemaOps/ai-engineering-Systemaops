@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why does production image work revolve around inpainting rather than text-to-image?",
+      "options": [
+        "Text-to-image is legally restricted",
+        "~70% of billable image work is EDITING — swap a background, remove a logo, regenerate a hand — and from-scratch generation can't keep the rest of the image pixel-identical",
+        "Inpainting models are smaller",
+        "Clients prefer the word \"inpainting\""
+      ],
+      "correct": 1,
+      "explanation": "The task family: inpainting regenerates inside a mask, outpainting regenerates outside/beyond the canvas, editing regenerates everything while keeping semantic fidelity (SDEdit, InstructPix2Pix)."
+    },
+    {
+      "stage": "pre",
+      "question": "Why does the naive mask-and-replace approach to inpainting fail?",
+      "options": [
+        "Masks can't be applied to latents",
+        "Replacing the unmasked region with the forward-diffused clean image at each step leaves the model blind to what's inside the masked region's surroundings — boundary artifacts bleed through",
+        "It requires retraining the VAE",
+        "It works fine — there's no problem"
+      ],
+      "correct": 1,
+      "explanation": "The model needs the clean context as an explicit conditioning input, not just a post-hoc pixel paste — that's what the dedicated inpainting architecture provides."
+    },
+    {
+      "stage": "post",
+      "question": "How does a proper inpainting model differ architecturally?",
+      "options": [
+        "It uses a second discriminator",
+        "The U-Net takes 9 input channels instead of 4: noisy latent (4) + VAE-encoded source image (4) + mask (1), trained on randomly masked images to denoise only the masked region with the clean surroundings as conditioning",
+        "It runs two U-Nets in parallel",
+        "It operates in pixel space only"
+      ],
+      "correct": 1,
+      "explanation": "SD-Inpaint, SDXL-Inpaint, and Flux-Fill all use this 9-channel (or analogous) input — the model can \"see\" the context and produce coherent completions."
+    },
+    {
+      "stage": "post",
+      "question": "How does SDEdit edit images with no retraining at all?",
+      "options": [
+        "It edits prompts, not images",
+        "Noise the source image up to an intermediate t, then run the reverse chain with a new prompt — t/T ≈ 0.3 gives near-identical results with stylistic tweaks, 0.6 moderate edits preserving coarse structure, 0.9 near-total regeneration",
+        "It interpolates two latents linearly",
+        "It uses a fine-tuned editing model"
+      ],
+      "correct": 1,
+      "explanation": "The starting-noise level is a fidelity-vs-freedom dial. InstructPix2Pix is the trained alternative: fine-tuned on (input, instruction, output) triples with separate image and text CFG scales."
+    },
+    {
+      "stage": "post",
+      "question": "When would you reach for RePaint?",
+      "options": [
+        "When you need maximum speed",
+        "When you only have a standard unconditional diffusion model: at each reverse step it occasionally jumps back to a noisier state and regenerates, avoiding boundary artifacts without any inpainting-specific training",
+        "When the mask covers the whole image",
+        "When working with GANs instead"
+      ],
+      "correct": 1,
+      "explanation": "The resampling trick buys coherence with extra compute instead of extra training — the fallback when no 9-channel inpainting checkpoint exists for your base model."
+    }
+  ]
+}
