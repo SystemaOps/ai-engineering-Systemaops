@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What do SSMs and transformers each buy, and at what cost?",
+      "options": [
+        "They are equivalent formulations",
+        "Transformers buy exact recall via attention at quadratic cost (a 256k attention map is 65B entries per head); SSMs buy linear time and CONSTANT memory via a fixed-size recurrent state — but compressing long history into fixed state leaks information, lagging on state-tracking and in-context retrieval",
+        "SSMs are always strictly better",
+        "Transformers use less memory"
+      ],
+      "correct": 1,
+      "explanation": "The hybrid bet: put attention layers where exact recall matters, SSM layers everywhere else, and tune the ratio — the recipe that survived three years of scaling."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the SSM recurrence, and why does it give O(1) inference?",
+      "options": [
+        "h_t depends on all previous inputs directly",
+        "h_t = A·h_{t−1} + B·x_t, y_t = C·h_t — computing y_t needs only the previous state and current input, never earlier x's, so per-token memory and compute are constant regardless of sequence length",
+        "It's softmax attention in disguise",
+        "It requires the full sequence upfront"
+      ],
+      "correct": 1,
+      "explanation": "Modeling quality lives in the structure of A: S4 used structured matrices evaluable as long convolutions; Mamba made A, B, C data-dependent (\"selective\"); Mamba-3 re-adds targeted complexity."
+    },
+    {
+      "stage": "post",
+      "question": "What is Jamba's interleaving recipe?",
+      "options": [
+        "Alternating SSM and attention 1:1",
+        "1 Transformer layer per 7 Mamba layers (l=8 group) with MoE applied every other layer (e=2) — yielding 52B total / 12B active with a 256k context that fits on a single 80GB GPU",
+        "All Mamba with one final attention",
+        "Random layer ordering per training run"
+      ],
+      "correct": 1,
+      "explanation": "The sparse attention layers provide the exact-recall capability pure SSMs lack, while the Mamba majority keeps the KV cache tiny — only 1-in-8 layers grows a cache at all."
+    },
+    {
+      "stage": "post",
+      "question": "Why does Jamba's KV cache stay small at 256k context?",
+      "options": [
+        "It quantizes the cache to 2-bit",
+        "Only the attention layers (1 in 8) maintain a growing KV cache — Mamba layers carry a fixed-size state regardless of length, so the total cache is roughly an eighth of an equivalent pure-Transformer's",
+        "It evicts old tokens silently",
+        "256k contexts are never actually used"
+      ],
+      "correct": 1,
+      "explanation": "That arithmetic is what puts 256k on one 80GB GPU. Jamba 1.5 scales the family to 398B total / 94B active on the same recipe."
+    },
+    {
+      "stage": "post",
+      "question": "What do the three Mamba-3 innovations target?",
+      "options": [
+        "Bigger vocabulary, longer training, more data",
+        "Exponential-trapezoidal discretization (more accurate state updates), complex-valued state spaces (richer dynamics the real-valued recurrence couldn't express), and MIMO projections (higher state-update bandwidth)",
+        "Quantization, pruning, and distillation",
+        "Three new attention mechanisms"
+      ],
+      "correct": 1,
+      "explanation": "Mamba-3 (ICLR 2026) is the current-best pure-SSM baseline that future hybrids rebuild around — each innovation patches a specific known weakness of the recurrence."
+    }
+  ]
+}

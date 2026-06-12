@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why did prior sparse-attention approaches fail to stick?",
+      "options": [
+        "They were never implemented",
+        "Fixed patterns (sliding/strided/block) throw away information and fail long-range recall; inference-time sparsity (H2O, StreamingLLM) prunes a model pre-trained on DENSE attention, recovering only a fraction of the speedup since the model never learned to route through the sparse pattern",
+        "GPUs can't skip computations",
+        "Sparsity always hurts short contexts"
+      ],
+      "correct": 1,
+      "explanation": "At 64k tokens attention eats 70-80% of decode latency — NSA (ACL 2025 best paper) is the fix that stuck because it's both natively trainable AND kernel-aligned."
+    },
+    {
+      "stage": "pre",
+      "question": "What are NSA's three parallel branches?",
+      "options": [
+        "Three copies of full attention",
+        "Compressed (blocks of ~32-64 tokens summarized by a learned MLP for a coarse whole-sequence view), selected (top-k most relevant blocks read at full resolution, routed by compressed-branch scores), and sliding window (~512 recent tokens for local syntax) — combined by a learned per-position gate",
+        "Encoder, decoder, and cross branches",
+        "Past, present, and future windows"
+      ],
+      "correct": 1,
+      "explanation": "out = g_cmp·out_cmp + g_sel·out_sel + g_win·out_win, with gates from a small MLP on the query that don't need to sum to 1."
+    },
+    {
+      "stage": "post",
+      "question": "How does NSA make discrete top-k selection trainable?",
+      "options": [
+        "With a Gumbel-softmax relaxation",
+        "The top-k is a forward-graph NO-OP that only controls which blocks load from memory — gradients flow through the compressed-branch attention scores, which influence both the compressed output AND the selection logic, plus through the selected blocks' contribution",
+        "By annealing k from N down to 16",
+        "Selection isn't trainable — it's frozen"
+      ],
+      "correct": 1,
+      "explanation": "That's the \"natively trainable\" trick: the differentiable coarse attention doubles as the routing signal, so pre-training shapes the sparsity pattern end to end."
+    },
+    {
+      "stage": "post",
+      "question": "What makes NSA's kernel \"hardware-aligned\"?",
+      "options": [
+        "It's written in assembly",
+        "Queries load by GQA group with selection shared per-group (not per-head), so sparse KV block fetches amortize across the group and attention runs in SRAM — arithmetic intensity stays high instead of degrading into scattered memory reads",
+        "It only runs on Hopper GPUs",
+        "It avoids matrix multiplication"
+      ],
+      "correct": 1,
+      "explanation": "Sparsity that ignores the memory hierarchy delivers paper FLOP savings but no wall-clock win; NSA beats FlashAttention on 64k decode while matching or beating full-attention quality."
+    },
+    {
+      "stage": "post",
+      "question": "Why does each branch exist — what would break with only two?",
+      "options": [
+        "Three is an arbitrary choice",
+        "Compressed alone is too coarse for exact recall; selection needs the compressed scores as its routing signal; and the sliding window covers structure-heavy short-range patterns (syntax, local coreference) the global branches would miss",
+        "Redundancy for fault tolerance",
+        "One branch per GPU die"
+      ],
+      "correct": 1,
+      "explanation": "Coarse overview + targeted fine detail + local context — three views of the same KV cache, each cheap, jointly covering what full attention provided expensively."
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why does softmax attention have a noise floor that grows with context length?",
+      "options": [
+        "Floating-point rounding errors",
+        "Softmax never produces exact zeros — every unrelated token gets O(1/N) mass, so at 128k context even 0.001% per token sums to ~12% of total weight; the model must route around a noise floor that grows with N",
+        "Longer prompts have more typos",
+        "The KV cache overflows past 32k"
+      ],
+      "correct": 1,
+      "explanation": "Empirically it shows as hallucinated citations in long-context RAG, lost-in-the-middle failures, and degradation past 32k — the model wants a hard top-k that smooth softmax can't deliver."
+    },
+    {
+      "stage": "pre",
+      "question": "How does differential attention cancel the noise?",
+      "options": [
+        "It clips small attention weights to zero",
+        "Split Q and K into two halves, compute two softmax maps, and output (A₁ − λ·A₂)V — the roughly uniform noise both maps share cancels in the subtraction, while the trained signal peaks appear in only one map and survive",
+        "It averages ten attention maps",
+        "It doubles the temperature"
+      ],
+      "correct": 1,
+      "explanation": "Like a differential amplifier: common-mode noise subtracts out, differential signal remains. ICLR 2025 measured lower perplexity, better long-context accuracy, fewer hallucinations at equal size."
+    },
+    {
+      "stage": "post",
+      "question": "What three problems kept DIFF V1 out of frontier pre-training?",
+      "options": [
+        "Licensing, cost, and politics",
+        "The value cache loaded twice per decode step, custom CUDA kernels broke FlashAttention compatibility, and per-head RMSNorm destabilized long training runs at 70B+ scale",
+        "It only worked on encoder models",
+        "It required double the parameters"
+      ],
+      "correct": 1,
+      "explanation": "V2 (Microsoft, January 2026) fixed all three: baseline-matching decode latency, no custom kernels, FlashAttention-compatible — the production-stack rewrite."
+    },
+    {
+      "stage": "post",
+      "question": "Why doesn't the subtraction cancel the SIGNAL along with the noise?",
+      "options": [
+        "Signal tokens are excluded from A₂",
+        "Cancellation requires the component to appear in BOTH maps at the same magnitude — at initialization the uniform noise does, but training drives the peaked signal weights into the maps asymmetrically",
+        "λ is set to zero for signal positions",
+        "The signal is added back afterwards"
+      ],
+      "correct": 1,
+      "explanation": "The learned λ balances the two maps so the shared floor subtracts out while the differential part — what the model actually learned to attend to — passes through."
+    },
+    {
+      "stage": "post",
+      "question": "What failure modes is differential attention specifically aimed at?",
+      "options": [
+        "Slow tokenization of long documents",
+        "Attention-head interference at long context: hallucinated citations in RAG, lost-in-the-middle on 100k retrieval, and needle-in-haystack degradation past 32k — all downstream of unrelated-token noise accumulating",
+        "Out-of-memory errors during training",
+        "Repetition loops in short outputs"
+      ],
+      "correct": 1,
+      "explanation": "As contexts stretched to 100k+, the O(1) total noise contribution became a first-order quality problem — which is why a noise-cancelling attention variant earned a production rewrite."
+    }
+  ]
+}

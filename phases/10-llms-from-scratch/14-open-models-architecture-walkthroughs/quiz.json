@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "How different is a 2026 frontier open model from the GPT-2 you built in Lesson 04?",
+      "options": [
+        "Completely different — new math required",
+        "The skeleton (embedding, blocks of norm/attention/MLP with residuals, head, causal loss) is UNCHANGED — Llama 3's 200-page report describes the same object with five or six well-motivated modifications plus scaling details; the math you know covers 95%",
+        "Only the tokenizer is shared",
+        "They no longer use attention"
+      ],
+      "correct": 1,
+      "explanation": "The lesson is a diff: when Llama 5 or DeepSeek-V4 drops, you read the config, see which known knobs moved, and immediately know the implications."
+    },
+    {
+      "stage": "pre",
+      "question": "What are the six knobs that actually move between frontier architectures?",
+      "options": [
+        "Six different learning rate schedules",
+        "Normalization (LayerNorm→RMSNorm), positions (learned→RoPE + YaRN/NTK variants), activation (GELU→SwiGLU), attention sharing (MHA→GQA→MQA→MLA), dense vs MoE MLPs, and pre-norm placement (post-norm is gone)",
+        "Depth, width, heads, vocab, batch, steps",
+        "Six proprietary secret components"
+      ],
+      "correct": 1,
+      "explanation": "Everything else — LR schedule, data mix, context length — lives in the training config, not the architecture. The 2026 toolbox is finite; each model picks a subset."
+    },
+    {
+      "stage": "post",
+      "question": "What does RMSNorm drop relative to LayerNorm, and why is that fine?",
+      "options": [
+        "It drops the scaling parameter",
+        "It removes the mean-subtraction and shift, keeping only RMS-based scaling — empirically as good at stabilizing training while being cheaper, which is why every modern model adopted it",
+        "It drops normalization entirely",
+        "It normalizes across the batch instead"
+      ],
+      "correct": 1,
+      "explanation": "A recurring theme of the six knobs: each change strips or restructures a component once data showed the simpler form loses nothing."
+    },
+    {
+      "stage": "post",
+      "question": "What can you compute about any open model from its config.json alone?",
+      "options": [
+        "Its exact benchmark scores",
+        "Parameter count, KV cache size per context length, and activation memory — fields like hidden_dim, n_layers, n_kv_heads, vocab_size, and expert counts fully determine the deployment arithmetic",
+        "Its training data composition",
+        "Nothing useful without the weights"
+      ],
+      "correct": 1,
+      "explanation": "That arithmetic is the practical skill: matching a model to a deployment target's latency and memory constraints before downloading a single shard."
+    },
+    {
+      "stage": "post",
+      "question": "Why does reading Llama 3, DeepSeek-V3, Mixtral, Qwen, and Gemma side by side pay off?",
+      "options": [
+        "To memorize each model's trivia",
+        "Each family diverges from the shared baseline at NAMED, specific lines — Mixtral adds MoE, DeepSeek adds MLA + loss-free balancing, Gemma interleaves SWA — so a fresh model card translates mentally back to the GPT-2 baseline plus knob settings",
+        "Because each needs its own framework",
+        "Only to compare parameter counts"
+      ],
+      "correct": 1,
+      "explanation": "A finite toolbox plus a diff-reading habit replaces the need for a new mental model per release."
+    }
+  ]
+}

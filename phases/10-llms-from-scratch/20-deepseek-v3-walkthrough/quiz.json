@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "How does DeepSeek-V3 relate to the six-knob framework of Lesson 14?",
+      "options": [
+        "It ignores the standard knobs entirely",
+        "It turns all six standard knobs (RMSNorm, RoPE, SwiGLU, pre-norm, weight tying, MoE) AND adds four of its own: Multi-Head Latent Attention, auxiliary-loss-free load balancing, Multi-Token Prediction, and DualPipe training",
+        "It only changes the tokenizer",
+        "It is a Llama 3 fine-tune"
+      ],
+      "correct": 1,
+      "explanation": "Llama 3 405B is \"GPT-2 with six knobs turned\"; DeepSeek-V3 (671B total / 37B active) is the first frontier open model whose deep structure meaningfully diverges — and the blueprint many 2026 runs copy."
+    },
+    {
+      "stage": "pre",
+      "question": "How does MLA differ from GQA?",
+      "options": [
+        "MLA uses more KV heads than GQA",
+        "GQA shares K/V across query-head groups; MLA compresses K and V into ONE shared low-rank latent per token per layer (kv_lora_rank ≈ 512 floats) and decompresses per head on the fly — the cache stores only the latent",
+        "MLA removes the KV cache entirely",
+        "They are the same technique"
+      ],
+      "correct": 1,
+      "explanation": "The up-projections can even be absorbed into subsequent matmuls. Extra decompression compute is small against the bandwidth saved — a net win for long-context inference."
+    },
+    {
+      "stage": "post",
+      "question": "What is the MLA cache advantage at 128k context, by the numbers?",
+      "options": [
+        "Roughly equal to GQA",
+        "61 layers × 512 latent × 131072 tokens × 2 bytes ≈ 7.6 GB, versus ~30.5 GB for a Llama-3-70B-style GQA baseline (2 × 61 × 8 heads × 128 dim) — 4x smaller",
+        "2x larger but higher quality",
+        "Exactly 1 GB regardless of context"
+      ],
+      "correct": 1,
+      "explanation": "Deriving these numbers from the published config is the lesson's core skill: the architecture choices become concrete serving dollars."
+    },
+    {
+      "stage": "post",
+      "question": "Which part of the stack does each DeepSeek-specific innovation target?",
+      "options": [
+        "All four target the tokenizer",
+        "MLA targets inference KV-cache memory; auxiliary-loss-free routing targets MoE training quality (no balance penalty polluting the objective); MTP targets training signal density plus free speculative drafts; DualPipe targets multi-node training utilization",
+        "They all reduce parameter count",
+        "All four are inference-only tricks"
+      ],
+      "correct": 1,
+      "explanation": "Four innovations, four different bottlenecks — memory, objective purity, supervision density, and pipeline bubbles. That breadth is why the model defined a new frontier recipe."
+    },
+    {
+      "stage": "post",
+      "question": "Why is the 671B-total / 37B-active ratio \"the right bet\"?",
+      "options": [
+        "Smaller ratios crash GPU drivers",
+        "Capacity (knowledge, specialization) scales with total parameters at storage cost while per-token compute scales only with active parameters — MoE + MLA together give frontier capability at a fraction of dense inference cost, which neither achieves alone",
+        "It matches Chinchilla exactly",
+        "Marketing preferred bigger numbers"
+      ],
+      "correct": 1,
+      "explanation": "MoE attacks the FLOPs bill, MLA attacks the memory bill — the two binding constraints of serving. Their combination is the architectural thesis of the model."
+    }
+  ]
+}

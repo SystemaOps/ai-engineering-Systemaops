@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why isn't a frontier training run just a sequence of notebooks?",
+      "options": [
+        "Notebooks can't import each other",
+        "Llama 3 405B took 30M H100-hours over ~54 days — one corrupted checkpoint, data contamination, or eval regression can cost a week of wall-clock and a month of GPU budget; survival requires every stage to have deterministic inputs/outputs, a manifest, a hash, and a gate",
+        "Notebooks are forbidden by license",
+        "GPUs can't run Jupyter"
+      ],
+      "correct": 1,
+      "explanation": "Each prior lesson works as a notebook with its own conventions and seeds. The capstone is the orchestration discipline that turns them into one reproducible run."
+    },
+    {
+      "stage": "pre",
+      "question": "What are the four components of the pipeline scaffold?",
+      "options": [
+        "Tokenizer, model, dataset, GPU",
+        "Manifest (describes the run), orchestrator (coordinates stages and tracks experiments), eval gate (thresholds that decide shipping), and artifact store (hashed stage outputs) — the same shape from 100M to 1T parameters",
+        "Docker, Kubernetes, Spark, Airflow",
+        "Train, test, validate, deploy scripts"
+      ],
+      "correct": 1,
+      "explanation": "The difference between your hobby GPT and Llama 3 is the size of the numbers in each stage's config, not the shape of the pipeline."
+    },
+    {
+      "stage": "post",
+      "question": "What is the artifact contract between stages?",
+      "options": [
+        "A legal document signed by the team",
+        "Each stage declares what it consumes, what it produces, and how the NEXT stage verifies its input — tokenizer feeds sharded data, base checkpoint feeds SFT, SFT feeds RLHF/DPO branches that merge into the refined policy, which feeds eval and quantization toward the ship gate",
+        "Shared global variables",
+        "A single zip file per run"
+      ],
+      "correct": 1,
+      "explanation": "The twelve-stage dependency graph makes failure containment possible: a bad artifact is caught at the next stage's verification, not three stages later."
+    },
+    {
+      "stage": "post",
+      "question": "Why do eval thresholds act as a SHIP GATE rather than a report?",
+      "options": [
+        "Reports are too long to read",
+        "A gate makes the decision mechanical and auditable: if the eval report or served-model checks miss thresholds, the run does not ship — no human optimism overriding a regression at 2am",
+        "Gates run faster than reports",
+        "Regulators require gates"
+      ],
+      "correct": 1,
+      "explanation": "Both the eval report and the inference server feed the gate in the dependency graph — quality AND serving must pass before the artifact is releasable."
+    },
+    {
+      "stage": "post",
+      "question": "What drives the rollback plan's design?",
+      "options": [
+        "Alphabetical order of artifacts",
+        "Cost asymmetry: tokenizers and eval reports are cheap to re-run, pre-training checkpoints are catastrophically expensive — the plan maps which artifacts can be regenerated versus which must be protected with redundancy and hashes",
+        "Rollbacks are never needed",
+        "Always restart from stage one"
+      ],
+      "correct": 1,
+      "explanation": "Knowing what a corrupted checkpoint costs (weeks, millions) is what justifies the manifest-and-hash discipline everywhere else."
+    }
+  ]
+}

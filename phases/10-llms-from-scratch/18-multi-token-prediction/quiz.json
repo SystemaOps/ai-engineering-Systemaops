@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why is plain next-token prediction a \"surprisingly weak signal\"?",
+      "options": [
+        "Cross-entropy can't be optimized well",
+        "Each hidden state is supervised to predict exactly ONE thing, while structure, coherence, factuality, and arithmetic flow extend well beyond one token — the model must learn these by accumulating one-token signals over trillions of tokens",
+        "Tokens are too small a unit of text",
+        "Next-token loss ignores rare words"
+      ],
+      "correct": 1,
+      "explanation": "MTP's question: what if every hidden state predicted multiple future tokens at once? Denser supervision per position, same data."
+    },
+    {
+      "stage": "pre",
+      "question": "Why couldn't Gloeckle et al.'s parallel MTP heads be used for speculative decoding?",
+      "options": [
+        "They were too slow to evaluate",
+        "Independent heads on the same hidden state predicted different offsets WITHOUT chaining causally — head k never saw the prediction for k−1, so the multi-token outputs weren't a coherent draft sequence",
+        "Meta's license forbade it",
+        "They only predicted two tokens ahead"
+      ],
+      "correct": 1,
+      "explanation": "DeepSeek-V3's redesign keeps the causal chain: depth k's hidden state is built FROM depth k−1's state combined with the embedding of the intervening token."
+    },
+    {
+      "stage": "post",
+      "question": "How does a sequential MTP module construct its per-depth hidden state?",
+      "options": [
+        "By copying the backbone state unchanged",
+        "h^(k) = T_k(M_k · concat(RMSNorm(h^(k−1)), RMSNorm(E(t_{i+k})))) — each depth gets its own small transformer block while the embedding E and output head are SHARED with the main model to keep overhead modest",
+        "By averaging all previous states",
+        "Through a frozen adapter layer"
+      ],
+      "correct": 1,
+      "explanation": "At DeepSeek-V3 scale: 14B extra parameters across MTP modules on a 671B model — about 2% overhead for denser training signal plus a free inference asset."
+    },
+    {
+      "stage": "post",
+      "question": "What double payoff did DeepSeek-V3 get from MTP?",
+      "options": [
+        "Smaller checkpoints and faster loading",
+        "Training: gradient flow through the depth-k losses distills multi-step structure back into the main model; inference: the trained MTP heads are repurposed as speculative-decoding drafters with 80%+ acceptance, yielding 1.8x generation throughput",
+        "Better tokenization and longer context",
+        "Cheaper data and fewer GPUs"
+      ],
+      "correct": 1,
+      "explanation": "The same module serves both phases — the rare optimization that improves the model AND ships a deployment speedup as a by-product."
+    },
+    {
+      "stage": "post",
+      "question": "How is the MTP training loss assembled?",
+      "options": [
+        "Only the deepest module is trained",
+        "A cross-entropy loss per prediction depth k = 1..D against ground-truth t_{i+k}, averaged/weighted and added to the main next-token loss — every position gets D+1 supervision signals instead of one",
+        "An adversarial loss against a critic",
+        "MSE between hidden states"
+      ],
+      "correct": 1,
+      "explanation": "The joint loss across depths is the entire mechanism: more gradient information per token of data, with teacher-forced ground-truth embeddings keeping each depth's input clean."
+    }
+  ]
+}

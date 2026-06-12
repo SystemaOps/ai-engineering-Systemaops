@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why is a 70B model's decoding only ~35 tokens/sec on an H100 despite idle compute units?",
+      "options": [
+        "The softmax is the bottleneck",
+        "Memory bandwidth is the ceiling: every token loads 70B weights from HBM for one step of arithmetic producing one token — speculative decoding converts this latency problem into a solvable throughput problem",
+        "Python overhead per token",
+        "The KV cache is too small"
+      ],
+      "correct": 1,
+      "explanation": "One verifier forward pass over prefix + N drafts produces up to N+1 accepted tokens — amortizing the weight-loading cost that dominates decode."
+    },
+    {
+      "stage": "pre",
+      "question": "What does the Leviathan theorem guarantee, even with a terrible draft?",
+      "options": [
+        "At least 50% acceptance always",
+        "Accept d ~ p with probability min(1, q(d)/p(d)), on reject sample from the normalized residual (q−p)₊ — the output is distributed EXACTLY according to the verifier q regardless of draft quality; a worse draft just rejects more often",
+        "Drafts converge to the verifier",
+        "Speedup of at least 2x"
+      ],
+      "correct": 1,
+      "explanation": "Identical, not approximate — the entire reason production stacks can ship it as a pure latency optimization with zero quality risk."
+    },
+    {
+      "stage": "post",
+      "question": "What is the single biggest speedup lever?",
+      "options": [
+        "Maximizing draft length N",
+        "Acceptance rate α: at fixed N=5, going from α=0.6 (vanilla draft) to α=0.9 (EAGLE-3) takes expected accepted tokens from 2.2 to 4.1 per verifier forward — nearly 2x more throughput from the same verifier",
+        "Using a bigger verifier",
+        "Lowering the temperature"
+      ],
+      "correct": 1,
+      "explanation": "E[accepted] = (1−α^(N+1))/(1−α); wall time per token is (N·c+1)/E[accepted]. For α=0.8, c=0.05, optimal N≈5-7 at 3.2x; α=0.95 pushes 5x."
+    },
+    {
+      "stage": "post",
+      "question": "What limitation did each EAGLE generation remove?",
+      "options": [
+        "Each just added more parameters",
+        "EAGLE-1: draft reads the verifier's own hidden states instead of being an independent small LLM (α 0.6→0.7-0.8); EAGLE-2: dynamic draft TREES scored via tree attention with adaptive length (α>0.85); EAGLE-3: drops feature-matching loss for direct token prediction + training-time test feeding the draft its own predictions",
+        "They only changed batch sizes",
+        "Each removed one transformer layer"
+      ],
+      "correct": 1,
+      "explanation": "EAGLE-3's TTT aligns train and inference distributions to stop error accumulation — measured up to 6.5x on chat and +38% throughput at batch 64 in SGLang."
+    },
+    {
+      "stage": "post",
+      "question": "What must a correct speculative implementation handle besides accept/reject?",
+      "options": [
+        "Nothing — accept/reject is everything",
+        "Rolling the KV cache BACK on rejection (the verifier already wrote states for discarded draft positions) and emitting the bonus token from q_{N+1} on full acceptance",
+        "Re-tokenizing the entire prefix",
+        "Restarting the draft model weights"
+      ],
+      "correct": 1,
+      "explanation": "The cache rollback is the classic implementation bug: forget it, and rejected draft tokens poison subsequent attention."
+    }
+  ]
+}

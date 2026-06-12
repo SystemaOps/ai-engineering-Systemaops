@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What ceiling does Hogwild! Inference attack that speculative decoding can't?",
+      "options": [
+        "GPU memory capacity limits",
+        "Spec decoding parallelizes WITHIN one sequence (3-5x) but the autoregressive dependency remains the hard ceiling — Hogwild! parallelizes ACROSS sequences: 50k reasoning tokens at 35 tok/s is 24 minutes, and N cooperating workers can divide that work",
+        "Tokenizer throughput",
+        "Network bandwidth between nodes"
+      ],
+      "correct": 1,
+      "explanation": "An orthogonal axis of inference parallelism: tokens-within-a-sequence (spec decode) vs whole-sequences-in-cooperation (Hogwild!)."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the core Hogwild! setup?",
+      "options": [
+        "N models voting on the final answer",
+        "N instances of the SAME LLM share ONE KV cache — every worker sees every other worker's tokens instantly as part of its own context, with write order determined by arrival time; no per-worker position index",
+        "A coordinator assigning sub-tasks",
+        "One model with N attention heads"
+      ],
+      "correct": 1,
+      "explanation": "Unlike voting ensembles, tree-of-thought, or multi-agent frameworks, there is no explicit coordination machinery — the shared cache IS the communication channel."
+    },
+    {
+      "stage": "post",
+      "question": "Why does coordination emerge without any fine-tuning?",
+      "options": [
+        "A hidden RL objective trains it online",
+        "Reasoning models (QwQ, DeepSeek-R1) already have the abilities: prompted with \"you are one of N instances sharing memory, avoid redundant work,\" they read the cache, notice what's been attempted, and pivot — observed forming plans, calling out other workers' errors, and adapting when plans fail",
+        "The cache contains special sync tokens",
+        "It doesn't — coordination is hardcoded"
+      ],
+      "correct": 1,
+      "explanation": "The emergent behavior comes entirely from existing reasoning capability plus shared visibility — \"I see worker 2 handled the base case, so I'll take the inductive step.\""
+    },
+    {
+      "stage": "post",
+      "question": "What is the namesake connection to Hogwild! SGD?",
+      "options": [
+        "Both were written by the same lab",
+        "Hogwild! SGD (2011) had asynchronous workers writing to a shared PARAMETER vector without locks; Hogwild! Inference has workers writing to a shared KV CACHE — both rely on empirical convergence rather than synchronization guarantees",
+        "Both require gradient updates",
+        "The name is a random choice"
+      ],
+      "correct": 1,
+      "explanation": "The same engineering bet twice: drop the locks, accept races, and observe that the process still converges in practice."
+    },
+    {
+      "stage": "post",
+      "question": "What determines whether Hogwild! actually speeds up a task?",
+      "options": [
+        "Worker count alone — more is always better",
+        "Task-level parallelism p and coordination overhead c: speedup tracks how decomposable the problem is and how much cache-reading redundancy costs — workload-dependent and still experimental as of 2026",
+        "GPU clock frequency",
+        "The prompt's word count"
+      ],
+      "correct": 1,
+      "explanation": "A serial proof gains little from N workers; a multi-case analysis gains a lot. The wall-time model as a function of N, p, and c is the lesson's analysis exercise."
+    }
+  ]
+}

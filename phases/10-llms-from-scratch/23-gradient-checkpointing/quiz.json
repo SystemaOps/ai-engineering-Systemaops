@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why do activations, not weights, blow up training memory?",
+      "options": [
+        "Activations are stored in fp64",
+        "Backprop retains the inputs to every differentiated op — roughly 12·B·L·d floats per layer; at d=8192, L=8192 that's ~800 MB/layer in BF16, 51 GB for 64 layers, before the quadratic attention-softmax intermediates are even counted",
+        "Optimizer states live on disk",
+        "Weights are always larger"
+      ],
+      "correct": 1,
+      "explanation": "BF16 weights plus optimizer state might fit in 80GB; activations are what push past it. Checkpointing trades FLOPs for memory: recompute instead of save."
+    },
+    {
+      "stage": "pre",
+      "question": "How does naive full checkpointing work, and what does it cost?",
+      "options": [
+        "It compresses activations losslessly",
+        "Split the network into segments, store only each segment's INPUT, and rerun the segment's forward during backward to rematerialize intermediates — about 33% extra forward FLOPs (a step becomes 1+1+2 = 4 units instead of 3)",
+        "It skips backward for some layers",
+        "It moves activations to swap space"
+      ],
+      "correct": 1,
+      "explanation": "Chen et al. 2016: one checkpoint every √L layers balances memory against compute — 8 checkpoints for a 64-layer model."
+    },
+    {
+      "stage": "post",
+      "question": "What insight powers selective checkpointing (Korthikanti 2022)?",
+      "options": [
+        "All activations cost the same to store",
+        "The attention softmax is B·L²·heads and grows QUADRATICALLY with sequence length while FFN activations grow linearly — keep the cheap linear/residual activations and recompute only attention: ~5x memory saved for under 5% FLOP overhead",
+        "Checkpointing works best on embeddings",
+        "Recomputing the FFN is free"
+      ],
+      "correct": 1,
+      "explanation": "Versus naive checkpointing's 33% overhead, the smart selection targets exactly the O(L²) term. Megatron-Core ships it as \"selective\" recomputation, used in most 2024+ frontier runs."
+    },
+    {
+      "stage": "post",
+      "question": "When does offloading beat recomputation?",
+      "options": [
+        "Never — recompute always wins",
+        "When idle CPU-GPU transfer bandwidth exceeds the cost of rematerialization: ship activations to CPU RAM between forward and backward — FSDP2 ships it first-class, and mixed strategies (checkpoint some layers, offload others) are common",
+        "Only on machines without CPUs",
+        "When the model has under 1B params"
+      ],
+      "correct": 1,
+      "explanation": "The trade is FLOPs vs PCIe bandwidth. The right mix depends on which resource your training run has spare."
+    },
+    {
+      "stage": "post",
+      "question": "What exactly does the backward pass need from the forward?",
+      "options": [
+        "Only the final loss value",
+        "The INPUT to each op (grad_params = inputᵀ @ grad_output for linears) and activation-derivative intermediates (ReLU/GELU/softmax derivatives depend on activation values) — that's what autograd retains, and what checkpointing chooses to drop and rebuild",
+        "All gradients from the previous step",
+        "The random seed only"
+      ],
+      "correct": 1,
+      "explanation": "Knowing what backward consumes is what makes \"which segments to drop\" answerable — the answer is not \"all of them,\" it's \"the expensive-to-store, cheap-to-recompute ones.\""
+    }
+  ]
+}

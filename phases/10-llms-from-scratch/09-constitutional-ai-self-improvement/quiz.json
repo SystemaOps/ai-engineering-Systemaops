@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What expensive input do both RLHF and DPO depend on, and what did Constitutional AI propose?",
+      "options": [
+        "GPU clusters — CAI runs on CPUs",
+        "Human preference pairs (Llama 2 Chat used 1.5M+ comparisons; slow, expensive, annotator-biased) — CAI has the MODEL generate the preference labels by critiquing its own outputs against a written constitution of principles",
+        "Synthetic data — CAI uses real data",
+        "Reward models — CAI removes rewards"
+      ],
+      "correct": 1,
+      "explanation": "Bai et al. 2022. The human budget shrinks to a much smaller step: writing the constitution and picking the reward rules."
+    },
+    {
+      "stage": "pre",
+      "question": "What are Constitutional AI's two stages?",
+      "options": [
+        "Pretraining then fine-tuning",
+        "SL-CAI: the model critiques its own responses against a principle, revises them, and is fine-tuned on (prompt, revised) pairs; then RLAIF: the model judges response pairs via the constitution, building a preference dataset for DPO/PPO — preferences from the model, not humans",
+        "Red-teaming then patching",
+        "Distillation then quantization"
+      ],
+      "correct": 1,
+      "explanation": "Same pipeline shape as RLHF with the human swapped out: self-critique supplies stage 1's data, self-judgment supplies stage 2's preferences."
+    },
+    {
+      "stage": "post",
+      "question": "How did DeepSeek-R1 skip the critic entirely?",
+      "options": [
+        "By training on more human data",
+        "For tasks with VERIFIABLE outcomes (math with known answers, code that passes tests), generate many candidates, grade each with a deterministic rule, and run policy-gradient (GRPO) on the rewards — almost no human preference data, o1-class reasoning",
+        "By copying OpenAI's weights",
+        "By using a 10x larger model"
+      ],
+      "correct": 1,
+      "explanation": "The division of labor in 2026 alignment: Constitutional AI for subjective behavior, rule-based RL for verifiable behavior."
+    },
+    {
+      "stage": "post",
+      "question": "How does GRPO differ from PPO?",
+      "options": [
+        "GRPO uses a bigger value network",
+        "GRPO replaces PPO's learned value-function baseline with a GROUP-RELATIVE baseline: sample a group of responses per prompt and normalize each reward against the group mean — no critic network to train at all",
+        "GRPO only works on images",
+        "They are identical algorithms"
+      ],
+      "correct": 1,
+      "explanation": "The group statistics play the role the critic played: \"better than the other attempts at this same prompt\" is the advantage signal."
+    },
+    {
+      "stage": "post",
+      "question": "When does self-improvement fail?",
+      "options": [
+        "It never fails with enough compute",
+        "When it collapses into mode seeking — the model amplifies its own preferences and narrows its distribution; self-generated signals work when grounded by a constitution or verifiable rule, not as a free lunch on arbitrary tasks",
+        "Only when the model is too small",
+        "When the constitution is too long"
+      ],
+      "correct": 1,
+      "explanation": "Knowing when self-improvement beats human data and when it degenerates is the lesson's judgment call: grounding is the difference between bootstrapping and echo-chambering."
+    }
+  ]
+}

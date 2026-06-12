@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What three compounding bottlenecks hit DeepSeek-V3's 2,048-GPU training?",
+      "options": [
+        "Power, cooling, and networking cables",
+        "Activation memory pressure (8k sequences, 61 layers), pipeline bubbles (~12% idle even with 1F1B at 8 stages), and cross-node MoE all-to-all reaching a 1:1 compute-to-communication ratio",
+        "Slow disks, small RAM, old drivers",
+        "Checkpoint size, eval time, and logging"
+      ],
+      "correct": 1,
+      "explanation": "Each had separate fixes (checkpointing, Zero Bubble, comm kernels); DualPipe's contribution is making them play together — over 95% GPU utilization across the 14.8T-token run."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the pipeline-bubble problem?",
+      "options": [
+        "GPU memory fragmenting over time",
+        "With layers split across P devices, each stage idles waiting for the previous stage's output (forward) or the next stage's gradient (backward) — GPipe wasted most GPU time; 1F1B interleaving and Zero Bubble's B/W backward split progressively tightened it",
+        "Network packets arriving duplicated",
+        "Batches being too large to fit"
+      ],
+      "correct": 1,
+      "explanation": "Zero Bubble (Sea AI Lab 2023) split backward into backward-for-input and backward-for-weights to fill idle slots; DualPipe is the next step on that lineage."
+    },
+    {
+      "stage": "post",
+      "question": "What are the four components of a DualPipe chunk, and how do they overlap?",
+      "options": [
+        "Four identical compute slices",
+        "Attention, all-to-all dispatch, MoE MLP, and all-to-all combine — scheduled so dispatch comms run in parallel with the next chunk's attention compute, and combine comms run under the following chunk's MLP",
+        "Load, compute, store, sync",
+        "Embed, encode, decode, project"
+      ],
+      "correct": 1,
+      "explanation": "The decomposition is what creates overlap windows: each communication phase hides inside a neighboring chunk's compute phase instead of blocking the pipeline."
+    },
+    {
+      "stage": "post",
+      "question": "What is the \"dual\" in DualPipe, and why is its cost acceptable?",
+      "options": [
+        "Two optimizers running simultaneously",
+        "Micro-batches inject from BOTH pipeline ends, so device i must hold both early-layer i and late-layer P−1−i — a 2x replication of non-expert parameters that's cheap because Expert Parallelism already spreads the MoE experts (most of the weights) thin across ranks",
+        "Dual-precision fp8/fp16 training",
+        "Two copies of the dataset"
+      ],
+      "correct": 1,
+      "explanation": "Bidirectional streams fill each other's idle slots. The replicated dense layers are small potatoes next to the sharded expert weights."
+    },
+    {
+      "stage": "post",
+      "question": "What trade does DualPipeV (Sea AI Lab, 2025) make?",
+      "options": [
+        "More memory for less compute",
+        "It drops the 2x parameter replication at the cost of a marginally larger bubble when Expert Parallelism is inactive — the refinement for setups where the dual copy isn't already amortized",
+        "It abandons pipeline parallelism",
+        "It doubles the all-to-all traffic"
+      ],
+      "correct": 1,
+      "explanation": "The variant choice tracks your parallelism mix: with heavy EP, DualPipe's replication is free; without it, DualPipeV's tighter memory wins."
+    }
+  ]
+}
