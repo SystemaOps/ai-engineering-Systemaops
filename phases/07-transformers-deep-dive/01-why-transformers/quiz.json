@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What were the three fatal weaknesses of RNNs?",
+      "options": [
+        "Too many parameters, slow inference, big files",
+        "Sequential computation (1,024 tokens = 1,024 serial steps on massively parallel GPUs), vanishing gradients (information 50 tokens back is crushed through 50 non-linearities), and a fixed-width hidden-state bottleneck regardless of source length",
+        "No GPU support, no Python bindings, no docs",
+        "Overfitting, underfitting, and exploding loss"
+      ],
+      "correct": 1,
+      "explanation": "\"Attention Is All You Need\" (2017) dropped recurrence entirely: every position attends to every other in parallel, training in one big matmul instead of N sequential steps."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the fundamental compute difference between recurrence and attention?",
+      "options": [
+        "Attention uses fewer FLOPs total",
+        "O(N) serial depth vs O(1): an RNN can't compute h_5 before h_4, wasting 99% of parallel silicon, while the whole N×N attention matrix fills in one batched matmul with no step depending on another",
+        "RNNs can't run on GPUs at all",
+        "Attention has no learnable weights"
+      ],
+      "correct": 1,
+      "explanation": "In practice transformers train 5-10x faster per epoch at N=512, and the gap widens with length — until the O(N²) attention memory wall, which Flash Attention later addressed."
+    },
+    {
+      "stage": "post",
+      "question": "What does the transformer trade away for parallelism?",
+      "options": [
+        "Accuracy on short sequences",
+        "Memory: attention scales O(N²) versus recurrence's O(N) — fine at 2K context, but 128K needs sliding windows, RoPE extrapolation, Flash Attention tiling, or linear-attention variants",
+        "The ability to do translation",
+        "Nothing — it's strictly better"
+      ],
+      "correct": 1,
+      "explanation": "Transformers trade time for memory and then win the time back through parallelism — the memory bill comes due at long context."
+    },
+    {
+      "stage": "post",
+      "question": "What is the inductive-bias shift from RNNs to transformers?",
+      "options": [
+        "Transformers assume stronger locality",
+        "RNNs assume locality and recency; transformers assume NOTHING — every pair is an attention candidate, so they need more data to train well but scale further once they have it (Chinchilla formalized: enough tokens and a transformer always beats an equal-size RNN)",
+        "Both share identical biases",
+        "Transformers assume tokens are independent"
+      ],
+      "correct": 1,
+      "explanation": "Weaker priors + more data beats stronger priors + less — the recurring bet of the scaling era."
+    },
+    {
+      "stage": "post",
+      "question": "What evidence shows the transformer is modality-general?",
+      "options": [
+        "It only dominates language",
+        "By 2026 the same block powers language (GPT-5, Claude 4, Llama 4), vision (ViT, DINOv2, SAM 3), audio (Whisper), biology (AlphaFold 3), and robotics (RT-2) — same architecture, different inputs",
+        "It was abandoned outside NLP",
+        "Each modality needed a new architecture"
+      ],
+      "correct": 1,
+      "explanation": "One architectural bet changed every scaling curve in deep learning after 2017 — which is why this phase studies the block in such depth."
+    }
+  ]
+}

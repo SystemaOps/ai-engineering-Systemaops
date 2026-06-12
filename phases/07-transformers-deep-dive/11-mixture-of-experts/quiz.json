@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What link does Mixture of Experts break?",
+      "options": [
+        "The link between data and parameters",
+        "Dense models pay FLOPs equal to parameter count on EVERY token — MoE replaces each FFN with E experts plus a router picking k per token, so storage scales with E while compute scales with k (e.g., DeepSeek-V3: 671B total, 37B active)",
+        "The link between loss and gradients",
+        "The link between layers and depth"
+      ],
+      "correct": 1,
+      "explanation": "Typical 2026 config: E=256, k=8. The top 10 open models on Artificial Analysis are all MoE — sparsity is the scaling idea of the decade."
+    },
+    {
+      "stage": "pre",
+      "question": "What does an MoE block look like mechanically?",
+      "options": [
+        "E parallel attention layers voting",
+        "Attention is unchanged; the FFN is swapped: a single linear router scores E experts per token, the top-k are selected, and the output is a gated mixture of those k independent FFNs (typically SwiGLU)",
+        "Experts process different documents",
+        "A tree of routers at every layer"
+      ],
+      "correct": 1,
+      "explanation": "Each token picks its own experts. The router is just one linear layer — the intelligence is in what the gradient teaches the experts to specialize in."
+    },
+    {
+      "stage": "post",
+      "question": "What is the load-balancing problem?",
+      "options": [
+        "GPUs overheating unevenly",
+        "If the router sends 90% of tokens to one expert, the rest starve and capacity is wasted — classic fixes are auxiliary balance losses (Switch, Mixtral) or capacity limits with token dropping, both with costs",
+        "Tokens arriving out of order",
+        "Experts having different sizes"
+      ],
+      "correct": 1,
+      "explanation": "The auxiliary loss adds a hyperparameter and a competing gradient; capacity limits drop tokens and hurt quality — which set up 2024's better answer."
+    },
+    {
+      "stage": "post",
+      "question": "How does DeepSeek-V3's auxiliary-loss-free balancing work?",
+      "options": [
+        "It removes the router entirely",
+        "A learned per-expert BIAS shifts top-k selection and is nudged ±γ outside the training loss based on each expert's usage vs target — while gating probabilities use the raw scores unchanged, decoupling routing from expression",
+        "It trains each expert on its own GPU",
+        "It randomizes expert assignment"
+      ],
+      "correct": 1,
+      "explanation": "No penalty pollutes the main objective: balance is enforced by selection-time bias only. The lesson calls it 2024's big unlock."
+    },
+    {
+      "stage": "post",
+      "question": "Why does MoE dominate the 2026 frontier?",
+      "options": [
+        "MoE models are easier to fine-tune",
+        "Dense scaling hit a wall — meaningfully smarter meant exponentially more FLOPs per token; MoE decouples capacity from per-token compute, so a 671B/37B-active model beats a dense 70B at comparable inference cost",
+        "Regulators capped dense model sizes",
+        "MoE requires no load balancing"
+      ],
+      "correct": 1,
+      "explanation": "DeepSeek-V3, Mixtral, Qwen2.5-MoE, Llama 4, Kimi K2, gpt-oss — the architecture answer to the compute wall is to stop paying for parameters you don't use per token."
+    }
+  ]
+}

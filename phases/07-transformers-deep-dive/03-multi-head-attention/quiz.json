@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why isn't one attention head enough?",
+      "options": [
+        "One head is numerically unstable",
+        "A single head produces ONE attention matrix capturing one kind of relationship — subject-verb agreement, co-reference, discourse, and chunking get smeared into one softmax distribution and half the signal is lost",
+        "Single heads can't be trained by SGD",
+        "One head can only see 64 tokens"
+      ],
+      "correct": 1,
+      "explanation": "The Vaswani fix: run several attention functions in parallel with separate Q/K/V projections, each in a d_model/n_heads subspace — same total parameters, more expressive power."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the split-attend-concat mechanic?",
+      "options": [
+        "Splitting the batch across GPUs",
+        "Project X to Q/K/V, reshape (N, d_model) into (n_heads, N, d_head), run scaled dot-product attention independently per head, stack back to (N, d_model), and multiply by the learned output matrix W_o — which is where heads finally get to mix",
+        "Splitting the sequence into chunks",
+        "Running the same head several times"
+      ],
+      "correct": 1,
+      "explanation": "Heads never talk during the attention computation itself — they specialize in disjoint subspaces, and W_o recombines their findings."
+    },
+    {
+      "stage": "post",
+      "question": "What head specializations have probing studies found?",
+      "options": [
+        "All heads learn identical patterns",
+        "Positional heads, previous-token heads, copy heads, named-entity heads, and induction heads — the last underlying in-context learning itself",
+        "Heads only encode punctuation",
+        "Specialization is a debunked myth"
+      ],
+      "correct": 1,
+      "explanation": "Specialization without competition is why heads work: each gets its own representational budget instead of fighting within one softmax."
+    },
+    {
+      "stage": "post",
+      "question": "What problem do MQA and GQA solve, and how?",
+      "options": [
+        "Training instability at scale",
+        "KV-cache memory at inference: multi-query shares ONE K/V head across all query heads, grouped-query uses G groups (e.g. N/8) — GQA cuts KV-cache by N/G with nearly full quality and is the modern default (Llama 3, Qwen 2+, Mistral)",
+        "Vanishing gradients in deep stacks",
+        "Tokenizer vocabulary explosion"
+      ],
+      "correct": 1,
+      "explanation": "The variant table is an inference-economics story: full MHA (GPT-2, BERT) pays maximum cache; the lineage trades K/V diversity for serving memory."
+    },
+    {
+      "stage": "post",
+      "question": "How does Multi-head Latent Attention (MLA) go further than GQA?",
+      "options": [
+        "It removes attention entirely",
+        "It compresses K/V into a low-rank latent space and projects back at compute time — spending extra FLOPs to save much more memory (DeepSeek-V2/V3)",
+        "It quantizes the cache to 1 bit",
+        "It caches only the first token"
+      ],
+      "correct": 1,
+      "explanation": "The same trade pushed to its limit: FLOPs are cheap and growing cheaper, HBM is the scarce resource — so recompute what you'd otherwise store."
+    }
+  ]
+}

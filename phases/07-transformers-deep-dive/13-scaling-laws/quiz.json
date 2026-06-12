@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What two knobs split a fixed training-compute budget?",
+      "options": [
+        "Learning rate and batch size",
+        "Parameters N and training tokens D, with FLOPs ≈ 6·N·D — you can trade a bigger model on less data against a smaller model on more data",
+        "Layers and attention heads",
+        "Precision and parallelism"
+      ],
+      "correct": 1,
+      "explanation": "Pre-2022 the answer was \"push N hard\" — GPT-3 was 175B params on ~300B tokens (1.7 tokens/param), backed by the Kaplan laws."
+    },
+    {
+      "stage": "pre",
+      "question": "What did Chinchilla (Hoffmann 2022) discover?",
+      "options": [
+        "Bigger is always better",
+        "The compute-optimal ratio is ~20 tokens per parameter — GPT-3 was 10x undertrained; Chinchilla (70B, 1.4T tokens) beat GPT-3 (175B, 300B) on every benchmark at 2.5x lower inference cost",
+        "Data quality doesn't matter",
+        "Scaling laws don't exist"
+      ],
+      "correct": 1,
+      "explanation": "From L(N,D) = A/N^α + B/D^β + E, taking the derivative at fixed compute gives D_opt/N_opt ≈ 20 — the result that reorganized frontier training."
+    },
+    {
+      "stage": "post",
+      "question": "What do the terms in L(N,D) = A/N^α + B/D^β + E represent?",
+      "options": [
+        "Three different loss functions summed",
+        "A capacity-limited term shrinking with parameters (α≈0.34), a data-limited term shrinking with tokens (β≈0.28), and E≈1.69 — the IRREDUCIBLE loss floor no scale removes",
+        "Train, validation, and test losses",
+        "Attention, FFN, and embedding losses"
+      ],
+      "correct": 1,
+      "explanation": "The two power-law terms trade against each other; near-symmetric exponents are why the optimal compute split is roughly even between model size and data."
+    },
+    {
+      "stage": "post",
+      "question": "Why does 2026 deliberately train PAST Chinchilla-optimal?",
+      "options": [
+        "Chinchilla was mathematically wrong",
+        "Chinchilla optimizes training loss per training FLOP, but training is paid once and inference forever — Llama 3 8B trained on 15T tokens (1,875 tokens/param, 94x past optimal) buys a smaller deployable footprint at equal quality",
+        "Data became free in 2024",
+        "To use up idle GPU clusters"
+      ],
+      "correct": 1,
+      "explanation": "The objective changed: not \"best model per training dollar\" but \"cheapest-to-serve model at a quality bar.\" Over-training small models is the deployment-economics answer."
+    },
+    {
+      "stage": "post",
+      "question": "What practical discipline do scaling laws give a training run?",
+      "options": [
+        "They guarantee any run will succeed",
+        "Fit the law on small cheap runs, then PREDICT the loss of the expensive run before launching — budget misallocations (too big a model, too little data) become visible on paper instead of after a multi-million-dollar training job",
+        "They replace hyperparameter tuning",
+        "They only apply post-hoc"
+      ],
+      "correct": 1,
+      "explanation": "That predictability is the point: scaling laws turned frontier training from artisanal gambling into capacity planning."
+    }
+  ]
+}

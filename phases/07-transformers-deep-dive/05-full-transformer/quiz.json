@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What are the six pieces that turn one attention layer into a stackable block?",
+      "options": [
+        "Six identical attention layers",
+        "Embedding + positional signal, self-attention (masked in decoders), a position-wise FFN (4x expansion), residual connections, layer normalization, and cross-attention (decoder only)",
+        "Conv, pool, norm, dropout, dense, softmax",
+        "Tokenizer, encoder, decoder, beam, cache, head"
+      ],
+      "correct": 1,
+      "explanation": "Every transformer since 2017 — BERT, GPT, T5 — inherits this skeleton; 2026 refinements (RMSNorm, SwiGLU, pre-norm, RoPE) polish the pieces without changing the shape."
+    },
+    {
+      "stage": "pre",
+      "question": "Why do residual connections matter for depth?",
+      "options": [
+        "They reduce parameter count",
+        "Without x + sublayer(x), gradients vanish past roughly 6 layers — the residual stream gives gradients a direct path through arbitrarily deep stacks",
+        "They speed up the forward pass",
+        "They prevent overfitting on small data"
+      ],
+      "correct": 1,
+      "explanation": "Depth is what gives the model capacity, and depth breaks without this plumbing — \"attention is the star, everything else is the scaffolding that lets you stack it deep.\""
+    },
+    {
+      "stage": "post",
+      "question": "How do encoder and decoder blocks differ?",
+      "options": [
+        "Decoders have fewer parameters",
+        "Encoders are bidirectional (no mask, two sublayers: self-attention + FFN); decoders add a causal mask and a THIRD sublayer — cross-attention, where queries come from the decoder and K/V from the encoder, the only place information crosses over",
+        "Encoders process text, decoders images",
+        "They are identical except in name"
+      ],
+      "correct": 1,
+      "explanation": "Pure decoder-only models (GPT) drop cross-attention entirely: just masked self-attention + FFN — the simplification lessons 06-08 specialize from."
+    },
+    {
+      "stage": "post",
+      "question": "Why did pre-norm replace post-norm?",
+      "options": [
+        "Post-norm was patented",
+        "Post-norm (LN after the residual add) is hard to train deeply without careful warmup; pre-norm (LN before the sublayer) trains stably at depth and is the 2026 default — Llama, Qwen, GPT-3+, Mistral",
+        "Pre-norm uses fewer FLOPs",
+        "There is no difference in practice"
+      ],
+      "correct": 1,
+      "explanation": "A small reordering with big training-dynamics consequences: normalizing the input to each sublayer keeps the residual stream's scale free to grow."
+    },
+    {
+      "stage": "post",
+      "question": "What is the position-wise FFN's role in the block?",
+      "options": [
+        "It mixes information across positions",
+        "A two-layer MLP applied independently at each position (W_2 · activation(W_1 · x), 4x expansion by default) — attention moves information BETWEEN positions; the FFN transforms it WITHIN each position",
+        "It normalizes the attention scores",
+        "It caches keys and values"
+      ],
+      "correct": 1,
+      "explanation": "The division of labor in every block: attention routes, FFN computes. Modern variants swap the activation for SwiGLU but keep the role."
+    }
+  ]
+}

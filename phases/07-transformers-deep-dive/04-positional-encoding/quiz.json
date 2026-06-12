@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why does attention need positional encoding at all?",
+      "options": [
+        "To speed up the softmax computation",
+        "Scaled dot-product attention is permutation-invariant: shuffle the input rows and the output rows shuffle identically — \"the cat sat on the mat\" and its scrambled version are indistinguishable without injected position",
+        "GPUs require sequential indices",
+        "It prevents attention scores from overflowing"
+      ],
+      "correct": 1,
+      "explanation": "Order-blindness is fine for bag-of-words; for language, code, audio, and video — anywhere order carries meaning — it's fatal."
+    },
+    {
+      "stage": "pre",
+      "question": "What are the three eras of positional encoding?",
+      "options": [
+        "One-hot, binary, and decimal positions",
+        "Absolute sinusoidal (Vaswani 2017: add sin/cos of position, extrapolates poorly), RoPE (Su 2021: rotate Q and K by position-proportional angles, dominant in 2026), and ALiBi (Press 2022: per-head linear distance penalties on attention scores, excellent extrapolation)",
+        "Learned, frozen, and hybrid embeddings",
+        "Char-level, word-level, sentence-level"
+      ],
+      "correct": 1,
+      "explanation": "Essentially every frontier open model uses RoPE — Llama 2/3/4, Qwen, Mistral, DeepSeek-V3, Kimi. Absolute sinusoidal is historical."
+    },
+    {
+      "stage": "post",
+      "question": "What is RoPE's \"beautiful trick\"?",
+      "options": [
+        "It needs no trigonometry",
+        "Rotating Q at position m and K at position n by angles θ_i·pos makes the dot product q'_m·k'_n a function of (m − n) ALONE — relative position emerges in the attention score even though rotations used absolute positions",
+        "It adds positions only to values",
+        "It learns positions during fine-tuning"
+      ],
+      "correct": 1,
+      "explanation": "Per-dimension-pair frequencies θ_i = base^(−2i/d_head) with base 10000. Rotation acts on Q and K, never the embeddings or V."
+    },
+    {
+      "stage": "post",
+      "question": "How did models like Llama 3 extend context from 8K to 128K without retraining from scratch?",
+      "options": [
+        "By switching to ALiBi mid-training",
+        "By scaling RoPE's base frequency — NTK-aware scaling, YaRN, and LongRoPE adjust the rotation frequencies so trained relative-position behavior stretches to longer contexts",
+        "By doubling the parameter count",
+        "By truncating all inputs to 8K"
+      ],
+      "correct": 1,
+      "explanation": "Because position lives in a continuous rotation rather than a learned table, the frequency base becomes a tunable extrapolation knob."
+    },
+    {
+      "stage": "post",
+      "question": "Why does absolute sinusoidal encoding fail beyond trained lengths?",
+      "options": [
+        "The sine function is undefined past max_len",
+        "The model only learned to read phase patterns for positions it saw — nothing taught it what position 2048 means when training covered 0-2047",
+        "The PE matrix runs out of memory",
+        "Sinusoids repeat exactly at max_len"
+      ],
+      "correct": 1,
+      "explanation": "ALiBi's distance-penalty approach extrapolates naturally because \"further away = more penalty\" generalizes to any length — the property that motivated moving beyond additive embeddings."
+    }
+  ]
+}

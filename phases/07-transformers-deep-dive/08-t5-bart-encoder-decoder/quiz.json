@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "When is encoder-decoder the natural fit over decoder-only or encoder-only?",
+      "options": [
+        "Whenever the model is small",
+        "For input → output tasks — translation, summarization, speech-to-text, prose-to-JSON — where the encoder densely represents the source and the decoder generates while cross-attending to it at every step",
+        "Only for image processing",
+        "When training data is unlabeled"
+      ],
+      "correct": 1,
+      "explanation": "Training is the same shift-by-one loss as GPT, just conditioned on the encoder output. Decoder-only won the spotlight, but encoder-decoder never went away."
+    },
+    {
+      "stage": "pre",
+      "question": "How do T5 and BART differ in pretraining philosophy?",
+      "options": [
+        "T5 is supervised, BART unsupervised",
+        "T5 reframed EVERY NLP task as text-in/text-out and pretrained on span corruption (corrupt input spans, decode them); BART is a denoising autoencoder corrupting input multiple ways — shuffle, mask, delete, rotate — and reconstructing the original",
+        "T5 has no encoder, BART no decoder",
+        "They share identical pretraining"
+      ],
+      "correct": 1,
+      "explanation": "Both 2019 papers defined the modern playbook: a single architecture, vocabulary, and loss spanning all tasks via the text-to-text framing."
+    },
+    {
+      "stage": "post",
+      "question": "What efficiency property does the encoder-decoder split give at inference?",
+      "options": [
+        "The decoder runs only once",
+        "The encoder runs ONCE per input while the decoder autoregresses, cross-attending to the same cached encoder output every step — a free speedup that grows with input length",
+        "Both halves run fully in parallel",
+        "Cross-attention costs nothing"
+      ],
+      "correct": 1,
+      "explanation": "For a 5,000-token article summarized into 200 tokens, the expensive bidirectional encoding happens once; only the cheap 200-step decode is serial."
+    },
+    {
+      "stage": "post",
+      "question": "Where does the encoder-decoder format survive in 2026?",
+      "options": [
+        "Nowhere — it is fully obsolete",
+        "Where input structure matters: Whisper (speech → text), Google's translation stack, code-repair models with distinct context-and-edit structure, and Flan-T5 variants for structured reasoning",
+        "Only in academic reproductions",
+        "In every frontier chat model"
+      ],
+      "correct": 1,
+      "explanation": "The architecture choice follows the task shape: a clearly delimited source that deserves bidirectional encoding plus a generated target."
+    },
+    {
+      "stage": "post",
+      "question": "How does information flow through a decoder block in an encoder-decoder model?",
+      "options": [
+        "Encoder and decoder share weights",
+        "Three sublayers: masked self-attention over the target prefix, then cross-attention where decoder queries meet encoder keys/values (the ONLY bridge from source to target), then the FFN",
+        "The encoder output is concatenated to input tokens",
+        "Information flows through shared embeddings only"
+      ],
+      "correct": 1,
+      "explanation": "Cross-attention is the single channel between the two halves — the same mechanism lessons 05's full transformer introduced, now doing real work."
+    }
+  ]
+}

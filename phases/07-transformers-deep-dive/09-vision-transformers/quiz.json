@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What was ViT's radical simplification of computer vision?",
+      "options": [
+        "Deeper convolutional stacks",
+        "Drop convolutions entirely: slice the image into fixed patches, linearly project each into an embedding, and feed the sequence to a VANILLA transformer encoder — at sufficient pretraining scale it matches or beats ResNets",
+        "Hand-crafted SIFT features revived",
+        "Trees of binary classifiers"
+      ],
+      "correct": 1,
+      "explanation": "\"An Image is Worth 16x16 Words\" (Dosovitskiy 2020). The pedagogical punchline: no vision-specific layers at all — the encoder is identical to BERT's."
+    },
+    {
+      "stage": "pre",
+      "question": "What does the standard ViT patchify step produce?",
+      "options": [
+        "One token for the whole image",
+        "A 224×224 image cut into 16×16 patches gives a 14×14 grid = 196 tokens of 768 values each — patch size is the lever: smaller patches mean more tokens and better resolution at quadratic attention cost",
+        "A 50,000-token pixel sequence",
+        "An edge map fed to an RNN"
+      ],
+      "correct": 1,
+      "explanation": "The linear embedding is literally nn.Conv2d(C, d_model, kernel_size=P, stride=P) — a 2-line implementation that turns vision into sequence modeling."
+    },
+    {
+      "stage": "post",
+      "question": "What is the [CLS] token's role, and when is it discarded?",
+      "options": [
+        "It marks the image's top-left corner",
+        "A learnable token prepended to the sequence whose final hidden state serves as the whole-image representation for classification — DINOv2 and SAM skip it and use the patch embeddings directly for dense tasks",
+        "It stores the class label during training",
+        "It is required by all ViT variants"
+      ],
+      "correct": 1,
+      "explanation": "Classification wants one vector; segmentation and retrieval want per-patch features. The head choice follows the task."
+    },
+    {
+      "stage": "post",
+      "question": "What scale condition does ViT need to beat CNNs, and why?",
+      "options": [
+        "None — ViT always wins",
+        "Large pretraining (ImageNet-21k or bigger): transformers lack convolution's built-in locality and translation-equivariance priors, so they need more data to learn those regularities — but then scale further",
+        "Only TPU hardware",
+        "Batch sizes above 65k"
+      ],
+      "correct": 1,
+      "explanation": "The same weak-prior trade as language transformers vs RNNs. CNNs still win on edge devices and latency-sensitive tasks; everything else has a ViT in the stack by 2026."
+    },
+    {
+      "stage": "post",
+      "question": "What broader 2026 pattern did ViT inaugurate?",
+      "options": [
+        "Custom architectures per modality",
+        "One architecture, many modalities: Whisper tokenizes audio, ViT tokenizes images, robotics uses action tokens, video uses pixel/patch tokens — the transformer doesn't care, feed it a sequence and it learns",
+        "The return of hand-tuned features",
+        "Smaller models replacing larger ones"
+      ],
+      "correct": 1,
+      "explanation": "Tokenize-then-transform became the universal recipe — the conceptual bridge from this phase to the multimodal models of Phase 12."
+    }
+  ]
+}

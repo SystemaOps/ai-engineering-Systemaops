@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why do training and inference need different optimizations?",
+      "options": [
+        "They run on different hardware vendors",
+        "Training is parallel and FLOP-bound; inference is serial and MEMORY-bound — a naive decoder does O(N²) work recomputing attention over the full prefix at every step, and attention's HBM traffic underuses GPUs 4-10x",
+        "Inference uses a different loss",
+        "Training never touches attention"
+      ],
+      "correct": 1,
+      "explanation": "Different bottleneck, different tricks: the KV cache attacks redundant computation; Flash Attention attacks redundant memory movement."
+    },
+    {
+      "stage": "pre",
+      "question": "What does the KV cache exploit?",
+      "options": [
+        "Tokens repeating in the vocabulary",
+        "Every prefix token's K and V vectors are deterministic once computed — store them, and each new token needs only ONE query against the cached keys, dropping per-step cost from O(N²) to O(N)",
+        "Sparsity in the attention matrix",
+        "Quantization of model weights"
+      ],
+      "correct": 1,
+      "explanation": "For a 4K-token response, naive recomputation is 16M attention operations, almost all redundant — the cache is the single most important inference optimization."
+    },
+    {
+      "stage": "post",
+      "question": "How does Flash Attention achieve its speedup?",
+      "options": [
+        "By skipping the softmax entirely",
+        "Tiling: the full N×N score matrix NEVER hits HBM — softmax and matmuls happen block-by-block in on-chip SRAM, giving 2-4x wall-clock on A100 and 5-10x on H100 with FP8",
+        "By pruning low attention scores",
+        "By caching attention outputs to disk"
+      ],
+      "correct": 1,
+      "explanation": "Dao et al. It computes the same exact attention — no approximation — just with a memory-hierarchy-aware schedule. Universal in every 2026 inference stack."
+    },
+    {
+      "stage": "post",
+      "question": "How big does the KV cache get, and how does GQA help?",
+      "options": [
+        "A few megabytes regardless of model",
+        "Llama 3 70B (80 layers, 8 KV heads via GQA) needs ~10.4 GB for a 32K context at batch 1 — with full 64-head MHA it would be 32 GB; GQA's shared K/V heads cut the cache by the head-grouping factor, and MLA compresses further",
+        "It's constant per token count",
+        "GQA increases cache size for quality"
+      ],
+      "correct": 1,
+      "explanation": "The arithmetic (2 × heads × d_head × dtype bytes per token per layer) is why attention-variant choice is really a serving-economics decision."
+    },
+    {
+      "stage": "post",
+      "question": "Why does the production stack assume both optimizations?",
+      "options": [
+        "Marketing requirements",
+        "vLLM, TensorRT-LLM, SGLang, and llama.cpp all build on KV caching and Flash Attention as the baseline — without them, long-context serving is memory-starved and latency-bound beyond usability",
+        "They are required by the model license",
+        "Only one of them is ever needed"
+      ],
+      "correct": 1,
+      "explanation": "These two Dao-era optimizations moved frontier inference from \"slow\" to \"fast\" and became the floor every further optimization (paged attention, prefix caching) stands on."
+    }
+  ]
+}

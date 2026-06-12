@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What does the capstone build, and why that task?",
+      "options": [
+        "A 70B production chat model",
+        "A small decoder-only transformer trained end-to-end on character-level Shakespeare — laptop-trainable in under 10 minutes, yet correct enough that a bigger dataset and longer training yields a real LM",
+        "A BERT-style classifier",
+        "An attention visualizer only"
+      ],
+      "correct": 1,
+      "explanation": "It's the course's nanoGPT — the shape of Karpathy's reference implementation, retooled around the thirteen preceding lessons. Reading papers isn't the same as making the pieces work together."
+    },
+    {
+      "stage": "pre",
+      "question": "Which 2026-modern primitives does the capstone block use?",
+      "options": [
+        "Post-norm LayerNorm and ReLU",
+        "RMSNorm (pre-norm placement), causal multi-head attention, residual connections, and a SwiGLU FFN — with the lm_head weight-tied to the token embedding",
+        "Batch norm and convolutions",
+        "Sinusoidal-only positions and GELU"
+      ],
+      "correct": 1,
+      "explanation": "Each piece maps back to a lesson: norm and FFN from lesson 05, the causal mask from 07, positions from 04 (with a RoPE option). The skeleton is the same one frontier models refine."
+    },
+    {
+      "stage": "post",
+      "question": "Why tie the lm_head to the token embedding?",
+      "options": [
+        "It's required for the softmax to work",
+        "The input embedding maps token → vector and the output head maps vector → token logits — sharing one matrix for both saves V×d parameters and acts as a regularizer; standard in GPT-class models",
+        "It speeds up the tokenizer",
+        "To prevent gradient explosion"
+      ],
+      "correct": 1,
+      "explanation": "For a small model the embedding can be a large fraction of all parameters, so tying is nearly free quality — the two mappings are natural transposes of each other."
+    },
+    {
+      "stage": "post",
+      "question": "What training objective drives the capstone?",
+      "options": [
+        "Masked-token prediction like BERT",
+        "Shift-by-one cross-entropy from lesson 07: inputs predict the next character at every position, all positions trained in parallel under the causal mask",
+        "Reinforcement learning from rewards",
+        "Contrastive loss on text pairs"
+      ],
+      "correct": 1,
+      "explanation": "Same loss as every GPT — character-level vocabulary just makes the pipeline small enough to inspect end to end."
+    },
+    {
+      "stage": "post",
+      "question": "What is the pedagogical point of a from-scratch build when libraries exist?",
+      "options": [
+        "Libraries are forbidden in production",
+        "Integration is where understanding gets tested: configs, initialization, masking, loss wiring, and generation loops hide the bugs papers never mention — and a working small model proves each lesson's piece actually composes",
+        "From-scratch models are faster",
+        "To avoid open-source licenses"
+      ],
+      "correct": 1,
+      "explanation": "\"Thirteen lessons. One model. No shortcuts.\" — the difference between knowing the blocks and having made them run."
+    }
+  ]
+}

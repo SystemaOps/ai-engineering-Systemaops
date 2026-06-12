@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What three bets did Whisper make against the wav2vec/HuBERT status quo?",
+      "options": [
+        "Smaller models, cleaner data, CTC",
+        "Train on everything (680k hours of weakly-labeled internet audio across 97 languages, no phoneme labels), one multi-task model steered by task tokens (transcribe, translate, language ID, timestamps), and a plain encoder-decoder transformer — no vocoder, no CTC, no HMM",
+        "Per-language models with HMM decoders",
+        "Self-supervision plus fine-tuned heads"
+      ],
+      "correct": 1,
+      "explanation": "The result is robustness across accents, noise, and zero-resource languages — the default speech front-end for nearly every voice assistant in 2026."
+    },
+    {
+      "stage": "pre",
+      "question": "In what sense is Whisper \"a ViT that eats spectrograms\"?",
+      "options": [
+        "It literally reuses ViT weights",
+        "The log-mel spectrogram (~3,000 frames × 80 bins for 30s) is treated as the input image — a standard transformer encoder processes it, just as ViT processes patch sequences; audio became sequence modeling the same way vision did",
+        "It converts audio to actual photographs",
+        "It uses 16x16 pixel patches on waveforms"
+      ],
+      "correct": 1,
+      "explanation": "Audio is an image of frequency over time. Same tokenize-then-transform recipe, different frontend."
+    },
+    {
+      "stage": "post",
+      "question": "What does the convolutional stem accomplish?",
+      "options": [
+        "It classifies the audio language",
+        "Two Conv1D layers (kernel 3, stride 2) halve the 3,000 mel frames to 1,500 before the encoder — cutting sequence length (and quadratic attention cost) without many parameters",
+        "It removes background noise",
+        "It converts stereo to mono"
+      ],
+      "correct": 1,
+      "explanation": "A cheap learned downsampler at the entrance: the 24-layer encoder then runs self-attention over 1,500 timesteps instead of 3,000."
+    },
+    {
+      "stage": "post",
+      "question": "How do task tokens steer the single decoder?",
+      "options": [
+        "Separate decoder weights per task",
+        "The decoder prompt begins with control tokens — <|startoftranscript|><|en|><|transcribe|><|0.00|> vs <|fr|><|translate|> — selecting language, task, and timestamping from one set of weights",
+        "An external classifier routes requests",
+        "The user fine-tunes per task"
+      ],
+      "correct": 1,
+      "explanation": "Multi-task-by-prompt predates the instruction-tuned LLM era's standard practice — the vocabulary is GPT-2's BPE plus these audio-specific specials."
+    },
+    {
+      "stage": "post",
+      "question": "Why did weak supervision at scale beat clean-corpus pipelines?",
+      "options": [
+        "Clean data causes overfitting always",
+        "680k internet-scraped hours cover the real-world distribution — accents, noise, code-switching, domains — that curated academic corpora miss; volume and diversity bought robustness that no amount of pipeline polish on small clean data could",
+        "Weak labels are more accurate",
+        "Academic corpora were unlicensed"
+      ],
+      "correct": 1,
+      "explanation": "The same scaling-era lesson as Chinchilla: data distribution coverage beats per-sample quality once the model is large enough to absorb the noise."
+    }
+  ]
+}

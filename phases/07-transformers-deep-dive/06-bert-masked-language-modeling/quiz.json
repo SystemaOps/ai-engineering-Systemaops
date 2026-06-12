@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What problem did BERT solve for 2018-era NLP?",
+      "options": [
+        "Slow tokenization pipelines",
+        "Every task trained its own model from scratch on its own labels — BERT pretrained a bidirectional encoder on all internet text to predict missing words, then fine-tuned one head per downstream task; within 18 months its family dominated every NLP leaderboard",
+        "The lack of GPU clusters",
+        "Machine translation specifically"
+      ],
+      "correct": 1,
+      "explanation": "The \"pretrain once, fine-tune everywhere\" pattern was the revelation. By 2020 every search engine and moderation pipeline had a BERT inside."
+    },
+    {
+      "stage": "pre",
+      "question": "What can masked language modeling do that causal LM cannot?",
+      "options": [
+        "Generate longer sequences",
+        "Use context from BOTH sides: predicting the mask in \"the [MASK] brown fox\" can read \"brown fox jumps\" to the right — bidirectional attention that a causal model's triangle mask forbids",
+        "Train without any labels",
+        "Run without positional encoding"
+      ],
+      "correct": 1,
+      "explanation": "GPT predicts the next word; BERT predicts a missing word. One sentence of difference — and half a decade of everything embedding-shaped."
+    },
+    {
+      "stage": "post",
+      "question": "Why aren't all 15% of selected tokens replaced with [MASK]?",
+      "options": [
+        "To save tokenizer vocabulary slots",
+        "[MASK] never appears at inference — 100% masking would create a pretrain/fine-tune distribution shift, so 80% become [MASK], 10% become a random token, and 10% stay unchanged to keep the model honest",
+        "Random replacement is faster",
+        "The 80/10/10 split was arbitrary"
+      ],
+      "correct": 1,
+      "explanation": "The 10% unchanged forces the model to maintain good representations for every token, not just masked ones, since any position might be a prediction target."
+    },
+    {
+      "stage": "post",
+      "question": "What happened to Next Sentence Prediction?",
+      "options": [
+        "It remains essential in all encoders",
+        "RoBERTa (2019) ablated it and showed NSP HURT rather than helped — modern encoders skip it entirely",
+        "It was renamed to contrastive loss",
+        "It became the main pretraining task"
+      ],
+      "correct": 1,
+      "explanation": "A cautionary tale about auxiliary objectives: plausible-sounding extra tasks need ablation, and BERT's own follow-up removed half its recipe."
+    },
+    {
+      "stage": "post",
+      "question": "Why do encoder-only models still matter in 2026?",
+      "options": [
+        "Nostalgia and legacy systems only",
+        "For classification, retrieval, and structured extraction they run 5-10x faster per token than decoders, and their embeddings back every modern retrieval stack — ModernBERT (Dec 2024) rebuilt the architecture with Flash Attention, RoPE, and GeGLU at 8K context",
+        "They are required for tokenization",
+        "Decoders cannot do classification"
+      ],
+      "correct": 1,
+      "explanation": "Bidirectional encoding remains the right inductive bias when you need one vector per text rather than a continuation — generation isn't every task."
+    }
+  ]
+}

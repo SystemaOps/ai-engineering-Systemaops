@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What is the speculative-decoding pitch, in numbers?",
+      "options": [
+        "Halving the model's parameter count",
+        "A 3B draft proposes 5 tokens (~3ms each), then the 70B verifies all 5 in ONE forward pass (~30ms): 45ms total vs 150ms straight-line — trading a little GPU memory for 2-4x lower decode latency",
+        "Skipping every other output token",
+        "Compressing the KV cache by 4x"
+      ],
+      "correct": 1,
+      "explanation": "It attacks the autoregressive tax directly: verification is parallel even though generation is serial, so let a cheap model do the serial part."
+    },
+    {
+      "stage": "pre",
+      "question": "What guarantee makes speculative sampling safe to deploy?",
+      "options": [
+        "Outputs are at most 5% worse",
+        "The output sequence is IDENTICALLY DISTRIBUTED to what the big model would have produced alone (Leviathan 2023, Chen 2023) — no quality trade, just speed",
+        "It only works with greedy decoding",
+        "The draft model is fine-tuned to agree"
+      ],
+      "correct": 1,
+      "explanation": "Accept each draft token with probability min(1, q/p); on rejection, sample from the normalized residual (q−p)₊. The residual trick is the mathematical insight preserving exactness."
+    },
+    {
+      "stage": "post",
+      "question": "What happens on rejection, and what's the bonus on full acceptance?",
+      "options": [
+        "The whole sequence restarts",
+        "On first rejection at position j, sample the replacement from the normalized residual (q_j − p_j)₊ and discard later drafts; if all N drafts are accepted, sample one extra token free from q_{N+1} — the verifier pass already computed it",
+        "Rejected tokens are retried with the draft",
+        "Rejections fall back to greedy decoding"
+      ],
+      "correct": 1,
+      "explanation": "Left-to-right accept/reject plus the residual correction is the whole algorithm — one big-model call yields between 1 and N+1 tokens."
+    },
+    {
+      "stage": "post",
+      "question": "What determines the acceptance rate α?",
+      "options": [
+        "Only the size of the verifier",
+        "Draft-verifier similarity (same family/training data boosts it), decoding strategy (greedy-on-greedy accepts most; temperature sampling drops it), and task type — code and structured output accept more than free-form creative writing",
+        "The GPU memory bandwidth",
+        "The vocabulary size alone"
+      ],
+      "correct": 1,
+      "explanation": "Rule of thumb: at α = 0.75 with N = 5, you make ~3x fewer big-model calls, netting ~2.5x wall-clock after paying the cheap draft cost."
+    },
+    {
+      "stage": "post",
+      "question": "How do the four 2026 draft-verifier families differ?",
+      "options": [
+        "They are all the same algorithm renamed",
+        "Vanilla uses a separate small draft model; Medusa adds extra decoding heads on the verifier itself (no draft model); EAGLE reuses the verifier's hidden states for a lightweight draft with higher acceptance (3-4x typical); Lookahead self-speculates via Jacobi iteration with no draft at all",
+        "They differ only in batch size",
+        "Only vanilla is used in production"
+      ],
+      "correct": 1,
+      "explanation": "Every production stack — vLLM, TensorRT-LLM, SGLang, llama.cpp — ships at least vanilla + EAGLE-2 by default in 2026."
+    }
+  ]
+}

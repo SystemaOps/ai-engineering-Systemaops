@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What problem do attention variants solve that Flash Attention doesn't?",
+      "options": [
+        "Numerical instability in softmax",
+        "Flash Attention hides the O(N²) activation MEMORY but every token still attends to every token — the arithmetic stays O(N²); variants change the TOPOLOGY of the attention matrix itself (128K-context Llama 3 70B = 16 billion entries per layer)",
+        "Tokenizer vocabulary size",
+        "Gradient vanishing in deep stacks"
+      ],
+      "correct": 1,
+      "explanation": "Three families: sliding window (attend to W neighbors), sparse/block (pre-chosen pairs only), and differential (subtract two attention maps)."
+    },
+    {
+      "stage": "pre",
+      "question": "How does sliding window attention change the cost, and what does it do to the KV cache?",
+      "options": [
+        "It doubles cost for better quality",
+        "Each token attends only to the last W positions, dropping compute to O(N·W) — and only the last W tokens of K/V need caching: a Gemma-3-ish 1024-window config at 128K context cuts the KV cache 128x",
+        "It only changes training, not inference",
+        "It removes the need for positions"
+      ],
+      "correct": 1,
+      "explanation": "The cache reduction is often the bigger win than the FLOPs: serving memory is the scarce resource at long context."
+    },
+    {
+      "stage": "post",
+      "question": "How do SWA models avoid losing long-range retrieval?",
+      "options": [
+        "They can't — SWA forbids long range",
+        "Interleave SWA layers with full-attention layers (Gemma 3's 5:1 ratio is the textbook default) — and stacked causal SWA grows the receptive field anyway: after L layers, information flows L×W tokens back through overlapping windows",
+        "By doubling the window every layer",
+        "By adding more attention heads"
+      ],
+      "correct": 1,
+      "explanation": "Mistral 7B's stack relied on exactly that forward flow. The occasional global layer is the insurance policy for direct long-range lookup."
+    },
+    {
+      "stage": "post",
+      "question": "What are the canonical sparse-attention patterns?",
+      "options": [
+        "Random dropout of attention scores",
+        "Local + strided (last W tokens plus every stride-th earlier, O(N·√N) — OpenAI sparse transformer), local + global tokens + random links (Longformer/BigBird), and learned block sparsity skipped at kernel level (DeepSeek's Native Sparse Attention, 2025)",
+        "Diagonal-only attention",
+        "Alphabetically grouped tokens"
+      ],
+      "correct": 1,
+      "explanation": "The progression runs from hand-designed patterns to LEARNED ones — NSA decides which (Q,K) blocks matter and stays FlashAttention-compatible."
+    },
+    {
+      "stage": "post",
+      "question": "What does differential attention fix?",
+      "options": [
+        "Slow softmax kernels",
+        "The \"attention sink\" — weight bleeding into the first few tokens regardless of relevance; computing two attention maps with separate Q/K projections and SUBTRACTING one from the other cancels the common-mode noise (Microsoft DIFF Transformer, 2024)",
+        "Overlong context windows",
+        "Tokenization artifacts"
+      ],
+      "correct": 1,
+      "explanation": "Like a differential amplifier in electronics: shared noise cancels in the subtraction. Frontier models mix all three variants — most layers SWA, some global, a few differential heads cleaning up retrieval."
+    }
+  ]
+}

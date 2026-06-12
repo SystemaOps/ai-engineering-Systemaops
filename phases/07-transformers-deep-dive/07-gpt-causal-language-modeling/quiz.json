@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What is the causal mask, mechanically?",
+      "options": [
+        "A dropout pattern over embeddings",
+        "An N×N upper-triangular matrix of −inf added to attention scores before softmax — exp(−inf) = 0, so each position attends only to itself and earlier positions; one torch.tril() call",
+        "A filter on the tokenizer vocabulary",
+        "A hash of the input sequence"
+      ],
+      "correct": 1,
+      "explanation": "\"The most consequential single line of code in modern AI\": GPT-1 through GPT-5, Claude, Llama, Qwen, Mistral, and DeepSeek are all decoder-only causal transformers around this mask."
+    },
+    {
+      "stage": "pre",
+      "question": "Why is the mask necessary for parallel training?",
+      "options": [
+        "It reduces memory usage",
+        "Each position's prediction must depend only on earlier positions or the model trivially CHEATS by reading the answer — with the mask applied once, you get N parallel next-token predictions in a single forward pass",
+        "Softmax requires square matrices",
+        "It synchronizes GPU threads"
+      ],
+      "correct": 1,
+      "explanation": "This is why GPT training scales: process a million tokens per batch in one GPU pass, with one cross-entropy loss per position summed and backpropped together."
+    },
+    {
+      "stage": "post",
+      "question": "What is the \"autoregressive tax\"?",
+      "options": [
+        "Licensing fees for decoder models",
+        "Training is parallel but inference is serial — each new token requires a full forward step conditioned on all previous ones, so serial depth at inference equals output length; decoding is the latency bottleneck of every LLM",
+        "The cost of storing checkpoints",
+        "Extra FLOPs from the mask itself"
+      ],
+      "correct": 1,
+      "explanation": "The KV cache saves recomputing past hidden states, but can't remove the one-token-at-a-time dependency — the asymmetry that motivates speculative decoding."
+    },
+    {
+      "stage": "post",
+      "question": "How is the next-token loss structured?",
+      "options": [
+        "MSE between embeddings",
+        "Shift-by-one: inputs [t1,t2,t3] predict targets [t2,t3,t4]; each position contributes −log P(target_i | inputs up to i), summed as sequence cross-entropy",
+        "A contrastive loss over negatives",
+        "Reward-weighted policy gradients"
+      ],
+      "correct": 1,
+      "explanation": "Pretraining, fine-tuning, SFT — same loss, different data. The entire GPT lineage differs in scale, data, and RLHF, not in this core objective."
+    },
+    {
+      "stage": "post",
+      "question": "How do BERT and GPT divide the task landscape?",
+      "options": [
+        "GPT replaced BERT everywhere",
+        "Bidirectional encoders excel where you need representations (classification, retrieval); causal decoders own GENERATION — the triangle mask sacrifices right-context understanding to gain the ability to sample text token by token",
+        "BERT generates better text",
+        "They are interchangeable architectures"
+      ],
+      "correct": 1,
+      "explanation": "The mask is the fork in the road: see both sides and you can't generate; see only the past and you can. Every architecture choice downstream follows from it."
+    }
+  ]
+}
