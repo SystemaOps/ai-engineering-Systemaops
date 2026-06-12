@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why isn't Whisper-style transcription enough for audio products?",
+      "options": [
+        "Whisper is too slow for production",
+        "Recognition is not reasoning — questions about instruments, speaker emotion, or \"what happened at minute 3\" need audio UNDERSTANDING; a transcript discards timing, speakers, emotion, music, and environmental sound",
+        "Transcription requires internet access",
+        "Whisper only supports English"
+      ],
+      "correct": 1,
+      "explanation": "The cascade route (Whisper transcribes, LLM reasons over text) works for pure speech but fails on music, environmental audio, multi-speaker overlap, and emotion — everything acoustic the transcript throws away."
+    },
+    {
+      "stage": "pre",
+      "question": "How is a log-Mel spectrogram computed?",
+      "options": [
+        "Direct FFT of the whole file at once",
+        "Resample to 16kHz, STFT with 25ms windows and 10ms hop, take FFT magnitudes, apply ~80 Mel filter banks (perceptual frequency warp), then log-compress — yielding a (T, 80) array, e.g. (3000, 80) for 30 seconds",
+        "Run the waveform through a CNN classifier",
+        "Convert audio to MIDI notes"
+      ],
+      "correct": 1,
+      "explanation": "Every audio encoder in the arc starts from this same feature. Whisper's 12-layer ViT-style encoder then processes it as a sequence of time frames, one hidden vector per frame."
+    },
+    {
+      "stage": "post",
+      "question": "Why does Audio Flamingo 3 concatenate Whisper AND BEATs features (AF-Whisper)?",
+      "options": [
+        "To double the parameter count for marketing",
+        "Whisper was trained on speech-dominant data and is weaker on music/environmental audio; BEATs (self-supervised on AudioSet) captures those better — Whisper carries the linguistic signal, BEATs the acoustic signal",
+        "BEATs is required by the license",
+        "Whisper cannot output embeddings"
+      ],
+      "correct": 1,
+      "explanation": "Encoder choice tracks the audio distribution: Whisper for speech, BEATs for music and sounds, the hybrid when the product must handle both."
+    },
+    {
+      "stage": "post",
+      "question": "What is the standard pattern for attaching an audio encoder to an LLM?",
+      "options": [
+        "Retrain everything from scratch",
+        "Frozen Whisper-class encoder → trainable audio Q-former (N learnable queries cross-attending to spectrogram frames) → LLM frozen or lightly tuned",
+        "Pipe transcripts through the tokenizer",
+        "Average all encoder outputs into one vector"
+      ],
+      "correct": 1,
+      "explanation": "Same Q-former pattern as BLIP-2 for vision (Phase 12 · 03), applied to audio: the small trainable bridge translates encoder features into tokens the LLM can consume."
+    },
+    {
+      "stage": "post",
+      "question": "Why does end-to-end audio-LLM training beat the cascade for reasoning?",
+      "options": [
+        "It is cheaper to train",
+        "Audio tokens flow directly into the LLM, preserving acoustic information (emotion, speaker identity, environment) that transcription destroys — at the cost of needing new audio-text instruction data",
+        "Cascades cannot run on GPUs",
+        "End-to-end models skip the encoder"
+      ],
+      "correct": 1,
+      "explanation": "Qwen-Audio, SALMONN, LTU, and AF3 progressively built this stack: Whisper-class encoders, Q-former bridges, audio instruction tuning, and finally chain-of-thought reasoning over audio."
+    }
+  ]
+}

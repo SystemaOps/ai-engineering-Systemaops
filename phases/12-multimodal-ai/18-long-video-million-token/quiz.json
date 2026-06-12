@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Roughly how many tokens does a 30-minute clip cost at 1 FPS with 3x3 pooling (81 tokens/frame)?",
+      "options": [
+        "About 5,000 tokens",
+        "1800 frames × 81 = 145,800 tokens — doable by 2025 open VLMs but tight; doubling to 2 FPS hits 291,600, and a 2-hour movie at 1 FPS reaches 583k tokens",
+        "Exactly 1 million tokens",
+        "Under 100 tokens after compression"
+      ],
+      "correct": 1,
+      "explanation": "Token arithmetic is the gatekeeper of long-video work: FPS × duration × tokens-per-frame decides which scaling path you're forced onto before any model choice matters."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the \"brute context\" path, and what recall did Gemini 1.5 document?",
+      "options": [
+        "Caching answers to common questions",
+        "Scale context to millions of tokens and process everything in one pass — Gemini 1.5 documented 99.7% needle-in-a-haystack recall up to ~9.5M tokens, via unpublished custom attention with memory hierarchy plus MoE routing",
+        "Re-watching the video multiple times",
+        "Trimming every video to 60 seconds"
+      ],
+      "correct": 1,
+      "explanation": "It's the highest-recall path and the least reproducible: the engineering isn't published in full detail and isn't open-source — hence the other three open paths."
+    },
+    {
+      "stage": "post",
+      "question": "How does ring attention make million-token training feasible?",
+      "options": [
+        "It skips attention for most tokens",
+        "The sequence is chunked across devices in a ring; each device passes its chunk along, computing partial attention and aggregating — the quadratic cost is amortized across devices, so training compute scales linearly with context",
+        "It quantizes attention weights to 1 bit",
+        "It only attends to the first and last frames"
+      ],
+      "correct": 1,
+      "explanation": "LWM trained a 1M-token context model this way; LongVILA adapted it to VLMs, handling 1400-frame videos (268k context) with 8-way ring parallelism."
+    },
+    {
+      "stage": "post",
+      "question": "What does token compression (Video-XL's summary tokens) trade away?",
+      "options": [
+        "Nothing — it's strictly better",
+        "Recall at specific timestamps: each N-frame clip collapses to a single summary token, so the model knows generally what happened but can miss exact frames",
+        "The ability to process color video",
+        "Compatibility with transformer architectures"
+      ],
+      "correct": 1,
+      "explanation": "Compression is the cheap path — the LLM sees one token per clip instead of thousands. LongVA's complementary trick: extend context on TEXT (200k→2M) and transfer it to video via shared representations."
+    },
+    {
+      "stage": "post",
+      "question": "How does VideoAgent differ from all three context-scaling paths?",
+      "options": [
+        "It uses a bigger context than Gemini",
+        "It never feeds the full video to the LLM — the video becomes a database, and the LLM agentically queries a retrieval tool for relevant clips (\"show me segments with a cat\") before answering",
+        "It transcribes the video to text only",
+        "It fine-tunes a new model per video"
+      ],
+      "correct": 1,
+      "explanation": "Agentic retrieval swaps raw context for tool calls: much cheaper per question and unbounded in video length, at the cost of retrieval misses and multi-step latency."
+    }
+  ]
+}

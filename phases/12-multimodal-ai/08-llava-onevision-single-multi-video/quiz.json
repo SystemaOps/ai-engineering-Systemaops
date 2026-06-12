@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why did pre-OneVision open VLMs split into single-image, multi-image, and video lineages?",
+      "options": [
+        "Licensing prevented combining them",
+        "Each scenario stresses a different budget: single-image wants ~2880 high-res tokens, multi-image wants several at ~576, video wants many frames at ~196 after pooling — separate models each picked one",
+        "Video requires a different programming language",
+        "The benchmarks forbade general models"
+      ],
+      "correct": 1,
+      "explanation": "Each lineage won its benchmark and failed the others. LLaVA-OneVision's bet: one model with a unified budget and the right curriculum beats the sum of specialists at equal parameters."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the OneVision unified token budget trick?",
+      "options": [
+        "Always exactly 1000 tokens",
+        "Roughly constant ~3000-4000 visual tokens per sample, allocated differently per scenario — AnyRes tiles with pooling for single images, 729/image for multi-image, 32 frames at 81 tokens for video",
+        "Unlimited tokens with a bigger context",
+        "One token per image regardless of content"
+      ],
+      "correct": 1,
+      "explanation": "The encoder produces different geometry per scenario, but the LLM consumes a constant budget — heterogeneous inputs never blow the context."
+    },
+    {
+      "stage": "post",
+      "question": "What did the curriculum-order ablation show?",
+      "options": [
+        "Order doesn't matter with enough data",
+        "Single-image-first (perception base), then mixed OneVision, then task transfer — video-first or multi-image-first produces worse image performance even with identical data",
+        "Video must always come first",
+        "Each stage needs a weight reset"
+      ],
+      "correct": 1,
+      "explanation": "Training all scenarios from scratch together underfits perception and overfits structure — a model that follows cross-image reasoning patterns but is visually shallow. Stage SI builds the base the later stages compose on."
+    },
+    {
+      "stage": "post",
+      "question": "What is the \"task transfer\" argument for one model over specialists?",
+      "options": [
+        "One model is cheaper to host, nothing more",
+        "Emergent cross-scenario effects: single-image skills export to video, multi-image reasoning exports back to single-image — capabilities the specialists never showed, like multi-camera reasoning and screenshot-agent behavior",
+        "Specialists cannot be benchmarked",
+        "Transfer learning only works on text"
+      ],
+      "correct": 1,
+      "explanation": "The reported emergent trio — multi-camera reasoning, set-of-mark prompting, iPhone-screenshot agent — came from skills crossing scenario boundaries, beating the sum of separate lineages."
+    },
+    {
+      "stage": "post",
+      "question": "How does OneVision fit 32 video frames into the budget?",
+      "options": [
+        "By dropping every other frame's colors",
+        "Aggressive 3x3 bilinear pooling reduces each 384px frame to 81 tokens — 32 × 81 = 2,592 tokens, within the unified budget",
+        "By converting video to a text transcript",
+        "Frames share one token via averaging"
+      ],
+      "correct": 1,
+      "explanation": "Temporal coverage trades against per-frame resolution: many low-token frames for dynamics, versus few high-token tiles for OCR-grade detail in the single-image allocation."
+    }
+  ]
+}

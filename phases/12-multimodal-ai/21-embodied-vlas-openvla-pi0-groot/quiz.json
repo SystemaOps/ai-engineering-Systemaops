@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What makes VLA (vision-language-action) models harder than VQA-style VLMs?",
+      "options": [
+        "Robots can't carry GPUs",
+        "Continuous high-dimensional action spaces (10 dims at 30 Hz = 33ms per action), scarce robot data (~1M Open X-Embodiment trajectories vs 5B+ web pairs), and safety — a wrong action damages hardware or humans",
+        "Cameras produce lower-quality images",
+        "Action data cannot be tokenized at all"
+      ],
+      "correct": 1,
+      "explanation": "Same VLM architecture, but the output is actions (joint torques, end-effector poses) instead of text — and the control-frequency budget and data scarcity reshape every design choice."
+    },
+    {
+      "stage": "pre",
+      "question": "What was RT-2's action-tokenization trick, and why co-fine-tune on web data?",
+      "options": [
+        "It output raw motor voltages as floats",
+        "Discretize each normalized joint target into 256 bins mapped to vocabulary IDs (a 10-DOF action = 10 tokens), co-fine-tuned with web image-text so general knowledge transfers — e.g., following \"move towards the fast-moving object\" never seen in robot data",
+        "It generated Python scripts for the robot",
+        "Actions were predicted by a separate CNN"
+      ],
+      "correct": 1,
+      "explanation": "RT-2 (July 2023) proved web-scale vision-language knowledge transfers to control. The cost: autoregressive VLM decode limited inference to 3-5 Hz."
+    },
+    {
+      "stage": "post",
+      "question": "What is OpenVLA, and what are its specs?",
+      "options": [
+        "A closed Google API for robots",
+        "The open-weights RT-2 equivalent: 7B Llama backbone, DINOv2 + SigLIP dual vision encoder, 256-bin action tokens, trained on Open X-Embodiment (970k trajectories, 22 robots), with LoRA support — 4-5 Hz on an A100",
+        "A simulator with no real-robot support",
+        "A 70B model requiring a datacenter"
+      ],
+      "correct": 1,
+      "explanation": "Fast enough for slow manipulation, not high-frequency control. Open X-Embodiment is the field's shared corpus — the RT-X training data pooled across labs and robot embodiments."
+    },
+    {
+      "stage": "post",
+      "question": "How does the FAST tokenizer speed up action decoding?",
+      "options": [
+        "By using a faster GPU kernel",
+        "Discrete-bin tokens are inefficient because actions cluster in a small region of bin-space — FAST compresses action sequences via DCT and quantizes the coefficients, turning a 30-step trajectory of 300 bin-tokens into ~10 tokens for a 3-5x speedup",
+        "By dropping every other action",
+        "By caching previous trajectories"
+      ],
+      "correct": 1,
+      "explanation": "Frequency-domain compression (like JPEG for trajectories) exploits the smoothness of real robot motion — fewer tokens to decode autoregressively, no quality loss."
+    },
+    {
+      "stage": "post",
+      "question": "How do π0 and GR00T N1 depart from discrete action tokens?",
+      "options": [
+        "They abandon vision input entirely",
+        "π0 replaces tokens with a flow-matching action expert producing continuous actions; GR00T N1 uses a dual-system design — a deliberate System 2 reasoner plus a fast System 1 controller — for humanoid robots at scale",
+        "They use reinforcement learning only",
+        "They output natural-language instructions to a human"
+      ],
+      "correct": 1,
+      "explanation": "Continuous flow-matching sidesteps quantization error and autoregressive latency for smooth high-frequency control; the dual-system split mirrors the think-slow/act-fast division the control loop demands."
+    }
+  ]
+}

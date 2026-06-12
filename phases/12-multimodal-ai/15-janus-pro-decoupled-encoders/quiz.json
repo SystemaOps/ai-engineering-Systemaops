@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What unavoidable tension do single-tokenizer unified models face?",
+      "options": [
+        "GPUs cannot run two losses at once",
+        "Understanding wants semantic features (SigLIP/DINOv2 concept-level vectors) while generation wants reconstruction-friendly VQ codes that compose back into crisp pixels — one encoder cannot optimize for both",
+        "Image tokens overflow the context window",
+        "Licensing conflicts between encoder vendors"
+      ],
+      "correct": 1,
+      "explanation": "Chameleon, Show-o, and Transfusion all share one visual tokenizer across both directions and pay a visible quality tax on one of them. VQ tokens have weak semantic coherence; SigLIP embeddings don't reconstruct."
+    },
+    {
+      "stage": "pre",
+      "question": "What is Janus-Pro's architectural fix?",
+      "options": [
+        "A bigger single encoder",
+        "Decoupled encoders sharing one transformer body: understanding routes through SigLIP-SO400m + a 2-layer MLP, generation routes through a VQ tokenizer on input and a VQ decoder on output",
+        "Two complete separate models ensembled",
+        "Dropping the vision encoder entirely"
+      ],
+      "correct": 1,
+      "explanation": "Everything upstream and downstream of the shared body is task-specific. Routing is disambiguated by prompt format (<understand> vs <generate> tags) or implicitly from the task."
+    },
+    {
+      "stage": "post",
+      "question": "Why does decoupling improve BOTH directions at once?",
+      "options": [
+        "It halves the parameter count",
+        "Understanding loss gets features tuned for semantic similarity (better perception than Show-o/Transfusion) while generation loss gets codes tuned for reconstruction (cleaner pixels) — the shared body learns to absorb the two input distributions",
+        "It eliminates the need for training data",
+        "Decoupling speeds up attention quadratically"
+      ],
+      "correct": 1,
+      "explanation": "The claim: with enough data and parameters, the body handles the switching. Each task simply receives the representation its loss actually wants."
+    },
+    {
+      "stage": "post",
+      "question": "What separated Janus-Pro from the original Janus?",
+      "options": [
+        "A completely new architecture",
+        "Scale: 7B params (vs 1.3B), stage-1 alignment data 72M→90M pairs, stage-2 unified data 26M→72M, plus 200k image-gen instruction samples in stage 3 — the decoupling idea was already in Janus",
+        "Switching from SigLIP to CLIP",
+        "Removing the VQ tokenizer"
+      ],
+      "correct": 1,
+      "explanation": "Result: Janus-Pro-7B matches LLaVA on MMMU (60.3 vs ~58) and beats DALL-E 3 on GenEval (0.80 vs 0.67) — one open model competitive on both sides of the unified spectrum."
+    },
+    {
+      "stage": "post",
+      "question": "How do the three unified-model architecture families divide the design space?",
+      "options": [
+        "They differ only in parameter count",
+        "Coupled-discrete (Show-o: one VQ tokenizer both ways), coupled-continuous (Transfusion: continuous patches + diffusion loss), and decoupled (Janus-Pro: SigLIP for understanding, VQ for generation)",
+        "All three use decoupled encoders",
+        "They are the same architecture from three labs"
+      ],
+      "correct": 1,
+      "explanation": "The axis is what representation each direction sees. Janus-Pro's answer to the tokenizer compromise is to stop compromising — different needs, different encoders, shared brain."
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What problem with Transfusion's two-loss training does Show-o sidestep?",
+      "options": [
+        "Transfusion cannot generate text",
+        "The continuous diffusion loss lives on a different numerical scale from discrete NTP, making loss-weight balancing a hyperparameter search — Show-o keeps BOTH modalities discrete and uses one masked-token-prediction objective",
+        "Transfusion requires two GPUs minimum",
+        "Transfusion's license forbids commercial use"
+      ],
+      "correct": 1,
+      "explanation": "Show-o's move: discrete like Chameleon, but generate images in PARALLEL via masked discrete diffusion instead of token-by-token — a single loss formulation that generalizes next-token prediction."
+    },
+    {
+      "stage": "pre",
+      "question": "How does MaskGIT-style masked discrete diffusion generate an image?",
+      "options": [
+        "It denoises continuous latents over 1000 steps",
+        "Start fully masked, predict ALL masked tokens in parallel each step, keep the top-K most confident, re-mask the rest — after ~8-16 iterations every token is filled in",
+        "It autoregressively emits one token per forward pass",
+        "It copies the nearest training image"
+      ],
+      "correct": 1,
+      "explanation": "Training is BERT for images: sample a masking ratio uniformly from [0,1], mask that fraction of the VQ tokens, train the transformer to recover them. The per-step unmasking schedule (cosine works well) is tuned."
+    },
+    {
+      "stage": "post",
+      "question": "How does Show-o's unified loss cover both text generation and image generation?",
+      "options": [
+        "It uses MSE for both modalities",
+        "Cross-entropy on <MASK> tokens generalizes both: text NTP is the special case where only the last token is \"masked\", image generation masks a random subset — one formulation, two masking patterns",
+        "Two optimizers with synced learning rates",
+        "It doesn't — text and image use unrelated losses"
+      ],
+      "correct": 1,
+      "explanation": "Training alternates standard NTP on text, masked-token prediction for text-to-image, and VQA samples (image → text, really just NTP). The hybrid attention mask is causal for text, bidirectional within the image block."
+    },
+    {
+      "stage": "post",
+      "question": "How do the three unified-generation approaches compare on image-decoding cost?",
+      "options": [
+        "All three need the same number of forward passes",
+        "Chameleon/Emu3 autoregress over 1024-4096 tokens (one pass each); Transfusion runs ~20 continuous-diffusion steps; Show-o needs ~16 parallel masked-prediction steps with cheaper per-step discrete logits",
+        "Show-o is the slowest of the three",
+        "Transfusion generates in a single pass"
+      ],
+      "correct": 1,
+      "explanation": "Parallel decoding is the speed story: ~16 full-transformer passes versus thousands of per-token passes makes Show-o much faster than Chameleon at similar scale, roughly matching Transfusion's step count at lower per-step cost."
+    },
+    {
+      "stage": "post",
+      "question": "Why can one Show-o checkpoint serve T2I, VQA, and inpainting?",
+      "options": [
+        "Three LoRA adapters are swapped at runtime",
+        "Task selection is just prompt format — masked-token prediction with the hybrid mask covers them all; inpainting is image generation where the known region's tokens start unmasked",
+        "A classifier routes to three hidden experts",
+        "It can't — each task needs a fine-tune"
+      ],
+      "correct": 1,
+      "explanation": "Everything is \"recover the masked tokens given the visible ones.\" VQA masks text positions, T2I masks image positions, inpainting masks only the region to fill — one backbone, one objective."
+    }
+  ]
+}

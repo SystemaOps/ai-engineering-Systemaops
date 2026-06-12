@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Across MM1, Idefics2, Molmo, Cambrian-1, and Prismatic's ablations, which knobs actually move VLM benchmark scores?",
+      "options": [
+        "Connector architecture above all",
+        "Image encoder, data mixture, and resolution schedule explain most of the variance — connector choice barely matters at a fixed token count",
+        "The random seed",
+        "The learning-rate scheduler"
+      ],
+      "correct": 1,
+      "explanation": "Most of the gap between \"good\" and SOTA open VLMs is not architecture — knowing which knob to turn first when underperforming saves a multi-million-GPU-hour mistake."
+    },
+    {
+      "stage": "pre",
+      "question": "What are the five axes of the VLM design space Idefics2 named?",
+      "options": [
+        "Width, depth, heads, layers, vocab",
+        "Image encoder, connector, language model, training data mix, and resolution schedule",
+        "Pretraining, SFT, RLHF, DPO, distillation",
+        "Latency, throughput, cost, accuracy, safety"
+      ],
+      "correct": 1,
+      "explanation": "Every production VLM commits on each axis. The ablation consensus: axes 1 (encoder), 4 (data), and 5 (resolution) dominate; axis 2 (connector) is nearly a wash."
+    },
+    {
+      "stage": "post",
+      "question": "What did the encoder comparisons consistently show?",
+      "options": [
+        "CLIP ViT-L remains unbeatable",
+        "SigLIP beats CLIP by 3+ MMMU points (MM1); DINOv2 and SigLIP top vision-centric leaderboards with CLIP mid-pack — the 2026 default is SigLIP 2 SO400m, sometimes concatenated with DINOv2 features",
+        "All encoders perform identically",
+        "ImageBind dominates everything"
+      ],
+      "correct": 1,
+      "explanation": "Cambrian-1's 20+ encoder match-up made it concrete: CLIP-to-DINOv2 is worth ~5-7 CV-Bench points, while swapping connectors at equal tokens moves under 1 point."
+    },
+    {
+      "stage": "post",
+      "question": "If connector architecture is a wash, what about visual TOKEN COUNT?",
+      "options": [
+        "Token count is also irrelevant",
+        "It matters a lot: 64 tokens is too few for OCR, 576-1024 is the sweet spot, 2048+ only helps documents/charts — Q-Former vs MLP is really a cost question about how many tokens reach the LLM",
+        "Fewer tokens are always better",
+        "Token count only affects training, not inference"
+      ],
+      "correct": 1,
+      "explanation": "At fixed token budget, MLP ≈ Q-Former ≈ Perceiver within a point. The real trade: Q-Former caps tokens regardless of resolution (saves context on high-res), MLP emits all patches."
+    },
+    {
+      "stage": "post",
+      "question": "Why does LLM size \"set the ceiling\" for a VLM?",
+      "options": [
+        "Bigger LLMs have bigger context windows only",
+        "Multimodal reasoning ceiling = the LLM's text reasoning ceiling; the encoder feeds it but cannot reason for it — 7B→13B reliably adds 2-4 MMMU points, and no connector cleverness substitutes for a 70B brain",
+        "LLM size determines image resolution",
+        "It doesn't — vision quality is everything"
+      ],
+      "correct": 1,
+      "explanation": "Why Qwen2.5-VL-72B-class models crush MMMU-Pro: the language brain is huge. Also from the ablations: detailed human captions (Molmo's PixMo) beat GPT-4V-distilled synthetic data at the same token count."
+    }
+  ]
+}

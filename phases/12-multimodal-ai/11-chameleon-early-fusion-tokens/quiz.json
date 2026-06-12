@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What premise of adapter-based VLMs (LLaVA, BLIP-2, Qwen-VL) does Chameleon reject?",
+      "options": [
+        "That transformers need attention",
+        "That text and images are two different input paths merging partway in — instead, images become discrete tokens from a SHARED vocabulary, so one sequence and one autoregressive loss cover both",
+        "That pretraining needs image data at all",
+        "That GPUs can process pixels"
+      ],
+      "correct": 1,
+      "explanation": "Adapter VLMs route text through embed() and images through encoder→projector. Three consequences: output is text-only, interleaved documents are awkward, and visual/text tokens live in different hidden-space regions."
+    },
+    {
+      "stage": "pre",
+      "question": "How does a VQ-VAE turn an image into transformer-compatible tokens?",
+      "options": [
+        "It hashes the JPEG bytes",
+        "An encoder maps the image to a spatial feature map; each feature is replaced by the index of its nearest entry (L2) in a learned codebook — the integer indices form a discrete alphabet a decoder can render back to pixels",
+        "It runs OCR on the image",
+        "It samples random integers per pixel"
+      ],
+      "correct": 1,
+      "explanation": "Training combines reconstruction, commitment, and codebook losses. For Chameleon: a 32x32 feature grid with a K=8192 codebook means one image becomes 1024 discrete tokens."
+    },
+    {
+      "stage": "post",
+      "question": "What does Chameleon's combined vocabulary look like?",
+      "options": [
+        "Two separate softmaxes, one per modality",
+        "Text BPE tokens (~32000) + image VQ tokens (8192) + modality separators in one ~40192-entry vocabulary — one embedding layer in, one softmax out, whatever the modality",
+        "Image tokens replace rare text tokens",
+        "A 1M-entry pixel vocabulary"
+      ],
+      "correct": 1,
+      "explanation": "Every token has a single ID. Separators matter: when the model emits <image>, downstream software knows the next 1024 tokens are VQ indices to send to the decoder for pixel rendering."
+    },
+    {
+      "stage": "post",
+      "question": "What capability does early fusion unlock that adapter VLMs structurally cannot offer?",
+      "options": [
+        "Faster text-only inference",
+        "Mixed-modality GENERATION — the model can emit image tokens and text tokens in one inference call, choosing the order autonomously (image then text, text then image, or interleaved)",
+        "Longer context windows",
+        "Better tokenizer compression of text"
+      ],
+      "correct": 1,
+      "explanation": "Since inference is just next-token prediction in the shared vocabulary, \"Draw a cat and describe it\" can yield <image> ...1024 tokens... </image> followed by a text description — same decoder, same loss."
+    },
+    {
+      "stage": "post",
+      "question": "Which training-stability tricks did Chameleon need to make early fusion work?",
+      "options": [
+        "Lower batch size only",
+        "QK-Norm, careful dropout placement, and LayerNorm ordering — token-only multimodal training at scale was unstable without them",
+        "Switching to fp64 precision",
+        "Freezing the embedding layer"
+      ],
+      "correct": 1,
+      "explanation": "Mixing modalities in one softmax stresses training dynamics. The lesson's comparison point: Chameleon vs BLIP-2's Q-Former is a trade between unified generation and the cheaper, more stable adapter route."
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What two firsts did Flamingo (2022) demonstrate?",
+      "options": [
+        "First open-source VLM and first GPU training",
+        "Processing arbitrarily interleaved image/video/text sequences, and in-context few-shot multimodal learning — caption a new image from three example pairs with no gradient step",
+        "First model to beat ImageNet and first chatbot",
+        "Text-to-image generation and speech synthesis"
+      ],
+      "correct": 1,
+      "explanation": "Both capabilities flowed from one architectural idea: leave the frozen LLM's stream untouched and insert gated cross-attention between its blocks. It's the ancestor of Gemini's interleaved inputs."
+    },
+    {
+      "stage": "pre",
+      "question": "Why does Flamingo's gate use tanh(alpha) with alpha initialized to zero?",
+      "options": [
+        "Tanh is the fastest activation",
+        "tanh(0) = 0, so at initialization the new cross-attention layers are no-ops — the model IS the pretrained Chinchilla on text; visual conditioning grows smoothly and additively as alpha opens",
+        "Zero initialization saves memory",
+        "It prevents overfitting on small data"
+      ],
+      "correct": 1,
+      "explanation": "The single most important design choice: visual conditioning is additive, gated, and zero at start. The residual means even a fully-open gate adds visual information on top rather than overwriting text capability."
+    },
+    {
+      "stage": "post",
+      "question": "What does the Perceiver resampler guarantee about visual token counts?",
+      "options": [
+        "More patches always produce more tokens",
+        "K=64 fixed learnable latents cross-attend over however many patches arrive — a 196-patch and a 900-patch image both exit as exactly 64 tokens, so the LLM cross-attention always sees the same shape",
+        "Tokens are compressed to exactly one per image",
+        "Token count equals the caption length"
+      ],
+      "correct": 1,
+      "explanation": "Six blocks of (latents cross-attend patches, then self-attention + FFN among latents). For video, per-frame latents plus temporal positions give T×64 tokens — variable input, fixed interface."
+    },
+    {
+      "stage": "post",
+      "question": "In an interleaved prompt \"<image A> caption A <image B> caption B <image C> ?\", what does the cross-attention mask enforce?",
+      "options": [
+        "Every text token sees every image",
+        "A text token attends only to images that precede it — Flamingo specifically chose \"only the most recent preceding image\"",
+        "Images attend to each other directly",
+        "Only the final token sees any image"
+      ],
+      "correct": 1,
+      "explanation": "Causal masking extended to image placement keeps few-shot structure intact: each caption is conditioned on its own image, which is what makes the 3-examples-then-query prompt pattern work."
+    },
+    {
+      "stage": "post",
+      "question": "How does Flamingo's bridge differ architecturally from BLIP-2's?",
+      "options": [
+        "They are identical",
+        "BLIP-2 prepends compressed visual tokens to the LLM's INPUT; Flamingo inserts gated cross-attention layers BETWEEN the frozen LLM's blocks, leaving the input stream purely textual",
+        "Flamingo fine-tunes the whole LLM",
+        "BLIP-2 has no vision encoder"
+      ],
+      "correct": 1,
+      "explanation": "Input-level injection (BLIP-2/LLaVA style) vs interleaved-layer injection (Flamingo style) is the fundamental fork in VLM bridge design — with different costs in parameters, context budget, and multi-image handling."
+    }
+  ]
+}

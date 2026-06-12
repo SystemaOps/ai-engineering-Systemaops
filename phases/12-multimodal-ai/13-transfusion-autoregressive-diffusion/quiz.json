@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What is the discrete-vs-continuous trade-off Transfusion tries to escape?",
+      "options": [
+        "Discrete tokens train slower on GPUs",
+        "Discrete VQ tokens fit the transformer's vocabulary but cap image fidelity at the quantization step; continuous diffusion preserves detail but lives in a separate model with noise-schedule engineering and no clean text integration",
+        "Continuous models cannot be open-sourced",
+        "Discrete tokens require more VRAM"
+      ],
+      "correct": 1,
+      "explanation": "Chameleon and Emu3 went discrete and plateaued below continuous-space diffusion quality. Transfusion's bet: keep images continuous, drop the VQ-VAE, and still train ONE model."
+    },
+    {
+      "stage": "pre",
+      "question": "How does Transfusion train one transformer on both modalities?",
+      "options": [
+        "Two separate transformers share an optimizer",
+        "Two losses on one backbone: text tokens get next-token cross-entropy on the vocab head, image patches (continuous 16x16 blocks, linearly embedded like ViT input) get a diffusion loss predicting added noise — both gradients update the same weights",
+        "Images are converted to text captions first",
+        "Alternating epochs of text-only and image-only data"
+      ],
+      "correct": 1,
+      "explanation": "The forward pass runs once; the loss picks one of two heads per token. <image> and </image> tags mark where the continuous patches live in the sequence."
+    },
+    {
+      "stage": "post",
+      "question": "Why does Transfusion use causal attention for text but bidirectional attention within an image?",
+      "options": [
+        "Bidirectional attention is cheaper to compute",
+        "Text needs causality or teacher forcing breaks, but an image's patches are one snapshot with no inherent order — they should all see each other, giving a block-triangular mask overall",
+        "Image patches arrive out of order from the dataloader",
+        "It was an arbitrary choice the paper never justified"
+      ],
+      "correct": 1,
+      "explanation": "The mask also lets text attend to previous images and image patches attend to preceding text — causal across modality boundaries, bidirectional inside each image block."
+    },
+    {
+      "stage": "post",
+      "question": "How does Transfusion compare to Chameleon-style discrete approaches?",
+      "options": [
+        "Identical quality, identical complexity",
+        "Continuous patches + diffusion loss buy a higher image-quality ceiling (no quantization bottleneck) at the cost of two-loss training dynamics and more code complexity than single-loss NTP on discrete tokens",
+        "Transfusion is simpler in every dimension",
+        "Chameleon generates better images"
+      ],
+      "correct": 1,
+      "explanation": "That's the lesson's core comparison axis: compute, quality, code complexity. Discrete = one elegant loss but tokenizer-capped fidelity; Transfusion = detail preserved but loss-balancing engineering."
+    },
+    {
+      "stage": "post",
+      "question": "What is MMDiT's (the Stable Diffusion 3 architecture) signature design?",
+      "options": [
+        "A single weight set shared identically by all modalities",
+        "Modality-specific weights at each block with joint attention at the residual stream — a close cousin of Transfusion's one-transformer-two-modality design",
+        "Three separate transformers voting",
+        "Convolutions instead of attention"
+      ],
+      "correct": 1,
+      "explanation": "Text and image get their own per-block parameters but mix in joint attention. The lesson positions Transfusion and MMDiT as the same family: continuous images and text reasoning sharing one backbone."
+    }
+  ]
+}

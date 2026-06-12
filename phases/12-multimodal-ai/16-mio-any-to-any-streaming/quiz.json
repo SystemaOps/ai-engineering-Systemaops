@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "How did most pre-2024 \"any-to-any\" systems actually work, and what did it cost them?",
+      "options": [
+        "One transformer trained on all modalities",
+        "Pipelines — vision model → text representation → speech model → audio — where each hop loses information, adds latency, and complicates training; GPT-4o's single-model subsecond demo showed the alternative",
+        "Rule-based format converters",
+        "Separate apps stitched by a UI layer"
+      ],
+      "correct": 1,
+      "explanation": "MIO's answer: tokenize text, image, speech, and music into one shared vocabulary and train a single causal transformer over interleaved sequences — any modality in, any modality out."
+    },
+    {
+      "stage": "pre",
+      "question": "How does MIO's shared vocabulary host four modalities without collisions?",
+      "options": [
+        "Each modality gets its own embedding matrix",
+        "Disjoint ID ranges in one ~48k vocabulary: text 0-31999, image 32000+ (SEED tokens), speech 36096+ (SpeechTokenizer base), music 40192+ (residual-VQ), plus separator tags — one embedding and one output projection span all of it",
+        "Tokens carry a modality bit flag",
+        "Hash functions map everything to 16k slots"
+      ],
+      "correct": 1,
+      "explanation": "Each tokenizer emits integers; the allocator just offsets them into reserved ranges. Separators like <speech> tell downstream decoders which renderer the following tokens belong to."
+    },
+    {
+      "stage": "post",
+      "question": "How does SpeechTokenizer's residual-VQ structure speech tokens?",
+      "options": [
+        "One flat codebook of 4096 phonemes",
+        "8 hierarchical codebooks over the 16kHz waveform — the first level carries coarse content, later levels add prosody and speaker identity; the transformer predicts layer 0 and a parallel decoder fills in the residual layers",
+        "Direct character transcription",
+        "Raw PCM samples as integers"
+      ],
+      "correct": 1,
+      "explanation": "This split is what makes streaming viable: the expensive autoregressive model only handles the base layer (~50ms of audio per token), while residuals decode in parallel."
+    },
+    {
+      "stage": "post",
+      "question": "What is MIO's streaming-decode latency story?",
+      "options": [
+        "Generation starts after the full utterance ends",
+        "Speech tokens stream in every 50ms and consume incrementally; output tokens stream to a parallel speech decoder with ~50-150ms conversion latency — time-to-first-audio-byte ~300-500ms, approaching GPT-4o's ~250ms",
+        "Latency is one minute per response",
+        "Audio is rendered only after all text finishes"
+      ],
+      "correct": 1,
+      "explanation": "Conversational use demands <500ms time-to-first-audio-byte. The causal transformer plus streaming tokenizers on both ends is what makes a single open model conversational."
+    },
+    {
+      "stage": "post",
+      "question": "What are the three open any-to-any recipes the lesson names?",
+      "options": [
+        "GPT-4o, Gemini, and Claude",
+        "AnyGPT (Feb 2024, the proof of concept), MIO (Sep 2024, the scale-up), and Unified-IO 2 (Dec 2023, the cousin with vision + action grounding)",
+        "LLaVA, BLIP-2, and Flamingo",
+        "Whisper, CLIP, and Stable Diffusion"
+      ],
+      "correct": 1,
+      "explanation": "All follow the same pattern — per-modality tokenizers feeding one causal transformer — but differ in scale, modality coverage, and whether action/embodiment is in scope."
+    }
+  ]
+}

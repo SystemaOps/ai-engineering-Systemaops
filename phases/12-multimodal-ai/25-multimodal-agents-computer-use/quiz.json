@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What is the multimodal agent loop for a task like \"book me a flight to Tokyo under $800\"?",
+      "options": [
+        "One giant prompt that outputs the booking",
+        "Perceive (screenshot) → reason (plan from screenshot + URL + goal) → act (emit a structured JSON action like click/type/scroll) → observe the new state → repeat — each step a VLM call, with errors compounding across steps",
+        "A web crawler that scrapes all flight data",
+        "A fine-tuned classifier per website"
+      ],
+      "correct": 1,
+      "explanation": "Recovery matters precisely because errors compound. This capstone pulls together every Phase 12 thread: high-res perception, tool-use reasoning, coordinate grounding, long-horizon memory, evaluation."
+    },
+    {
+      "stage": "pre",
+      "question": "What is GUI grounding, and what established the primitive?",
+      "options": [
+        "Electrically grounding the monitor",
+        "Given a screenshot and an instruction, output the (x, y) to click — SeeClick proved it at scale by fine-tuning a VLM to emit coordinates as text; CogAgent added 1120x1120 high-res encoding (~84% web navigation); Ferret-UI took it to mobile",
+        "Parsing HTML without rendering it",
+        "Recording human mouse movements"
+      ],
+      "correct": 1,
+      "explanation": "Output is usually JSON like {\"action\": \"click\", \"x\": 384, \"y\": 220, \"element_desc\": \"Search button\"} — the element_desc lets the system re-ground semantically if coordinates drift between screenshots."
+    },
+    {
+      "stage": "post",
+      "question": "How do screenshot-only, accessibility-tree, and hybrid input modes compare?",
+      "options": [
+        "They are interchangeable in reliability",
+        "Screenshot-only is most general (any app) but unstructured; the accessibility tree grounds far more reliably where available; production agents go hybrid — tree for atomic-action grounding, screenshot for semantic context",
+        "Trees are always available everywhere",
+        "Screenshots are deprecated in production"
+      ],
+      "correct": 1,
+      "explanation": "Browser automation always has the tree (Selenium + accessibility); desktop apps sometimes do. The hybrid takes reliability where it can and generality where it must."
+    },
+    {
+      "stage": "post",
+      "question": "How do agents keep 20-step workflows from overflowing the VLM context?",
+      "options": [
+        "They just use a bigger model",
+        "Compression: summary-chain (summarize every 5 steps, drop old screenshots), skip-frame (keep first/last/every 3rd), or a tool-recorded text log of actions taken — the log pattern, used by Claude's computer-use API, is simpler and more reliable",
+        "Each step starts a fresh conversation",
+        "Screenshots are stored at 1x1 pixel"
+      ],
+      "correct": 1,
+      "explanation": "Twenty screenshots of history is mostly redundant pixels. A text log of what was done preserves the decision-relevant state at a fraction of the tokens."
+    },
+    {
+      "stage": "post",
+      "question": "Where did computer-use agents actually stand on the 2026 benchmarks?",
+      "options": [
+        "Solved — frontier models score ~99%",
+        "Grounding is nearly solved (ScreenSpot-Pro ~85-90%) but end-to-end workflows are not: VisualWebArena frontier ~27%, and on AgentVista's realistic 12-domain tasks frontier models score only 27-40%",
+        "No model exceeds 5% anywhere",
+        "Benchmarks for agents don't exist yet"
+      ],
+      "correct": 1,
+      "explanation": "The gap between near-perfect single-click grounding and ~30% workflow completion is the compounding-error story — and why long-horizon memory, recovery, and visual tool use (ChartAgent-style crop/zoom/OCR calls) are the active frontier."
+    }
+  ]
+}

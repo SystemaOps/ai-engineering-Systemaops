@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What conventional wisdom did Emu3 attack head-on?",
+      "options": [
+        "That transformers can't process video",
+        "That image generation needs diffusion — the claim was that discrete tokens lose too much detail and autoregressive sampling accumulates error, which is why SD, DALL-E 3, Imagen, and Midjourney all used diffusion",
+        "That bigger models are always better",
+        "That CLIP loss is mandatory for VLMs"
+      ],
+      "correct": 1,
+      "explanation": "Emu3's bet: better visual tokenizer + enough scale + plain next-token loss = diffusion-beating generation in the same model that also does perception. A single Llama-style decoder beat SDXL on generation and LLaVA-1.6 on perception."
+    },
+    {
+      "stage": "pre",
+      "question": "What does Emu3's image tokenizer produce, and why is tokenizer quality \"the ceiling\"?",
+      "options": [
+        "16 tokens per image at K=256",
+        "A 512x512 image becomes 64x64 = 4096 tokens at codebook size 32768 (8x8 reduction per token), with reconstruction PSNR of 30.5 dB — close to Stable Diffusion's 32 dB continuous latents; the model can never generate detail the tokenizer can't reconstruct",
+        "Continuous embeddings, not discrete tokens",
+        "One token per object detected"
+      ],
+      "correct": 1,
+      "explanation": "Emu3 trains a custom IBQ-class tokenizer (SBER-MoVQGAN family). Part of the paper's contribution is simply \"we trained a very good tokenizer\" — that closes most of the assumed quality gap with diffusion."
+    },
+    {
+      "stage": "post",
+      "question": "How does the 3D video tokenizer work, and how many tokens does a 4s clip take?",
+      "options": [
+        "Each frame is tokenized independently at full resolution",
+        "A spatiotemporal 4x4x4-pixel patch maps to one integer — a 4s/8FPS clip at 256x256 with 4x spatial and 4x temporal reduction yields 64 × 64 × 8 = 32,768 tokens",
+        "Audio and video share one token stream",
+        "Only keyframes are tokenized"
+      ],
+      "correct": 1,
+      "explanation": "Patches span time, so the codebook captures motion, not just appearance. 32 frames compress 4x temporally to 8 token-frames of 64x64 spatial tokens each."
+    },
+    {
+      "stage": "post",
+      "question": "What inference trick borrowed from diffusion does Emu3 rely on for image quality?",
+      "options": [
+        "A denoising schedule over 50 steps",
+        "Classifier-free guidance — generate logits twice (full caption vs empty caption) and mix them with a guidance weight of roughly 3.0-7.0; temperature 0.8 for generation, 1.0 for perception",
+        "Beam search with width 100",
+        "Rejection sampling against CLIP score"
+      ],
+      "correct": 1,
+      "explanation": "The training objective is pure next-token prediction with teacher forcing; CFG is an inference-time quality lever. Temperature too high gives artifacts, too low gives mode collapse."
+    },
+    {
+      "stage": "post",
+      "question": "How does Emu3 learn WHEN to emit image vs text tokens with only one loss?",
+      "options": [
+        "A router network switches modalities",
+        "From the data distribution — training mixes formats like \"<caption> <image> tokens </image>\" for generation and \"<image> tokens </image> <question> text\" for perception, with modality-specific loss weights but an identical loss function",
+        "A hard-coded rule fires after 77 tokens",
+        "Separate decoder heads per modality"
+      ],
+      "correct": 1,
+      "explanation": "Generation emerges from predicting image tokens after the <image> tag. One weight set serves three roles: Emu3-Gen (image gen), Emu3-Chat (perception), Emu3-Stage2 (video gen)."
+    }
+  ]
+}

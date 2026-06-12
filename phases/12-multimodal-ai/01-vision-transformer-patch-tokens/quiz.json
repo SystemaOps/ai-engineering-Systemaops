@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why can't you just flatten an image's pixels into a transformer sequence?",
+      "options": [
+        "Pixels are not numbers",
+        "A 224x224 RGB image becomes 150,528 tokens, and self-attention is quadratic in sequence length — a non-starter; patches compress the grid into a manageable sequence",
+        "Transformers only accept text",
+        "Flattening loses the color channels"
+      ],
+      "correct": 1,
+      "explanation": "ViT's answer: carve the image into 16x16 patches, linearly project each, add positions — 196 tokens instead of 150k. Five years later every frontier model still begins this way."
+    },
+    {
+      "stage": "pre",
+      "question": "For ViT-B/16 at resolution 224, what is the token arithmetic?",
+      "options": [
+        "224 tokens, one per row",
+        "A 14x14 grid of 16x16 patches → 196 patch tokens, each a 768-value pixel cube projected to D=768, plus a [CLS] token → 197",
+        "1,000 tokens, one per class",
+        "3 tokens, one per channel"
+      ],
+      "correct": 1,
+      "explanation": "And the \"linear projection\" is implemented as nn.Conv2d(3, D, kernel_size=P, stride=P) — mathematically identical, computationally efficient."
+    },
+    {
+      "stage": "post",
+      "question": "Why did 2D-RoPE replace learnable 1D position tables in modern vision backbones?",
+      "options": [
+        "It uses less memory only",
+        "Learnable tables tie the model to the training resolution (interpolation needed at new grid sizes); 2D-RoPE rotates Q/K by (row, column) index, so arbitrary grids work at inference with no position table",
+        "1D positions were patented",
+        "RoPE is required by SigLIP's license"
+      ],
+      "correct": 1,
+      "explanation": "Relative 2D position emerges from rotation angles. This is what enables native-resolution and any-aspect-ratio processing in Qwen2-VL's M-RoPE and SigLIP 2."
+    },
+    {
+      "stage": "post",
+      "question": "What problem do register tokens solve?",
+      "options": [
+        "They store the image's EXIF metadata",
+        "ViTs without a sink token develop high-norm artifact patches that hijack self-attention — 4-16 learnable registers absorb that load, improving dense-prediction quality",
+        "They register the model with the hub",
+        "They cache attention for speed"
+      ],
+      "correct": 1,
+      "explanation": "Darcet et al. 2023's observation; DINOv2 and SigLIP 2 both ship registers. They're scaffolding, not content — discarded before patch tokens are handed to an LLM."
+    },
+    {
+      "stage": "post",
+      "question": "How does pretraining objective determine what a vision backbone is good for?",
+      "options": [
+        "It doesn't — all backbones are interchangeable",
+        "CLIP/SigLIP (contrastive with text) for semantic matching; DINOv2 (self-distillation, no labels) for dense visual features; MAE (masked reconstruction) as a finetuning starting point",
+        "Only supervised ImageNet pretraining works",
+        "The objective only affects training speed"
+      ],
+      "correct": 1,
+      "explanation": "The 2026 question isn't \"patches or not\" but which descendant: SigLIP 2 dominates open-VLM vision towers for text alignment, while DINOv2 is the default for segmentation/depth-style dense features."
+    }
+  ]
+}

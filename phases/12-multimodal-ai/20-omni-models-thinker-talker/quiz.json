@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What latency budget defines \"conversational feel\" for a voice assistant?",
+      "options": [
+        "Under 5 seconds round trip",
+        "Total round-trip under ~500ms — below that users stop noticing lag; GPT-4o claims ~250ms, Moshi ~160ms, Qwen2.5-Omni ~350-500ms, and EVERY component must stream",
+        "Exactly one second per response",
+        "Latency doesn't matter for voice"
+      ],
+      "correct": 1,
+      "explanation": "The pipeline — VAD + speech tokenization, optional 2-4 FPS camera input, thinking, then speech synthesis — adds latency at each step. Nothing can be \"batch everything then decode.\""
+    },
+    {
+      "stage": "pre",
+      "question": "What is the Thinker-Talker decomposition in Qwen2.5-Omni?",
+      "options": [
+        "Two copies of the same model voting",
+        "A large (7B-80B) Thinker reasons over interleaved text+image+audio and emits text tokens; a small (200M-1B) Talker converts those into discrete speech tokens; a streaming decoder renders waveform in real time",
+        "A planner that writes code for a renderer",
+        "Separate models for questions and answers"
+      ],
+      "correct": 1,
+      "explanation": "The split matters because the jobs differ: reasoning needs scale, text-to-speech-token conversion is local. A bigger Talker isn't more expressive — it's just slower."
+    },
+    {
+      "stage": "post",
+      "question": "How do Thinker and Talker run in parallel?",
+      "options": [
+        "Talker waits for the full text response",
+        "Talker consumes each text token as Thinker commits it and streams speech tokens immediately — by the time Thinker is at token t+3, audio for t_0..t+2 has already played",
+        "They alternate turns every second",
+        "Talker predicts the Thinker's output in advance"
+      ],
+      "correct": 1,
+      "explanation": "Mini-Omni's framing: \"talk while thinking in streaming.\" Thinker and Talker tokens interleave with no batch boundaries — this overlap is what keeps time-to-first-audio-byte inside the budget."
+    },
+    {
+      "stage": "post",
+      "question": "What problem does TMRoPE solve inside the Thinker?",
+      "options": [
+        "Reducing the vocabulary size",
+        "Vision frames (4 FPS), audio frames (50/s), and text would lose temporal alignment in naive sequence order — TMRoPE assigns absolute timestamps to every token so concurrent events attend as concurrent",
+        "Compressing video to fewer tokens",
+        "Encrypting the position embeddings"
+      ],
+      "correct": 1,
+      "explanation": "A vision token at t=2.3s, an audio token at t=2.32s, and the user's \"stop\" at t=2.35s are seen as the same conceptual moment — the infrastructure for \"he waved while saying hello\" to work."
+    },
+    {
+      "stage": "post",
+      "question": "Which open systems mapped the omni-model space alongside Qwen2.5-Omni?",
+      "options": [
+        "BERT, GPT-2, and T5",
+        "Mini-Omni (simplified the interleaved streaming design), Moshi (matched GPT-4o-class latency at ~160ms), and GLM-4-Voice (extended the pattern to Chinese)",
+        "Stable Diffusion and Midjourney",
+        "AlphaGo and MuZero"
+      ],
+      "correct": 1,
+      "explanation": "GPT-4o's May 2024 demo set the product target; the open ecosystem spent 2024-2025 racing to that surface, with Qwen2.5-Omni (March 2025) as the reference open design."
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What three gaps did the original Qwen-VL target versus LLaVA-1.5 and BLIP-2?",
+      "options": [
+        "Price, latency, license",
+        "Resolution (336px is useless for invoices and dense screenshots), video (per-frame stacking fails on multi-minute footage), and structured output (agents need JSON, not free-form text)",
+        "Bigger context, more languages, fewer parameters",
+        "Speech, music, and 3D"
+      ],
+      "correct": 1,
+      "explanation": "Every Qwen-VL generation extends one of these axes. Gen 1 (Aug 2023) shipped 448px, coordinate-token grounding (\"<box>(112,204),(280,344)</box>\"), and Chinese+English training — the grounding supervision was the headline."
+    },
+    {
+      "stage": "pre",
+      "question": "What architectural changes made Qwen2-VL the decisive generation?",
+      "options": [
+        "A 10x bigger language model only",
+        "Native dynamic resolution (any HxW divisible by 28, no resize/tiling), M-RoPE 3D positions replacing position tables, an MLP projector replacing the Q-Former, and dynamic-FPS video",
+        "Switching from Python to Rust",
+        "Quantization to 4-bit"
+      ],
+      "correct": 1,
+      "explanation": "Result: Qwen2-VL-7B matched GPT-4o on several benchmarks and beat it on DocVQA (94.5 vs 88.4). The rest of the open ecosystem copied each bet within twelve months."
+    },
+    {
+      "stage": "post",
+      "question": "Why does M-RoPE need all three axes (temporal, height, width)?",
+      "options": [
+        "For RGB channels",
+        "Images need 2D spatial position (t=0); video frames additionally need time — rotating Q/K by per-axis frequencies handles any resolution AND any frame count with no embedding table",
+        "One axis per attention head type",
+        "The third axis is for batch index"
+      ],
+      "correct": 1,
+      "explanation": "3D (t, h, w) positions unify still images and video under one scheme. MRoPE-v2 later scaled positions with max input size so 10-minute videos don't exhaust the frequency range."
+    },
+    {
+      "stage": "post",
+      "question": "What did Qwen2.5-VL's absolute time tokens change about video understanding?",
+      "options": [
+        "Videos play faster during training",
+        "Frames carry actual timestamps (<time>0.04</time>) instead of indices, so the model can say \"at 0:04 the cat jumps\" and dynamic FPS (1 for slow footage, 4+ for action) stays temporally grounded",
+        "Time zones are normalized to UTC",
+        "Frame order becomes irrelevant"
+      ],
+      "correct": 1,
+      "explanation": "Positional indices break when FPS varies — frame 12 means nothing if sampling density changes. Absolute time tokens decouple event localization from the sampling rate."
+    },
+    {
+      "stage": "post",
+      "question": "How did Qwen-VL make models \"agent-ready out of the box\"?",
+      "options": [
+        "By shipping a separate agent SDK",
+        "Training on explicit JSON output formats including tool calls like {\"tool\": \"click\", \"coords\": [380, 220]} — structured output as a first-class training target alongside OCR and grounding",
+        "By removing all safety filters",
+        "Through a special agent license"
+      ],
+      "correct": 1,
+      "explanation": "Computer-use agents need parseable coordinates and tool calls, not prose. Making structured output a training objective (not a prompting trick) is part of why the family dominates screen-agent benchmarks."
+    }
+  ]
+}

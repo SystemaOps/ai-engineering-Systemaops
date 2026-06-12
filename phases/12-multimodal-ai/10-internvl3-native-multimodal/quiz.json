@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What is \"alignment debt\" in post-hoc VLM training?",
+      "options": [
+        "Unpaid compute bills from alignment research",
+        "A text-pretrained LLM never natively learned visual tokens — bolting on vision afterward forces it to relate modalities without forgetting text, leaving measurable damage",
+        "The cost of RLHF licensing",
+        "Misaligned tensor shapes between towers"
+      ],
+      "correct": 1,
+      "explanation": "LLaVA, BLIP-2, Qwen-VL, and Idefics all follow the post-hoc recipe. The debt shows in three documented symptoms — quantified in MM1.5 and hinted at in OneVision's ablations."
+    },
+    {
+      "stage": "pre",
+      "question": "What are the three measurable symptoms of alignment debt?",
+      "options": [
+        "Slow inference, large checkpoints, high VRAM",
+        "Catastrophic forgetting (GSM8K drops 5-10 points), answer drift (rephrased visual questions get different answers), and visual-text inconsistency (describing an image correctly then contradicting the description)",
+        "Overfitting, underfitting, and dead neurons",
+        "Token leaks, NaN losses, and OOM errors"
+      ],
+      "correct": 1,
+      "explanation": "The inconsistency symptom is the most telling: visual tokens don't participate in the LLM's internal consistency checks the way its own text tokens do — weaker bindings from post-hoc attachment."
+    },
+    {
+      "stage": "post",
+      "question": "How does InternVL3's native pretraining differ, and what corpus mix does it use?",
+      "options": [
+        "It trains vision first, then text",
+        "One pretraining run with text and multimodal interleaved from step one: ~40% text-only, 35% interleaved image-text, 20% caption pairs, 5% video — no alignment stage, no forgetting to recover from",
+        "It uses 100% synthetic images",
+        "It skips pretraining entirely"
+      ],
+      "correct": 1,
+      "explanation": "Visual tokens are first-class citizens from the first gradient step. The result: matching Gemini 2.5 Pro on MMMU-Pro at 78B params, open — the strongest argument yet against post-hoc bolting."
+    },
+    {
+      "stage": "post",
+      "question": "How does V2PE differ from Qwen2-VL's M-RoPE?",
+      "options": [
+        "It abandons rotary embeddings",
+        "Position encoding varies per modality (1D text, 2D image, 3D video) with LEARNABLE hidden-dim allocation per frequency band, instead of M-RoPE's fixed axis split — worth 1-2 video-benchmark points at equal compute",
+        "It only supports square images",
+        "It is M-RoPE renamed"
+      ],
+      "correct": 1,
+      "explanation": "Same RoPE frequency base, but the trade-off between temporal and spatial frequency resolution becomes a learned parameter. Not a revolution — \"cleaner,\" as the lesson puts it."
+    },
+    {
+      "stage": "post",
+      "question": "Why does the text-only share (~40%) of the native corpus matter so much?",
+      "options": [
+        "Text data is cheapest to store",
+        "The model must remain a frontier text reasoner — native pretraining only beats post-hoc if text skills never degrade, so pure text keeps majority-scale presence in the same loss",
+        "Regulators require text quotas",
+        "Text tokens train faster than image tokens"
+      ],
+      "correct": 1,
+      "explanation": "The whole point is avoiding the post-hoc forgetting tax. Interleaved and caption data teach cross-modal binding, but the text foundation that sets the reasoning ceiling (per the recipes lesson) must be protected inside the single run."
+    }
+  ]
+}

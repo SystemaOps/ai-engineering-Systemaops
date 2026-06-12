@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What are the three failure modes of resizing every image to a fixed square?",
+      "options": [
+        "Slow upload, slow download, slow decode",
+        "Squished text and faces from distortion, destroyed chart labels and OCR content from downscaling, and (with padding instead) 50%+ of tokens wasted on pad at quadratic attention cost",
+        "Color shifts, compression artifacts, EXIF loss",
+        "None — square resize is lossless"
+      ],
+      "correct": 1,
+      "explanation": "Receipts are 1:3, documents portrait, screenshots 9:19.5, medical scans 4096px. The pre-2024 square-resize default threw away exactly the signal OCR and document understanding need."
+    },
+    {
+      "stage": "pre",
+      "question": "How does NaViT's patch-n'-pack handle a batch of different-sized images?",
+      "options": [
+        "Pads every image to the largest",
+        "Each image keeps its native patch grid; all patches concatenate into one long sequence with a block-diagonal mask so each image's patches attend only within their own image",
+        "Processes images one at a time",
+        "Center-crops everything to match"
+      ],
+      "correct": 1,
+      "explanation": "Three images of 576 + 256 + 768 tokens become one 1600-token sequence, no padding, no wasted compute. NaViT also introduced fractional patch dropping (50%) for regularization and speed, inherited by SigLIP 2."
+    },
+    {
+      "stage": "post",
+      "question": "How does LLaVA-NeXT's AnyRes work, and what is its cost?",
+      "options": [
+        "It retrains the encoder per aspect ratio",
+        "Tile the image into a best-fit grid of 336px crops plus a global thumbnail, encode each through the frozen encoder — effective, but a 1344px image at 4x4 costs ~9,800 tokens, most of an 8k context",
+        "It vectorizes the image as SVG",
+        "It sends multiple resolutions and votes"
+      ],
+      "correct": 1,
+      "explanation": "AnyRes is the pragmatic route when your encoder is frozen at one resolution: local detail from tiles plus global context from the thumbnail — paid for in token count that explodes with image size."
+    },
+    {
+      "stage": "post",
+      "question": "What does Qwen2-VL's M-RoPE give each patch?",
+      "options": [
+        "A unique random id",
+        "A 3D position (temporal, height, width) handled by rotary embeddings — native dynamic resolution with no position table, no retraining, any HxW at inference",
+        "An aspect-ratio tag in the prompt",
+        "A learned resolution embedding per size"
+      ],
+      "correct": 1,
+      "explanation": "Feed any image; the embedder produces H/14 × W/14 tokens, each rotated by its (t, row, col) position. Qwen2.5/3-VL continue it; InternVL3's V2PE is the same idea with per-modality encoding."
+    },
+    {
+      "stage": "post",
+      "question": "Which any-resolution approach fits which constraint?",
+      "options": [
+        "They are interchangeable in all cases",
+        "AnyRes when the encoder is frozen at one resolution; NaFlex/NaViT packing when training the encoder for one checkpoint serving every aspect ratio; M-RoPE when you control the architecture end to end",
+        "Always M-RoPE regardless of constraints",
+        "Always tile, never pack"
+      ],
+      "correct": 1,
+      "explanation": "The decision follows what you can change: frozen encoder → tile around it; trainable encoder → pack natively (SigLIP 2 NaFlex is the 2025+ open-VLM default); full control → positional scheme does the work."
+    }
+  ]
+}

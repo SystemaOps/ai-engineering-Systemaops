@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why is \"understand this PDF\" harder than plain OCR?",
+      "options": [
+        "PDFs are encrypted by default",
+        "The signal lives in layout, tables, figures, handwriting, and typography as well as text — raw OCR dumps the words and loses that an invoice's \"Total: $1,245\" came from the bottom-right, not a footnote",
+        "OCR cannot read printed text",
+        "PDFs contain no extractable text"
+      ],
+      "correct": 1,
+      "explanation": "Documents are not photos: headers, footnotes, two-column layouts, merged table cells, and title-vs-body typography all carry meaning that pixel-to-text extraction alone discards."
+    },
+    {
+      "stage": "pre",
+      "question": "What characterized the Era-1 OCR pipeline, and where did it break?",
+      "options": [
+        "End-to-end neural training",
+        "PDF → page images → Tesseract text+bboxes → layout analyzer → table recognizer → regex field extraction; works on clean print, breaks on handwriting, skewed scans, complex tables, and non-English scripts — each failure needing a custom exception path",
+        "It required cloud APIs for every page",
+        "It only worked on scanned books"
+      ],
+      "correct": 1,
+      "explanation": "TrOCR (2021) upgraded the OCR step itself with a transformer encoder-decoder — a clean win on handwriting and multilingual text — but the brittle multi-stage pipeline remained."
+    },
+    {
+      "stage": "post",
+      "question": "What did OCR-free models like Donut and Nougat change?",
+      "options": [
+        "They made Tesseract faster",
+        "They skip detection entirely and map page pixels DIRECTLY to structured output — Donut (Swin-B encoder-decoder) emits JSON or markdown per task schema; Nougat targets scientific papers, emitting LaTeX with equations and multi-column layout handled",
+        "They added more pipeline stages",
+        "They only output plain unstructured text"
+      ],
+      "correct": 1,
+      "explanation": "Era 2 (2022-2023) collapsed the pipeline into one model: no OCR, no layout analyzer, no detection — image in, markup out."
+    },
+    {
+      "stage": "post",
+      "question": "What are LayoutLMv3's three input streams?",
+      "options": [
+        "RGB, depth, and infrared",
+        "Text tokens, layout (bounding-box coordinates), and image patches — trained with unified masking across all three so the model binds words to their positions on the page",
+        "Audio, video, and subtitles",
+        "Three different OCR engines voting"
+      ],
+      "correct": 1,
+      "explanation": "LayoutLM-family models are the layout-aware middle path: they still consume OCR text but fuse it with spatial and visual signals rather than discarding the page geometry."
+    },
+    {
+      "stage": "post",
+      "question": "What does the Era-3 \"VLM-native\" endgame look like?",
+      "options": [
+        "Return to hand-written regex rules",
+        "Feed the page image to a frontier VLM at high native resolution (e.g., 2576px) and get structured-markup output for free — no document-specific architecture at all",
+        "A separate specialist model per document type",
+        "Converting PDFs to audio first"
+      ],
+      "correct": 1,
+      "explanation": "By 2026 generic VLM capability absorbed the specialist stack. The remaining engineering judgment is task fit: invoices, scientific papers, handwritten forms, and non-Latin receipts may still favor specialists like Donut, Nougat, DocLLM, or PaliGemma 2."
+    }
+  ]
+}

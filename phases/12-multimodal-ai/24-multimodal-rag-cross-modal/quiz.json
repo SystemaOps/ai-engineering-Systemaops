@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What does multimodal RAG require beyond the solved single-modality pattern?",
+      "options": [
+        "Just a bigger embedding model",
+        "Multiple retrieval heads (compatible embedding spaces per modality), fusion of results across modalities, generation grounding that cites mixed-modality sources, and evaluation metrics covering cross-modal signal",
+        "A relational database instead of vectors",
+        "Nothing — CLIP already solves it all"
+      ],
+      "correct": 1,
+      "explanation": "The three 2025 surveys (Abootorabi, Mei, Zhao et al.) independently arrive at this same four-part taxonomy of sub-problems."
+    },
+    {
+      "stage": "pre",
+      "question": "What are the three cross-modal retrieval patterns?",
+      "options": [
+        "Keyword, fuzzy, and semantic search",
+        "Shared embedding space (CLIP/CLAP, cosine works directly but limited to trained pairs), per-modality encoders + a translator module (flexible, more complex), and VLM hidden states as the representation (any supported modality, higher quality, more expensive)",
+        "SQL joins across modality tables",
+        "Always converting everything to text first"
+      ],
+      "correct": 1,
+      "explanation": "Practical choice: CLIP/SigLIP 2 for text+image, CLAP for text+audio, VLM hidden states when frontier quality justifies the cost."
+    },
+    {
+      "stage": "post",
+      "question": "You retrieved 5 images, 3 text passages, and 2 audio clips. What is the production-default fusion?",
+      "options": [
+        "Discard everything but the top modality",
+        "Score fusion: normalize scores within each modality, then sum — with a slight bias toward the query's dominant modality; upgrade to MoE fusion only if A/B testing shows clear domain wins",
+        "Always train an attention fusion network first",
+        "Random shuffling of all ten results"
+      ],
+      "correct": 1,
+      "explanation": "Score fusion is cheapest and often works. Attention-based fusion needs training; MoE fusion routes query types to modality experts (visual questions weight images higher) — worth it only when proven."
+    },
+    {
+      "stage": "post",
+      "question": "What does generation grounding look like with mixed-modality sources?",
+      "options": [
+        "Citations are impossible across modalities",
+        "Each claim cites the item that drove it, in modality-appropriate form: [1] for text, [img 3] with a short caption for images, [audio 2 at 0:34] with a timestamp for audio",
+        "One blanket citation at the end",
+        "Only text sources can be cited"
+      ],
+      "correct": 1,
+      "explanation": "\"Cite your sources\" must survive the modality mix — timestamps for audio, captions for images — or the user can't verify which retrieved evidence supports which claim."
+    },
+    {
+      "stage": "post",
+      "question": "Which real workflows motivate going wider than document RAG?",
+      "options": [
+        "Only academic benchmark chasing",
+        "Trip planning (\"quiet vegan brunch with natural light\"), medical triage (photo + notes), e-commerce (\"outfits like this selfie, in my size\"), and field service (engine sound + part photo)",
+        "Spreadsheet formula generation",
+        "Password recovery flows"
+      ],
+      "correct": 1,
+      "explanation": "Each pairs a query in one modality with evidence in others — exactly the cross-modal retrieval + fusion + grounded generation stack this lesson designs."
+    }
+  ]
+}

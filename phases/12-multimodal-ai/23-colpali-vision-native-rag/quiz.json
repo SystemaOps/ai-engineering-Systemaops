@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Where does the text-RAG pipeline lose signal on visually rich PDFs?",
+      "options": [
+        "Only at the final LLM step",
+        "At every stage: OCR drops chart data, 300-500-token chunking breaks table rows, multi-column layout flattens, figure annotations vanish, and one bi-encoder vector per chunk ignores the rest — five lossy steps",
+        "Text-RAG is lossless on PDFs",
+        "Only when the PDF is scanned"
+      ],
+      "correct": 1,
+      "explanation": "A financial report's Q3 growth lives in a chart; a contract's signature block is a layout fact. ColPali's question: why extract text at all? Embed the page IMAGE directly and keep all of it."
+    },
+    {
+      "stage": "pre",
+      "question": "What is ColBERT's MaxSim operation?",
+      "options": [
+        "Taking the max over document lengths",
+        "One vector PER TOKEN instead of per document; score = sum over query tokens of the max cosine similarity against any document token (Σᵢ maxⱼ cos(qᵢ, dⱼ)) — each query token \"picks\" its best match",
+        "Averaging all token embeddings first",
+        "A reranking LLM call per document"
+      ],
+      "correct": 1,
+      "explanation": "Late interaction trades storage (N_d vectors per document) for strong recall and term-level semantics — the foundation ColPali generalizes from text tokens to image patches."
+    },
+    {
+      "stage": "post",
+      "question": "How does ColPali apply the ColBERT pattern to document pages?",
+      "options": [
+        "It OCRs the page then runs ColBERT",
+        "PaliGemma encodes each page image into patch embeddings (N_p vectors); the text query becomes token embeddings; MaxSim runs between query tokens and image patches, retrieving top-k pages by total score",
+        "It hashes page thumbnails",
+        "It asks a VLM to rank pages in one prompt"
+      ],
+      "correct": 1,
+      "explanation": "Ingestion = embed every page, store all patch vectors. Query time = embed query tokens, MaxSim against stored pages. Each patch vector captures local layout AND content — no extraction step to lose either."
+    },
+    {
+      "stage": "post",
+      "question": "What did ColPali's benchmarks show, and what is the main cost?",
+      "options": [
+        "5% better with no downsides",
+        "20-40% better end-to-end accuracy than text-RAG on visually rich documents — paid for in storage, since N_p patch vectors per page grow fast (mitigated by PQ/OPQ quantization)",
+        "Equal accuracy at lower cost",
+        "Better accuracy only on plain-text pages"
+      ],
+      "correct": 1,
+      "explanation": "Multi-vector indexes are the price of late interaction. ColQwen2, ColSmol, and VisRAG extended the same pattern with different backbone VLMs."
+    },
+    {
+      "stage": "post",
+      "question": "How do bi-encoder and late-interaction retrieval differ at query time?",
+      "options": [
+        "They are mathematically identical",
+        "Bi-encoder compares ONE query vector to ONE document vector by cosine; late interaction keeps many vectors per side and computes fine-grained token/patch-level matching — costlier, but able to attend to specific regions",
+        "Bi-encoders cannot use cosine similarity",
+        "Late interaction requires no stored vectors"
+      ],
+      "correct": 1,
+      "explanation": "A single pooled vector must compress an entire page into one point; MaxSim lets the query term \"revenue chart\" match the exact patch where the chart sits."
+    }
+  ]
+}

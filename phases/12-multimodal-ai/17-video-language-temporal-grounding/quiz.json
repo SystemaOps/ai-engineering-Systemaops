@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why can't a video VLM just feed every frame to the LLM?",
+      "options": [
+        "Video codecs are proprietary",
+        "A 1-minute clip at 30 FPS is 1800 frames; at 196 tokens per frame that's 352k tokens — larger than any 2024-era LLM context, so frames must be subsampled, pooled, or Q-former-compressed",
+        "Frames arrive faster than GPUs can copy",
+        "LLMs only accept square inputs"
+      ],
+      "correct": 1,
+      "explanation": "Each reduction has its own tax: subsampling loses temporal detail, pooling loses spatial detail, and a Q-former (16-frame clip → 64 tokens) loses a little of both but saves the most tokens."
+    },
+    {
+      "stage": "pre",
+      "question": "What was Video-LLaMA's architecture, and what was its key strength and weakness?",
+      "options": [
+        "Per-pixel attention over raw video",
+        "16-frame clips at 2 FPS through a Video Q-former (32 queries) plus a parallel ImageBind audio branch — strength: audio-visual joint reasoning; weakness: fixed clip length with no arbitrary time grounding",
+        "A diffusion model that denoises captions",
+        "Pure text training on subtitle files"
+      ],
+      "correct": 1,
+      "explanation": "Video-LLaMA (June 2023) was the first open video-LLM. VideoChat dropped the audio branch; Video-LLaVA unified image and video frames in one encoder — but all stayed 8-16-frame systems."
+    },
+    {
+      "stage": "post",
+      "question": "What makes TMRoPE different from simple temporal embeddings?",
+      "options": [
+        "It uses learned position tables per video",
+        "Each patch token carries (t, h, w) where t is the ABSOLUTE timestamp, not a frame index — per-token rotation that natively handles uneven dynamic-FPS spacing",
+        "It encodes time in the color channels",
+        "It only works at exactly 30 FPS"
+      ],
+      "correct": 1,
+      "explanation": "The model sees \"at 4.2 seconds,\" not \"at frame 15.\" That's what enables precise grounding answers like \"the cat jumps at 4.2 seconds\" where Video-LLaMA could only say \"early in the clip.\""
+    },
+    {
+      "stage": "post",
+      "question": "How do the three temporal-token designs the lesson compares differ?",
+      "options": [
+        "They differ only in training data",
+        "Q-former-per-clip (Video-LLaMA: 16 frames → 32 queries), pooled-per-frame (Video-LLaVA: per-frame tokens with learned temporal embeddings), and M-RoPE-per-token (Qwen2.5-VL: every token rotated by its timestamp)",
+        "All three pool frames identically",
+        "Only one of them can process video at all"
+      ],
+      "correct": 1,
+      "explanation": "The granularity of temporal information rises left to right — clip-level, frame-level, token-level — and grounding accuracy rises with it, independent of the vision encoder."
+    },
+    {
+      "stage": "post",
+      "question": "Which benchmarks does the lesson name for evaluating video-language models?",
+      "options": [
+        "MMLU, GSM8K, HumanEval, ARC",
+        "VideoMME, TempCompass, EgoSchema, and Video-MMMU",
+        "ImageNet, COCO, VQAv2, OK-VQA",
+        "LibriSpeech, CommonVoice, FLEURS"
+      ],
+      "correct": 1,
+      "explanation": "These four stress different skills — general video QA, temporal-order sensitivity, long egocentric reasoning, and knowledge-intensive video understanding — so a sampler/encoding choice that helps one may not help another."
+    }
+  ]
+}

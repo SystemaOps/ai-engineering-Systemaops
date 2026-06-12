@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What was LLaVA's \"embarrassingly simple\" replacement for the Q-Former?",
+      "options": [
+        "A bigger Q-Former",
+        "A 2-layer MLP (1024 → 4096 → 4096) projecting ALL 576 patch tokens straight into the LLM input — no bottleneck, no multi-objective pretraining, direct LM loss",
+        "A diffusion model",
+        "Skipping the vision encoder entirely"
+      ],
+      "correct": 1,
+      "explanation": "The Q-Former's bottleneck lost information and required co-design with every backbone pairing. LLaVA traded token budget (576 tokens per image) for simplicity and directness — and became the most copied multimodal architecture on the planet."
+    },
+    {
+      "stage": "pre",
+      "question": "Where did LLaVA's 158k instruction turns come from?",
+      "options": [
+        "Thousands of paid human annotators",
+        "Text-only GPT-4 was fed COCO captions and bounding-box data and asked to generate conversations, descriptions, and reasoning questions — no human annotation",
+        "Scraped Reddit threads",
+        "The model annotated its own outputs"
+      ],
+      "correct": 1,
+      "explanation": "The data insight matched the architecture insight in importance: synthetic visual-instruction data generated from textual image descriptions made the recipe reproducible by anyone — 8 A100s for one day, 50+ forks by late 2023."
+    },
+    {
+      "stage": "post",
+      "question": "What happens in LLaVA's two training stages?",
+      "options": [
+        "Both stages train everything end to end",
+        "Stage 1: freeze ViT and LLM, train only the MLP on 558k caption pairs (a few hours); Stage 2: unfreeze the LLM (full or LoRA) and tune on the 158k instruction turns",
+        "Stage 1 trains the ViT; stage 2 the tokenizer",
+        "One stage of RLHF only"
+      ],
+      "correct": 1,
+      "explanation": "Stage 1 aligns ViT-space to LLM-space with no task-specific supervision; stage 2 teaches instruction following. The prompt format replaces an <image> placeholder with the 576 projected tokens."
+    },
+    {
+      "stage": "post",
+      "question": "What is the cost of LLaVA's no-bottleneck choice, and why did it stop mattering?",
+      "options": [
+        "Lower accuracy forever",
+        "576 context tokens per image — significant in a 2048-token context (1472 left for text), a rounding error at 32k",
+        "Doubled training time permanently",
+        "Incompatibility with quantization"
+      ],
+      "correct": 1,
+      "explanation": "Q-Former's 32-vs-576 token win was decisive in the 2k-context era. As LLM contexts grew, the token tax shrank while the simplicity dividend (any ViT + any LLM + one MLP) kept paying."
+    },
+    {
+      "stage": "post",
+      "question": "Why did the community converge on MLP projectors despite the Q-Former's efficiency?",
+      "options": [
+        "Salesforce closed the Q-Former source",
+        "The Q-Former's intermediate objectives lost information in the bottleneck and every backbone change forced a retrain — the MLP trains on the final task loss directly and swaps components freely",
+        "MLPs run on CPUs only",
+        "Marketing, not engineering"
+      ],
+      "correct": 1,
+      "explanation": "\"Simpler won\" for two structural reasons: loss directness (no intermediate representation the LLM must decode) and modularity (change the LLM or encoder without an R&D project)."
+    }
+  ]
+}

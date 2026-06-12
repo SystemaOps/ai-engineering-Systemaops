@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What was CLIP's core bet about supervision?",
+      "options": [
+        "More human labelers produce better labels",
+        "The web's billion+ image-caption pairs carry free supervisory signal — treat matching as the task: each image must match its own caption against N-1 in-batch distractors, no class labels needed",
+        "Synthetic captions beat real ones",
+        "Vision models need no text at all"
+      ],
+      "correct": 1,
+      "explanation": "400M noisy pairs and a contrastive loss replaced expensive labeled datasets — and the resulting embedding space does zero-shot classification it was never explicitly trained for."
+    },
+    {
+      "stage": "pre",
+      "question": "How is CLIP's similarity computed between an image and a caption?",
+      "options": [
+        "Edit distance between pixels and characters",
+        "Both towers output unit-normalized D-dim vectors, so cosine similarity is just the dot product f(x)ᵀg(y), scaled by a learned temperature",
+        "A third model scores each pair",
+        "Pixel-wise MSE against a rendered caption"
+      ],
+      "correct": 1,
+      "explanation": "Dual encoders (ViT/ResNet image tower, small transformer text tower) project into one space; the batch similarity matrix S[i,j] = cos(f(xᵢ), g(yⱼ))/τ feeds the contrastive loss."
+    },
+    {
+      "stage": "post",
+      "question": "What does InfoNCE actually optimize in a batch of N pairs?",
+      "options": [
+        "Reconstruction error of the image",
+        "Symmetric cross-entropy over the similarity matrix — each image must beat N-1 distractor captions and vice versa, so bigger batches mean more negatives and stronger signal (CLIP trained at batch 32k)",
+        "The temperature parameter alone",
+        "The norm of the embeddings"
+      ],
+      "correct": 1,
+      "explanation": "loss = (CE over rows + CE over columns)/2 with identity labels. In-batch negatives are the engine, which is exactly why batch size is one of the four pretraining levers."
+    },
+    {
+      "stage": "post",
+      "question": "Why does SigLIP's sigmoid loss scale better than CLIP's softmax?",
+      "options": [
+        "Sigmoid is more accurate mathematically",
+        "Softmax needs the full similarity matrix synchronized — all-gather of every embedding to every replica, quadratic communication in world size; sigmoid treats each pair as independent binary classification, no global sync",
+        "Sigmoid uses half-precision automatically",
+        "Softmax cannot run on TPUs"
+      ],
+      "correct": 1,
+      "explanation": "Element-wise pairwise loss (diagonal = positive, rest = negative) removes the distributed-softmax bottleneck, letting SigLIP scale past batch 32k at lower cost — why it became the dominant 2026 vision tower."
+    },
+    {
+      "stage": "post",
+      "question": "How does zero-shot ImageNet classification work with CLIP?",
+      "options": [
+        "Fine-tune a classification head on ImageNet first",
+        "Embed text templates like \"a photo of a {class}\" for every class, embed the image, take argmax over cosine similarities — no ImageNet training at all",
+        "Ask the text encoder to generate the label",
+        "Nearest-neighbor lookup in the training set"
+      ],
+      "correct": 1,
+      "explanation": "\"A photo of a cat\" embeds near cat images that were never labeled 'cat'. Prompt template quality is one of the four levers (with batch size, temperature, and data quality)."
+    }
+  ]
+}
