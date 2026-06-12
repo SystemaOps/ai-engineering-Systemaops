@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "How does TD learning split the difference between MC and DP?",
+      "options": [
+        "It averages their outputs",
+        "From a single transition (s,a,r,s'), form the one-step target r + γV(s') and nudge V(s) toward it — no model (unlike DP), no waiting for episode end (unlike MC); some bias from bootstrapping, but far lower variance and online updates from step one",
+        "It runs DP on sampled models",
+        "It eliminates both bias and variance"
+      ],
+      "correct": 1,
+      "explanation": "The TD error δ = r + γV(s') − V(s) is the online analogue of MC's G_t − V(s_t). This one-step update is the pivot all of modern RL — DQN, A2C, PPO, SAC — turns on."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the single difference between the Q-learning and SARSA updates?",
+      "options": [
+        "Q-learning uses a bigger learning rate",
+        "Q-learning's target uses max_{a'} Q(s',a') — assuming greedy behavior from s' regardless of what the agent actually does (off-policy); SARSA uses Q(s',a') for the action a' ACTUALLY taken next (on-policy)",
+        "SARSA doesn't use a reward signal",
+        "Q-learning needs a model of P"
+      ],
+      "correct": 1,
+      "explanation": "That decoupling lets Q-learning learn Q* while exploring ε-greedily — the property Mnih et al. (2015) scaled into DQN on Atari. SARSA converges to Q^π for the running ε-greedy policy."
+    },
+    {
+      "stage": "post",
+      "question": "What does the cliff-walking example reveal about the two algorithms?",
+      "options": [
+        "They learn identical paths always",
+        "Q-learning learns the optimal cliff-edge path but occasionally falls during exploration; SARSA learns a safer path one step away because it factors exploration noise into its Q-values — more conservative behavior when exploration happens at deployment",
+        "SARSA cannot solve cliff-walking",
+        "Q-learning refuses to go near cliffs"
+      ],
+      "correct": 1,
+      "explanation": "Both reach optimal as ε→0, but the on/off-policy distinction has real behavioral consequences while exploring — the practical reason to care which one you deploy."
+    },
+    {
+      "stage": "post",
+      "question": "What does Expected SARSA change, and why?",
+      "options": [
+        "It uses the max over actions like Q-learning",
+        "It replaces the sampled Q(s',a') with the expectation Σ_{a'} π(a'|s')Q(s',a') — same on-policy target but lower variance since no sample of a' is needed; often the modern textbook default",
+        "It removes the discount factor",
+        "It waits for episode termination"
+      ],
+      "correct": 1,
+      "explanation": "Same fixed point as SARSA, less noise per update — a free variance reduction whenever you can enumerate the action distribution."
+    },
+    {
+      "stage": "post",
+      "question": "How do n-step TD and TD(λ) interpolate between TD(0) and MC?",
+      "options": [
+        "They don't — the methods are unrelated",
+        "Wait n steps of real rewards before bootstrapping: n=1 is TD, n=∞ is MC; TD(λ) averages over all n with geometric weights (1−λ)λ^{n−1} — most deep RL uses n between 3 and 20",
+        "By annealing the learning rate",
+        "By switching algorithms mid-episode"
+      ],
+      "correct": 1,
+      "explanation": "The bias-variance dial: more real reward steps before bootstrapping means less bias and more variance. GAE in later lessons is this same idea applied to advantages."
+    }
+  ]
+}

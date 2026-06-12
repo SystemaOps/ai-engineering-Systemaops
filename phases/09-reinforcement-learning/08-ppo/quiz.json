@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What problem with on-policy A2C does PPO solve?",
+      "options": [
+        "A2C can't use neural networks",
+        "After one gradient update the policy changes, making the collected rollout off-policy — A2C must throw expensive data away after a single use; PPO's clipped importance ratio allows 10+ epochs on the same rollout without the policy exploding",
+        "A2C requires a replay buffer",
+        "A2C only works on discrete actions"
+      ],
+      "correct": 1,
+      "explanation": "TRPO solved it first with a hard KL trust-region constraint, but needed a conjugate-gradient solve per update. PPO got good-enough guarantees with one extra line of code — still the 2026 default."
+    },
+    {
+      "stage": "pre",
+      "question": "What is the importance ratio r_t(θ)?",
+      "options": [
+        "The reward divided by the value",
+        "π_θ(a_t|s_t) / π_θold(a_t|s_t) — the likelihood ratio of the new policy vs the one that collected the data; r=1 means no change, r=2 means the action is now twice as likely",
+        "The fraction of clipped gradients",
+        "The advantage divided by its std"
+      ],
+      "correct": 1,
+      "explanation": "Computed in practice as exp(log π_θ − log π_old). It's what lets stale data give an unbiased-ish gradient — until the ratio drifts too far, which is what clipping polices."
+    },
+    {
+      "stage": "post",
+      "question": "How does the clipped surrogate L^CLIP behave?",
+      "options": [
+        "It clips rewards to [−1, 1]",
+        "min(r·A, clip(r, 1−ε, 1+ε)·A): with A>0 the gradient flattens once r exceeds 1+ε (don't over-push good actions); with A<0 it caps at 1−ε (don't over-suppress); the min ensures no clipping on the side that would hurt you",
+        "It zeroes all negative advantages",
+        "It normalizes the policy entropy"
+      ],
+      "correct": 1,
+      "explanation": "Plotted against r, it's piecewise-linear with a flat roof on the good side and flat floor on the bad side. Typical ε = 0.2."
+    },
+    {
+      "stage": "post",
+      "question": "What does one PPO training iteration look like?",
+      "options": [
+        "One env step, one gradient step",
+        "Collect N×T transitions across parallel envs, compute GAE advantages and FREEZE them, snapshot π_old, then run K epochs of minibatch updates using the clipped objective with ratios computed against the snapshot",
+        "Train the critic to convergence first",
+        "Replay random transitions like DQN"
+      ],
+      "correct": 1,
+      "explanation": "Freezing advantages and the old policy is what makes multi-epoch reuse coherent — the ratio measures total drift from the data-collecting policy, not from the last minibatch."
+    },
+    {
+      "stage": "post",
+      "question": "Why did PPO outlive TRPO?",
+      "options": [
+        "TRPO was mathematically wrong",
+        "TRPO's hard KL constraint needs a conjugate-gradient solve per update; PPO's clipping achieves a similar trust-region effect with a one-line objective change, ten epochs per rollout, and no second-order machinery — simplicity won",
+        "PPO has better theoretical guarantees",
+        "TRPO was never open-sourced"
+      ],
+      "correct": 1,
+      "explanation": "Nine years on, PPO remains the default policy-gradient algorithm from MuJoCo to RLHF — the canonical case of \"good-enough theory plus excellent engineering ergonomics.\""
+    }
+  ]
+}

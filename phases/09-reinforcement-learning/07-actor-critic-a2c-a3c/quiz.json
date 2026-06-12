@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What is the advantage A(s,a), and why does it fix REINFORCE's variance?",
+      "options": [
+        "A faster optimizer for the critic",
+        "A = G − V̂(s) — an action is good if it produced ABOVE-AVERAGE return; subtracting the learned baseline leaves the gradient expectation unchanged but kills most of the noise from raw Monte Carlo returns that swing 10x between episodes",
+        "The agent's win rate over a baseline bot",
+        "A bonus for unexplored actions"
+      ],
+      "correct": 1,
+      "explanation": "REINFORCE-with-learned-critic IS actor-critic: the critic gives the actor a low-variance teacher. Every deep-policy method after 2015 (A2C, A3C, PPO, SAC, IMPALA) builds on this."
+    },
+    {
+      "stage": "pre",
+      "question": "What are the two networks in actor-critic and their jobs?",
+      "options": [
+        "Generator and discriminator",
+        "The actor π_θ(a|s) is the policy, sampled to act, trained by policy gradient; the critic V_φ(s) estimates expected return, trained by regression to a value target — the critic's output feeds the actor's advantage",
+        "Encoder and decoder",
+        "Two identical actors voting"
+      ],
+      "correct": 1,
+      "explanation": "Both train from the same rollouts under one combined loss: policy gradient + value regression (c_v ≈ 0.5) + entropy bonus (c_e ≈ 0.01) to keep exploration alive."
+    },
+    {
+      "stage": "post",
+      "question": "How does GAE generalize the bias-variance trade in advantage estimation?",
+      "options": [
+        "It eliminates both bias and variance",
+        "A_GAE = Σ (γλ)^l δ_{t+l} — an exponentially weighted average over all n-step advantages: λ=0 is pure TD (low variance, high bias), λ=1 is MC (unbiased, high variance); λ=0.95 is the 2026 default",
+        "It replaces advantages with raw rewards",
+        "It samples advantages from a buffer"
+      ],
+      "correct": 1,
+      "explanation": "Schulman et al. (2016). The same TD-to-MC dial as n-step returns, packaged as one tunable λ — the advantage estimator PPO ships with."
+    },
+    {
+      "stage": "post",
+      "question": "How do A2C and A3C differ, and which dominates today?",
+      "options": [
+        "A3C is A2C with attention",
+        "A3C runs asynchronous CPU workers applying gradients to a shared parameter server (decorrelation via different trajectories, no replay buffer); A2C synchronizes parallel envs into one batch update — GPU-based A2C dominates in 2026 because GPUs want large batches",
+        "A2C is off-policy, A3C on-policy",
+        "They differ only in author lists"
+      ],
+      "correct": 1,
+      "explanation": "A3C (Mnih 2016) proved CPU-scale RL training was possible; hardware then made its asynchrony obsolete — synchronous batching matches the accelerator."
+    },
+    {
+      "stage": "post",
+      "question": "Why does the combined loss include an entropy bonus?",
+      "options": [
+        "To regularize the critic's weights",
+        "Maximizing H(π_θ(·|s)) discourages premature collapse to a deterministic policy, keeping exploration alive while the advantage signal is still noisy — canonical coefficient c_e ≈ 0.01",
+        "To make training deterministic",
+        "Entropy measures the replay buffer size"
+      ],
+      "correct": 1,
+      "explanation": "Without it, the policy can lock onto an early local optimum and stop sampling alternatives — the policy-gradient analogue of ε-greedy's exploration guarantee."
+    }
+  ]
+}

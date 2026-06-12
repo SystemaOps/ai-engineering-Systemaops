@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why is dynamic programming called \"RL with cheating\"?",
+      "options": [
+        "It peeks at the test set",
+        "You already KNOW the transition and reward functions — no sampling needed, just iterate the Bellman equation until V or π stops moving; model-free methods exist precisely for when you don't have that model",
+        "It uses more compute than allowed",
+        "It copies policies from a database"
+      ],
+      "correct": 1,
+      "explanation": "Bellman designed these methods in 1957 and they still define correctness: \"optimal policy for this MDP\" means the policy DP would return."
+    },
+    {
+      "stage": "pre",
+      "question": "Why do you still need DP in 2026?",
+      "options": [
+        "It's required for GPU drivers",
+        "Tabular research environments are solved with DP for gold-standard policies; exact values DEBUG sampling methods (if Q-learning disagrees with DP by 30%, Q-learning has a bug); and MCTS/AlphaZero/model-based RL all iterate Bellman backups over a model",
+        "Deep RL no longer works",
+        "Regulations mandate exact solutions"
+      ],
+      "correct": 1,
+      "explanation": "DP is the reference implementation of the Bellman equation — the yardstick that makes every approximate method's error measurable."
+    },
+    {
+      "stage": "post",
+      "question": "How do policy iteration and value iteration differ?",
+      "options": [
+        "They are two names for one algorithm",
+        "Policy iteration alternates full evaluation (compute V^π to convergence) with greedy improvement, converging in ~5-20 outer loops; value iteration collapses both into one sweep of the Bellman OPTIMALITY backup (max over actions) — cheaper per iteration, more iterations",
+        "Value iteration requires no model",
+        "Policy iteration only works on grids"
+      ],
+      "correct": 1,
+      "explanation": "Policy iteration's convergence is guaranteed because each improvement strictly increases V^π somewhere and the deterministic-policy space is finite."
+    },
+    {
+      "stage": "post",
+      "question": "What is Generalized Policy Iteration (GPI)?",
+      "options": [
+        "A specific 1957 algorithm",
+        "The unifying frame: value function and policy locked in a two-way improvement loop — async value iteration, Q-learning, actor-critic, and PPO are all instances driving both toward mutual consistency",
+        "Policy iteration with neural networks",
+        "A genetic programming variant"
+      ],
+      "correct": 1,
+      "explanation": "GPI is why the rest of the phase rhymes: every algorithm is some schedule of \"evaluate a bit, improve a bit\" with different estimators plugged in."
+    },
+    {
+      "stage": "post",
+      "question": "Why does γ < 1 guarantee convergence?",
+      "options": [
+        "It makes rewards positive",
+        "The Bellman operator is a γ-contraction in sup-norm (||TV − TV'||∞ ≤ γ||V − V'||∞), which implies a unique fixed point and geometric convergence — drop it and you need a finite horizon or absorbing terminal state instead",
+        "Small numbers prevent overflow",
+        "It doesn't — convergence is empirical"
+      ],
+      "correct": 1,
+      "explanation": "The contraction-mapping argument is the one theorem underwriting the whole phase: iterate any γ-contraction from any starting point and you land at the same unique answer."
+    }
+  ]
+}

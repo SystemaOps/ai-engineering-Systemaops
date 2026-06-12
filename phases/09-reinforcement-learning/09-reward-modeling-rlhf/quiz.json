@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why does RLHF use pairwise preferences instead of a hand-written reward function?",
+      "options": [
+        "Preferences are required by PPO",
+        "\"Helpfulness\" has no closed-form expression over tokens — humans can't WRITE the reward but can cheaply COMPARE two responses and pick the better one; a reward model fitted to those comparisons supplies the scalar signal",
+        "Hand-written rewards are illegal",
+        "Pairs train faster on GPUs"
+      ],
+      "correct": 1,
+      "explanation": "Christiano 2017 → InstructGPT 2022: the SFT → RM → PPO recipe is what turned GPT-3 into ChatGPT and shipped every aligned LLM of 2023-2025."
+    },
+    {
+      "stage": "pre",
+      "question": "How is the reward model trained?",
+      "options": [
+        "Regression to star ratings",
+        "Bradley-Terry pairwise logistic loss: −E[log σ(R(x,y₊) − R(x,y₋))] — the reward DIFFERENCE implies log-odds of preference; R is usually the SFT model with a scalar head on top",
+        "Contrastive loss against random text",
+        "Cross-entropy on next tokens"
+      ],
+      "correct": 1,
+      "explanation": "Bradley-Terry dates to 1952 and remains the dominant choice. Same transformer backbone as the policy, one linear layer outputting the score."
+    },
+    {
+      "stage": "post",
+      "question": "Why is the KL penalty \"the single most important knob in RLHF\"?",
+      "options": [
+        "It speeds up PPO convergence",
+        "The RM was only trained on in-distribution completions — without the KL term (r = R_φ − β·KL(π_θ||π_ref)), PPO finds out-of-distribution reward hacks that score higher than any human-written response; the KL keeps the policy on the manifold where the RM is valid",
+        "It prevents GPU memory overflow",
+        "Regulators require KL reporting"
+      ],
+      "correct": 1,
+      "explanation": "It's a regularizer (β ≈ 0.01-0.05), not a hard trust region — anchoring π_θ to the frozen π_SFT reference so reward optimization can't wander into the RM's blind spots."
+    },
+    {
+      "stage": "post",
+      "question": "What replaced or extended the PPO stage by 2026?",
+      "options": [
+        "Nothing — vanilla RLHF is unchanged",
+        "DPO collapses RM + PPO into one supervised loss over preferences (cheaper, near-equal alignment quality); GRPO swaps the critic for a group-relative baseline with VERIFIER rewards (dominant for reasoning); PRMs score individual reasoning steps; RLAIF generates preferences with an LLM",
+        "Everything moved back to SFT only",
+        "Evolutionary strategies took over"
+      ],
+      "correct": 1,
+      "explanation": "The reward-model concept survives everywhere even where PPO doesn't: Best-of-N sampling, RL-from-verifiable-rewards, and process reward models all rest on it."
+    },
+    {
+      "stage": "post",
+      "question": "What does each of the three RLHF stages contribute?",
+      "options": [
+        "They are redundant safety checks",
+        "SFT biases the base model toward demonstrated good behavior; the RM converts cheap human comparisons into a scalar reward; PPO with KL then pushes the policy toward higher reward without leaving the SFT distribution",
+        "Each stage retrains from scratch",
+        "Only stage 3 changes the weights"
+      ],
+      "correct": 1,
+      "explanation": "A pipeline of progressively cheaper signals: expensive demonstrations → cheaper comparisons → automated reward queries. Note PPO advantages are token-level but the RM scores only the full response."
+    }
+  ]
+}

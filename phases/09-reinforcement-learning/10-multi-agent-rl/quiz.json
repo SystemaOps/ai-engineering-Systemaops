@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What fundamental assumption breaks when multiple learning agents share an environment?",
+      "options": [
+        "Rewards can no longer be scalar",
+        "Stationarity: each agent is part of the others' environment, so as policies change the transition dynamics shift — the Markov property fails because next state depends on other agents' moving-target choices, voiding tabular convergence proofs",
+        "Gradients can't be computed",
+        "Actions become continuous"
+      ],
+      "correct": 1,
+      "explanation": "Naive deep RL chases itself in loops and never converges. MARL is the set of tricks — CTDE, counterfactual baselines, self-play, leagues — that restore learnability."
+    },
+    {
+      "stage": "pre",
+      "question": "What is a Markov Game, and how do reward structures classify it?",
+      "options": [
+        "An MDP played on a game board",
+        "The MDP generalization with joint actions a = (a_1...a_n), transitions P(s'|s,a), and PER-AGENT rewards — identical rewards make it fully cooperative, zero-sum makes it adversarial, anything else is general-sum",
+        "A card game used for benchmarks",
+        "Any game with random transitions"
+      ],
+      "correct": 1,
+      "explanation": "The reward structure dictates the algorithm family: cooperative settings suit centralized critics and value decomposition; adversarial ones suit self-play and leagues."
+    },
+    {
+      "stage": "post",
+      "question": "What is centralized training / decentralized execution (CTDE)?",
+      "options": [
+        "One agent controls all the others",
+        "Each agent's POLICY conditions only on its local observation (deployable decentralized), but during training a centralized critic sees the global state and joint action — MADDPG, COMA's counterfactual baseline, MAPPO, and QMIX's monotonic value decomposition are all instances",
+        "Training on a central server farm",
+        "Sharing one policy across all agents"
+      ],
+      "correct": 1,
+      "explanation": "The dominant modern paradigm: privileged information stabilizes training, then gets discarded at deployment. MAPPO with a shared critic dominates cooperative MARL in 2026."
+    },
+    {
+      "stage": "post",
+      "question": "When does league play improve on plain self-play?",
+      "options": [
+        "When compute is limited",
+        "When the game has rock-paper-scissors strategy cycles: a population of past and current policies plus exploiters (beat the current best) and main-exploiters (beat the exploiters) prevents cycling — AlphaStar's recipe for StarCraft II",
+        "Only in two-player perfect-information games",
+        "League play is always strictly worse"
+      ],
+      "correct": 1,
+      "explanation": "Self-play (AlphaZero, OpenAI Five) works best in zero-sum symmetric settings; once strategies can cycle, training against a diverse league is what forces robustness."
+    },
+    {
+      "stage": "post",
+      "question": "Which core challenges define MARL beyond non-stationarity?",
+      "options": [
+        "Only GPU memory limits",
+        "Credit assignment under shared rewards (who caused it?), exploration coordination (complementary not redundant), joint-action-space blowup exponential in n, and partial observability of the global state",
+        "Choosing the right random seed",
+        "Reward normalization only"
+      ],
+      "correct": 1,
+      "explanation": "COMA's counterfactual baseline (\"what if I'd acted differently?\") targets credit assignment directly; QMIX's decomposition targets scalability. Each technique maps to one named challenge."
+    }
+  ]
+}

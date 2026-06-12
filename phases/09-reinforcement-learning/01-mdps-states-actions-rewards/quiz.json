@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What five objects define a Markov Decision Process?",
+      "options": [
+        "Inputs, outputs, weights, biases, loss",
+        "States S, actions A, transitions P(s'|s,a), rewards R(s,a,s'), and a discount γ — the shape every RL algorithm from Q-learning to PPO and GRPO optimizes over",
+        "Agents, environments, episodes, epochs, seeds",
+        "Nodes, edges, weights, paths, cycles"
+      ],
+      "correct": 1,
+      "explanation": "Chess bots, inventory planners, trading agents, and the RLHF loop training a reasoning model all collapse to this one mathematical object — learn it once, read the rest of RL for free."
+    },
+    {
+      "stage": "pre",
+      "question": "What does the Markov property require, and what does its failure indicate?",
+      "options": [
+        "Rewards must always be positive",
+        "The future depends only on the present state: P(s_{t+1}|s_t,a_t) equals conditioning on the whole history — if it doesn't hold, the STATE REPRESENTATION is incomplete, which is a failure of the state, not the method",
+        "Actions must be deterministic",
+        "Episodes must terminate in finite time"
+      ],
+      "correct": 1,
+      "explanation": "In an LLM the \"state\" is the context window plus memory; in chess, the board. When learning stalls, check whether the state actually carries everything needed to decide."
+    },
+    {
+      "stage": "post",
+      "question": "What do V^π(s) and Q^π(s,a) measure?",
+      "options": [
+        "Loss and accuracy of the policy net",
+        "V is the expected discounted return G_t starting from state s under policy π; Q is the same but committing to a specific first action a — every RL algorithm estimates one of these two, then improves π accordingly",
+        "Visit counts for states and actions",
+        "Variance and covariance of rewards"
+      ],
+      "correct": 1,
+      "explanation": "The return G_t = r_t + γr_{t+1} + γ²r_{t+2} + ... is the underlying random variable; V and Q are its expectations from different conditioning points."
+    },
+    {
+      "stage": "post",
+      "question": "What do the Bellman equations express, and how do RL algorithm families use them?",
+      "options": [
+        "A closed-form solution to any MDP",
+        "Expected return splits recursively into \"this step's reward\" plus \"discounted value of where you land\" — DP iterates the equation to convergence, Monte Carlo samples it, and temporal difference bootstraps it one step",
+        "The gradient of the policy network",
+        "A constraint that rewards sum to one"
+      ],
+      "correct": 1,
+      "explanation": "That three-way split — iterate, sample, or bootstrap — is the organizing map of this entire phase."
+    },
+    {
+      "stage": "post",
+      "question": "What does the discount factor γ control in practice?",
+      "options": [
+        "The learning rate decay",
+        "The effective planning horizon: γ=0.99 buys roughly 100 steps of lookahead, γ=0.9 roughly 10 — it sets how much future reward counts against the present",
+        "How many episodes to run",
+        "The exploration probability"
+      ],
+      "correct": 1,
+      "explanation": "The 1/(1−γ) horizon heuristic is the practical reading: pick γ to match how far ahead consequences of an action actually matter in your domain."
+    }
+  ]
+}

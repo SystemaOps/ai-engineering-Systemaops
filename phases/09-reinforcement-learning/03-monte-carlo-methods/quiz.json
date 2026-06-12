@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What does Monte Carlo need that dynamic programming doesn't, and vice versa?",
+      "options": [
+        "MC needs a GPU; DP needs a CPU",
+        "MC needs only the ability to SAMPLE episodes — no model; DP needs the full transition model P(s'|s,a) but gets exact backups — the shift trades higher variance for vastly broader applicability",
+        "Both need the same things",
+        "MC needs labels; DP needs rewards"
+      ],
+      "correct": 1,
+      "explanation": "A robot can't analytically compute pixel distributions after a torque; an LLM can't enumerate all continuations. Every later algorithm — TD, Q-learning, REINFORCE, PPO, GRPO — is a Monte Carlo estimator at heart."
+    },
+    {
+      "stage": "pre",
+      "question": "What distinguishes first-visit from every-visit MC?",
+      "options": [
+        "First-visit is biased, every-visit isn't",
+        "When an episode visits state s multiple times, first-visit counts only the return from the first visit (simpler analysis, iid samples) while every-visit counts all of them (more data per episode, typically faster convergence) — both unbiased in the limit",
+        "First-visit only works on grids",
+        "Every-visit requires a model"
+      ],
+      "correct": 1,
+      "explanation": "Both estimate V^π(s) = E[G_t | s_t = s] by averaging observed returns — the choice is a data-efficiency vs analysis-simplicity trade."
+    },
+    {
+      "stage": "post",
+      "question": "Why is the incremental-mean rewrite V_new = V_old + α(target − V_old) so important?",
+      "options": [
+        "It saves a negligible amount of memory",
+        "Swapping α = 1/n for a constant step size yields a non-stationary estimator that tracks a changing policy — that single move is the entire jump from MC to TD and to every modern RL update rule",
+        "It makes MC exact like DP",
+        "It eliminates the need for episodes"
+      ],
+      "correct": 1,
+      "explanation": "Every RL update you'll ever write has this shape: old estimate plus step size times (target minus old estimate). Only the target changes between algorithms."
+    },
+    {
+      "stage": "post",
+      "question": "Why does exploration become a problem in MC, and what are the three classic fixes?",
+      "options": [
+        "MC explores too much by default",
+        "MC only sees states the policy visits — a deterministic π leaves whole regions at zero value forever; fixes: exploring starts (random initial (s,a), unrealistic for robots), ε-greedy (random action with probability ε), and off-policy MC via importance sampling",
+        "Exploration is only a DP problem",
+        "Random seeds fix it automatically"
+      ],
+      "correct": 1,
+      "explanation": "DP touched every state by enumeration; sampling methods must earn their coverage. Off-policy MC's importance sampling is high-variance but bridges to replay-buffer methods like DQN."
+    },
+    {
+      "stage": "post",
+      "question": "What is Monte Carlo Control, and when does it converge?",
+      "options": [
+        "A variance-reduction technique",
+        "Sampling-based policy iteration: run π for an episode, update Q(s,a) from observed returns, make π ε-greedy w.r.t. Q, repeat — converging to Q* and π* with probability 1 if every pair is visited infinitely often and α satisfies Robbins-Monro",
+        "Running MC on multiple seeds",
+        "A method for continuous actions only"
+      ],
+      "correct": 1,
+      "explanation": "It's GPI with a sampled evaluator — the same evaluate-improve loop as policy iteration, with rollout averages standing in for exact Bellman backups."
+    }
+  ]
+}

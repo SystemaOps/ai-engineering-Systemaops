@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why does tabular Q-learning die on real problems, and what's the \"deadly triad\"?",
+      "options": [
+        "Tables are too fast to debug",
+        "A table needs one entry per (state, action) — chess has ~10⁴³ states, an Atari frame 100k features; but naively swapping in a neural net diverges under the deadly triad: function approximation + bootstrapping + off-policy learning",
+        "Q-learning can't handle rewards over 100",
+        "Tables don't fit in CPU cache"
+      ],
+      "correct": 1,
+      "explanation": "Replacing the table with Q(s,a;θ) was obvious-in-hindsight but took decades — because the combination of the three triad ingredients is genuinely unstable without extra machinery."
+    },
+    {
+      "stage": "pre",
+      "question": "What are DQN's three stabilizing tricks?",
+      "options": [
+        "Dropout, batch norm, weight decay",
+        "Experience replay (a ~10⁶ ring buffer sampled uniformly to decorrelate transitions), a target network (frozen copy θ⁻ refreshed every ~10k steps to stop the bootstrap target from moving), and reward clipping to {−1, 0, +1}",
+        "Bigger nets, more data, longer training",
+        "Curriculum, distillation, and ensembles"
+      ],
+      "correct": 1,
+      "explanation": "With this three-trick base, one architecture and one hyperparameter set solved dozens of Atari games from raw pixels — the result that sparked the deep-RL era (Nature, 2015)."
+    },
+    {
+      "stage": "post",
+      "question": "Why exactly does the target network help?",
+      "options": [
+        "It doubles model capacity",
+        "Using the same network on both sides of the Bellman equation means the regression target moves with every update — \"chasing your own tail\"; freezing θ⁻ for thousands of steps gives a stable target, with soft updates θ⁻ ← τθ + (1−τ)θ⁻ as the smoother variant",
+        "It parallelizes training across GPUs",
+        "It stores more transitions"
+      ],
+      "correct": 1,
+      "explanation": "The bootstrap is the unstable triad ingredient you can directly tame: turn a moving-target regression into a sequence of fixed-target regressions."
+    },
+    {
+      "stage": "post",
+      "question": "What does Double DQN fix, and how?",
+      "options": [
+        "Slow inference, by pruning the net",
+        "Maximization bias: the max over noisy Q-estimates is biased upward — DDQN uses the ONLINE net to select the argmax action and the TARGET net to evaluate it; a drop-in change that is consistently better",
+        "Memory usage of the replay buffer",
+        "Exploration in sparse-reward games"
+      ],
+      "correct": 1,
+      "explanation": "Hasselt (2016). Decoupling selection from evaluation breaks the upward bias loop — use it by default."
+    },
+    {
+      "stage": "post",
+      "question": "What did Rainbow (2017) demonstrate about DQN improvements?",
+      "options": [
+        "Most published improvements were fake",
+        "Prioritized replay, dueling V/advantage heads, noisy networks, n-step returns, and distributional Q each add a few percent — and the gains are roughly ADDITIVE when stacked",
+        "Only one trick matters at a time",
+        "DQN can't be improved further"
+      ],
+      "correct": 1,
+      "explanation": "The lesson's framing: everything since — DDQN, Rainbow, R2D2, Agent57 — is engineering layered on the same three-trick base."
+    }
+  ]
+}

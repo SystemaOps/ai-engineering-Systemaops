@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "What is the reality gap, and why train in simulation anyway?",
+      "options": [
+        "The lag between sim frames and real time",
+        "The systematic difference between sim and real distributions — bearings have more friction than MuJoCo models, motors have unmodeled delays and backlash; but sim offers unlimited resets, parallelism, and no broken hardware, so deployed robot RL must cross the gap",
+        "The cost difference between sim and robots",
+        "A rendering artifact in Isaac Sim"
+      ],
+      "correct": 1,
+      "explanation": "A policy that fails on hardware memorized the simulator. A real biped that falls once breaks hardware — but learning to walk takes millions of episodes, so sim is non-negotiable."
+    },
+    {
+      "stage": "pre",
+      "question": "How does domain randomization work, and what's its failure mode?",
+      "options": [
+        "It adds noise to the test set",
+        "Randomize every sim parameter that might differ on hardware (masses, friction, motor gains, sensor noise, lighting) so the policy generalizes across the span — but over-randomizing produces a universal yet overly cautious policy; too much noise acts like too much regularization",
+        "It randomizes the network weights",
+        "It shuffles training episodes"
+      ],
+      "correct": 1,
+      "explanation": "Tobin 2017, Peng 2018. If the real robot falls inside the training envelope, the policy works — with zero real data. One recipe, many robots."
+    },
+    {
+      "stage": "post",
+      "question": "How do system identification and domain adaptation complement DR?",
+      "options": [
+        "They are obsolete alternatives",
+        "SI fits sim parameters to measured real data before training (precise, but un-identified effects like motor deadband still break deployment); adaptation fine-tunes with small real datasets — residual simulators (Real2Sim2Real) or learned observation mappings from real to sim-like inputs",
+        "Both require retraining from scratch",
+        "They only apply to vision tasks"
+      ],
+      "correct": 1,
+      "explanation": "The 2026 dominant recipe combines all three with massively parallel simulation rather than picking one."
+    },
+    {
+      "stage": "post",
+      "question": "What is privileged teacher-student learning?",
+      "options": [
+        "Larger models teaching smaller ones text",
+        "Train a teacher in sim with ground-truth privileged information (friction, terrain height), then distill a student that sees only real-sensor observations — the student learns to INFER privileged features from observation history (Miki 2022, ANYmal)",
+        "Human teleoperation as supervision",
+        "Curriculum learning over level difficulty"
+      ],
+      "correct": 1,
+      "explanation": "The teacher solves an easier fully-observed problem; the student inherits the behavior while remaining deployable on what the hardware can actually sense."
+    },
+    {
+      "stage": "post",
+      "question": "What changed with massively parallel simulation (Isaac Lab, MJX, Brax)?",
+      "options": [
+        "Simulation became unnecessary",
+        "Thousands of robots run in parallel on one GPU — PPO with 4,096 humanoids collects years of experience in hours, and domain randomization becomes almost free when each env carries different randomized parameters",
+        "Training moved entirely to CPUs",
+        "The reality gap fully closed"
+      ],
+      "correct": 1,
+      "explanation": "The full 2026 quadruped recipe: parallel DR sim → privileged teacher → proprioception-only student → optional observation adaptation → zero-shot deploy, with minutes of safety-constrained fine-tuning as fallback."
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "Why are games the proving ground for every major RL breakthrough?",
+      "options": [
+        "Game companies fund the research",
+        "Clean win/loss reward, infinite self-play episodes, the game IS the simulator (perfect model), tractable action spaces, and multi-agent structure forcing adversarial robustness — from TD-Gammon (1992) through AlphaZero to DeepSeek-R1 (2025)",
+        "Games have the largest datasets",
+        "Human evaluation is easy on games"
+      ],
+      "correct": 1,
+      "explanation": "The lesson's unifying lens: self-play + search + policy improvement. Each landmark generalizes the previous, ending with GRPO applying the recipe to text reasoning."
+    },
+    {
+      "stage": "pre",
+      "question": "What is AlphaZero's core training loop?",
+      "options": [
+        "Supervised learning on grandmaster games",
+        "Self-play games where MCTS (guided by the policy-value net's priors via PUCT selection) produces visit distributions that become POLICY TARGETS — the net trains supervised on its own search output: L = (v−z)² − π·log p + reg",
+        "Q-learning over board positions",
+        "Evolutionary tournament selection"
+      ],
+      "correct": 1,
+      "explanation": "Search improves the raw policy; the policy then makes the search stronger. Zero human knowledge — one recipe mastered chess, shogi, and Go after tens of millions of self-play games."
+    },
+    {
+      "stage": "post",
+      "question": "What does MuZero remove from AlphaZero's requirements?",
+      "options": [
+        "The need for any neural network",
+        "Known rules: it learns a latent dynamics model (h encodes observations, g predicts next latent state + reward, f outputs policy and value) and runs MCTS entirely in the LEARNED latent space — one algorithm spanning Go, chess, shogi, AND Atari",
+        "The self-play stage",
+        "The value function"
+      ],
+      "correct": 1,
+      "explanation": "Schrittwieser 2019. Stochastic MuZero (2022) added chance nodes for backgammon-class games; Muesli and Gumbel MuZero improved sample efficiency."
+    },
+    {
+      "stage": "post",
+      "question": "How does GRPO map the AlphaZero recipe onto LLM reasoning?",
+      "options": [
+        "It trains LLMs to play chess",
+        "The \"game\" is answering a math/coding problem, tokens are actions, and the win signal comes from a VERIFIER (test passes, answer matches) — the same self-play-and-improve loop with group-relative baselines replacing the critic",
+        "It uses MCTS over chess openings",
+        "It replaces RL with supervised learning"
+      ],
+      "correct": 1,
+      "explanation": "DeepSeek-R1 (2024-2025) is the latest entry in the games lineage: verifiable rewards play the role win/loss played for AlphaZero — clean, ungameable, infinitely repeatable."
+    },
+    {
+      "stage": "post",
+      "question": "How does MCTS's PUCT rule balance exploration and exploitation?",
+      "options": [
+        "It always picks the highest Q-value",
+        "a* = argmax Q(s,a) + c·p(a|s)·√N(s)/(1+N(s,a)) — current value estimate plus a bonus that's high for moves the policy prior likes but the search hasn't visited much",
+        "It samples actions uniformly",
+        "It uses ε-greedy with decaying ε"
+      ],
+      "correct": 1,
+      "explanation": "The prior p focuses search where the net expects promise; the visit-count denominator forces breadth. The resulting visit distribution is the improved policy the net then learns to imitate."
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "questions": [
+    {
+      "stage": "pre",
+      "question": "When does value-based RL (argmax over Q) break down?",
+      "options": [
+        "Whenever rewards are negative",
+        "With continuous actions (which argmax over a 10-dimensional torque?) and when you want stochastic policies (argmax is deterministic by construction) — policy gradients instead parameterize π_θ(a|s) directly and ascend on expected return",
+        "When episodes exceed 100 steps",
+        "When the state is an image"
+      ],
+      "correct": 1,
+      "explanation": "No argmax, no Bellman recursion — just gradient ascent on J(θ) = E[G]. Every LLM-RL algorithm in 2026 (PPO, DPO, GRPO) is a refinement of this idea."
+    },
+    {
+      "stage": "pre",
+      "question": "What does the REINFORCE theorem say?",
+      "options": [
+        "Returns must be normalized to [0,1]",
+        "∇J(θ) = E[Σ_t G_t · ∇_θ log π_θ(a_t|s_t)] — run episodes, weight each action's log-probability gradient by the return that followed, average, step uphill",
+        "Q-values converge under Robbins-Monro",
+        "Policies must be deterministic at optimum"
+      ],
+      "correct": 1,
+      "explanation": "The proof is two lines: the log-derivative trick ∇P = P·∇log P plus the fact that environment transition terms don't depend on θ and vanish."
+    },
+    {
+      "stage": "post",
+      "question": "Why is baseline subtraction unbiased, and what's the typical baseline?",
+      "options": [
+        "It isn't — it introduces small bias",
+        "E[b(s_t)·∇log π(a_t|s_t)] = 0 for any baseline that doesn't depend on the action, so subtracting b(s_t) changes variance but not the expected gradient — the typical choice is a learned V̂(s_t), which turns REINFORCE into actor-critic",
+        "Baselines only work for discrete actions",
+        "The baseline replaces the return entirely"
+      ],
+      "correct": 1,
+      "explanation": "Vanilla REINFORCE's variance is murderous (noisy returns × noisy gradients). Baseline + reward-to-go gives the form that's the direct ancestor of A2C and PPO."
+    },
+    {
+      "stage": "post",
+      "question": "What is the reward-to-go trick?",
+      "options": [
+        "Discounting future rewards more heavily",
+        "Weight each action's gradient only by returns from time t ONWARD — past rewards can't be caused by the current action, so including them just adds zero-mean noise",
+        "Paying out rewards at episode end",
+        "Clipping returns to a fixed range"
+      ],
+      "correct": 1,
+      "explanation": "A pure variance reduction grounded in causality: credit assignment should only flow backward from future outcomes, never from rewards already banked."
+    },
+    {
+      "stage": "post",
+      "question": "What does ∇log π look like for a softmax policy?",
+      "options": [
+        "The raw score of the taken action",
+        "∇f_θ(s, a_taken) minus the policy-weighted average Σ_{a'} π(a'|s)∇f_θ(s,a') — the score of the action taken minus its expected value under the policy",
+        "The Hessian of the value function",
+        "A one-hot vector of the action index"
+      ],
+      "correct": 1,
+      "explanation": "\"Push up what you did, pull down what you'd typically do\" — and for continuous control, the Gaussian policy N(μ_θ(s), σ_θ(s)) gives the closed-form analogue SAC builds on."
+    }
+  ]
+}
