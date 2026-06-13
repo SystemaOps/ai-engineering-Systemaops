@@ -47,10 +47,10 @@ graph TD
     S10 --> GATE["Ship gate"]
     S12 --> GATE
 
-    style S1 fill:#1a1a2e,stroke:#e94560,color:#fff
-    style S4 fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style S9 fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style GATE fill:#1a1a2e,stroke:#51cf66,color:#fff
+    style S1 fill:#1f1f22,stroke:#e94560,color:#fff
+    style S4 fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style S9 fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style GATE fill:#1f1f22,stroke:#51cf66,color:#fff
 ```
 
 Stages 07 and 08 can run in parallel. Everything else is a hard dependency. A change in stage 02 (tokenizer) invalidates every downstream artifact. A change in stage 10 (eval) invalidates only the ship decision.
@@ -163,10 +163,10 @@ graph LR
     GATE -->|pass| SHIP["Ship"]
     GATE -->|fail| ROLL["Rollback plan"]
 
-    style M fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style GATE fill:#1a1a2e,stroke:#e94560,color:#fff
-    style SHIP fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style ROLL fill:#1a1a2e,stroke:#c0392b,color:#fff
+    style M fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style GATE fill:#1f1f22,stroke:#e94560,color:#fff
+    style SHIP fill:#1f1f22,stroke:#51cf66,color:#fff
+    style ROLL fill:#1f1f22,stroke:#c0392b,color:#fff
 ```
 
 ### Rollback Plan

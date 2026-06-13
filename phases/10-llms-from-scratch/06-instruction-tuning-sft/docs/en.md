@@ -183,10 +183,10 @@ graph TD
 
     Base --> SFT --> Chat
 
-    style D fill:#1a1a2e,stroke:#e94560,color:#fff
-    style L fill:#1a1a2e,stroke:#e94560,color:#fff
-    style B3 fill:#1a1a2e,stroke:#e94560,color:#fff
-    style C3 fill:#1a1a2e,stroke:#51cf66,color:#fff
+    style D fill:#1f1f22,stroke:#e94560,color:#fff
+    style L fill:#1f1f22,stroke:#e94560,color:#fff
+    style B3 fill:#1f1f22,stroke:#e94560,color:#fff
+    style C3 fill:#1f1f22,stroke:#51cf66,color:#fff
 ```
 
 ## Build It

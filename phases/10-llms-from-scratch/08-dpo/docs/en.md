@@ -108,10 +108,10 @@ graph TD
 
     Models --> DPO
 
-    style PI fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style REF fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style LOSS fill:#1a1a2e,stroke:#e94560,color:#fff
-    style DIFF fill:#1a1a2e,stroke:#e94560,color:#fff
+    style PI fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style REF fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style LOSS fill:#1f1f22,stroke:#e94560,color:#fff
+    style DIFF fill:#1f1f22,stroke:#e94560,color:#fff
 ```
 
 ### Why DPO is Simpler

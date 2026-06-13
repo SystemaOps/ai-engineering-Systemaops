@@ -54,9 +54,9 @@ graph TD
 
     S --> U --> A
 
-    style S fill:#1a1a2e,stroke:#e94560,color:#fff
-    style U fill:#1a1a2e,stroke:#ffa500,color:#fff
-    style A fill:#1a1a2e,stroke:#51cf66,color:#fff
+    style S fill:#1f1f22,stroke:#e94560,color:#fff
+    style U fill:#1f1f22,stroke:#ffa500,color:#fff
+    style A fill:#1f1f22,stroke:#51cf66,color:#fff
 ```
 
 **System message**: the invisible hand. It sets the model's identity, behavioral constraints, and output rules. The model treats this as highest-priority context. OpenAI, Anthropic, and Google all support system messages, but they process them differently internally. Claude gives system messages the strongest adherence. GPT-5 sometimes drifts from system instructions in long conversations, and Gemini 3 treats `system_instruction` as a separate generation-config field rather than a message.
@@ -152,9 +152,9 @@ graph LR
 
     T0 ~~~ T5 ~~~ T1
 
-    style T0 fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style T5 fill:#1a1a2e,stroke:#ffa500,color:#fff
-    style T1 fill:#1a1a2e,stroke:#e94560,color:#fff
+    style T0 fill:#1f1f22,stroke:#51cf66,color:#fff
+    style T5 fill:#1f1f22,stroke:#ffa500,color:#fff
+    style T1 fill:#1f1f22,stroke:#e94560,color:#fff
 ```
 
 | Setting | Temperature | Top-p | Use case |

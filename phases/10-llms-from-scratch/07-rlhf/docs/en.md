@@ -63,11 +63,11 @@ graph TD
         PPO --> |"Update"| PI
     end
 
-    style S fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style R fill:#1a1a2e,stroke:#e94560,color:#fff
-    style PI fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style REF fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style PPO fill:#1a1a2e,stroke:#e94560,color:#fff
+    style S fill:#1f1f22,stroke:#51cf66,color:#fff
+    style R fill:#1f1f22,stroke:#e94560,color:#fff
+    style PI fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style REF fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style PPO fill:#1f1f22,stroke:#e94560,color:#fff
 ```
 
 ### The Reward Model
@@ -125,10 +125,10 @@ graph LR
         UPDATE --> |"repeat"| PROMPT
     end
 
-    style PROMPT fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style SCORE fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style KL fill:#1a1a2e,stroke:#e94560,color:#fff
-    style OBJ fill:#1a1a2e,stroke:#e94560,color:#fff
+    style PROMPT fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style SCORE fill:#1f1f22,stroke:#51cf66,color:#fff
+    style KL fill:#1f1f22,stroke:#e94560,color:#fff
+    style OBJ fill:#1f1f22,stroke:#e94560,color:#fff
 ```
 
 ### The PPO Objective in Detail

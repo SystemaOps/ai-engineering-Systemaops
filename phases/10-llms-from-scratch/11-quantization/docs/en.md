@@ -72,12 +72,12 @@ graph LR
     FP16 -->|"server deploy"| INT8
     FP16 -->|"edge/laptop"| INT4
 
-    style FP32 fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style BF16 fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style FP16 fill:#1a1a2e,stroke:#ffa500,color:#fff
-    style FP8 fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style INT8 fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style INT4 fill:#1a1a2e,stroke:#e94560,color:#fff
+    style FP32 fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style BF16 fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style FP16 fill:#1f1f22,stroke:#ffa500,color:#fff
+    style FP8 fill:#1f1f22,stroke:#51cf66,color:#fff
+    style INT8 fill:#1f1f22,stroke:#51cf66,color:#fff
+    style INT4 fill:#1f1f22,stroke:#e94560,color:#fff
 ```
 
 ### How Quantization Works
@@ -133,10 +133,10 @@ graph TD
     A -->|"careful"| KV
     KV -->|"dangerous"| ATT
 
-    style W fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style A fill:#1a1a2e,stroke:#ffa500,color:#fff
-    style KV fill:#1a1a2e,stroke:#e94560,color:#fff
-    style ATT fill:#1a1a2e,stroke:#ff0000,color:#fff
+    style W fill:#1f1f22,stroke:#51cf66,color:#fff
+    style A fill:#1f1f22,stroke:#ffa500,color:#fff
+    style KV fill:#1f1f22,stroke:#e94560,color:#fff
+    style ATT fill:#1f1f22,stroke:#ff0000,color:#fff
 ```
 
 ### PTQ vs QAT
@@ -180,9 +180,9 @@ graph TD
     AWQ_ --> GPU
     GGUF_ --> EDGE
 
-    style GPTQ_ fill:#1a1a2e,stroke:#ffa500,color:#fff
-    style AWQ_ fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style GGUF_ fill:#1a1a2e,stroke:#0f3460,color:#fff
+    style GPTQ_ fill:#1f1f22,stroke:#ffa500,color:#fff
+    style AWQ_ fill:#1f1f22,stroke:#51cf66,color:#fff
+    style GGUF_ fill:#1f1f22,stroke:#4a4a50,color:#fff
 ```
 
 ### Quality Measurement

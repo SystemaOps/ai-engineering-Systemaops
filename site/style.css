@@ -46,12 +46,12 @@
 
 [data-theme="dark"] {
   /* Near-black page canvas (not pure #000 — avoids halation and keeps
-     hairline borders legible) with blueprint-navy content surfaces:
+     hairline borders legible) with neutral charcoal content surfaces:
      code blocks, cards, and diagram figures layer on top like documents
      on a black desk. */
   --bg: #0b0b0d;
-  --bg-surface: #131830;
-  --bg-surface-hover: #1b2244;
+  --bg-surface: #161618;
+  --bg-surface-hover: #202023;
   --ink: #e8e6dc;
   --ink-soft: #a8a6a0;
   --ink-mute: #7a7878;
@@ -68,8 +68,8 @@
   --status-planned: #4a4a48;
   --warn: #d4a83d;
 
-  --code-bg: #131830;
-  --modal-bg: #0f1424;
+  --code-bg: #161618;
+  --modal-bg: #121214;
   --overlay-bg: rgba(0, 0, 0, 0.8);
   --header-bg: rgba(8, 8, 10, 0.94);
 

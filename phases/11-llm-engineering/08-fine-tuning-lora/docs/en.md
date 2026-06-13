@@ -67,9 +67,9 @@ graph LR
     B --> Plus
     Plus --> Y["Output y"]
 
-    style W fill:#1a1a2e,stroke:#e94560,color:#fff
-    style A fill:#0f3460,stroke:#16213e,color:#fff
-    style B fill:#0f3460,stroke:#16213e,color:#fff
+    style W fill:#1f1f22,stroke:#e94560,color:#fff
+    style A fill:#2a2a2e,stroke:#4a4a50,color:#fff
+    style B fill:#2a2a2e,stroke:#4a4a50,color:#fff
 ```
 
 A is initialized with a random Gaussian. B is initialized to zero. This means the LoRA contribution starts at zero -- the model begins training from its original behavior and gradually learns the adaptation.
@@ -214,8 +214,8 @@ graph TD
     RAGBuild -->|"Also need style change"| FT
     FT --> Done
 
-    style Start fill:#1a1a2e,stroke:#e94560,color:#fff
-    style Done fill:#0f3460,stroke:#16213e,color:#fff
+    style Start fill:#1f1f22,stroke:#e94560,color:#fff
+    style Done fill:#2a2a2e,stroke:#4a4a50,color:#fff
 ```
 
 ## Build It

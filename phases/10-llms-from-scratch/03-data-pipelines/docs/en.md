@@ -69,13 +69,13 @@ graph TD
     E --> F[PII Removal]
     F --> G[Clean Text]
 
-    style A fill:#1a1a2e,stroke:#e94560,color:#fff
-    style B fill:#1a1a2e,stroke:#e94560,color:#fff
-    style C fill:#1a1a2e,stroke:#e94560,color:#fff
-    style D fill:#1a1a2e,stroke:#e94560,color:#fff
-    style E fill:#1a1a2e,stroke:#e94560,color:#fff
-    style F fill:#1a1a2e,stroke:#e94560,color:#fff
-    style G fill:#1a1a2e,stroke:#e94560,color:#fff
+    style A fill:#1f1f22,stroke:#e94560,color:#fff
+    style B fill:#1f1f22,stroke:#e94560,color:#fff
+    style C fill:#1f1f22,stroke:#e94560,color:#fff
+    style D fill:#1f1f22,stroke:#e94560,color:#fff
+    style E fill:#1f1f22,stroke:#e94560,color:#fff
+    style F fill:#1f1f22,stroke:#e94560,color:#fff
+    style G fill:#1f1f22,stroke:#e94560,color:#fff
 ```
 
 Each step eliminates a category of noise:
@@ -105,13 +105,13 @@ graph LR
     E --> F[Jaccard Similarity]
     F --> G[Deduplicated Set]
 
-    style A fill:#1a1a2e,stroke:#e94560,color:#fff
-    style B fill:#1a1a2e,stroke:#e94560,color:#fff
-    style C fill:#1a1a2e,stroke:#e94560,color:#fff
-    style D fill:#1a1a2e,stroke:#e94560,color:#fff
-    style E fill:#1a1a2e,stroke:#e94560,color:#fff
-    style F fill:#1a1a2e,stroke:#e94560,color:#fff
-    style G fill:#1a1a2e,stroke:#e94560,color:#fff
+    style A fill:#1f1f22,stroke:#e94560,color:#fff
+    style B fill:#1f1f22,stroke:#e94560,color:#fff
+    style C fill:#1f1f22,stroke:#e94560,color:#fff
+    style D fill:#1f1f22,stroke:#e94560,color:#fff
+    style E fill:#1f1f22,stroke:#e94560,color:#fff
+    style F fill:#1f1f22,stroke:#e94560,color:#fff
+    style G fill:#1f1f22,stroke:#e94560,color:#fff
 ```
 
 The idea:
@@ -146,13 +146,13 @@ graph TD
         B1["Doc A (200) | Doc B (500) | Doc C (100) | Doc D (400) | Doc E (848)"]
     end
 
-    style A1 fill:#1a1a2e,stroke:#e94560,color:#fff
-    style A2 fill:#1a1a2e,stroke:#e94560,color:#fff
-    style A3 fill:#1a1a2e,stroke:#e94560,color:#fff
+    style A1 fill:#1f1f22,stroke:#e94560,color:#fff
+    style A2 fill:#1f1f22,stroke:#e94560,color:#fff
+    style A3 fill:#1f1f22,stroke:#e94560,color:#fff
     style P1 fill:#333,stroke:#666,color:#999
     style P2 fill:#333,stroke:#666,color:#999
     style P3 fill:#333,stroke:#666,color:#999
-    style B1 fill:#1a1a2e,stroke:#16c784,color:#fff
+    style B1 fill:#1f1f22,stroke:#16c784,color:#fff
 ```
 
 The attention mask must be set correctly. Tokens from Document A should not attend to tokens from Document B within the same packed sequence. This requires a block-diagonal attention mask.

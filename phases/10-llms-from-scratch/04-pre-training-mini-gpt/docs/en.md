@@ -59,16 +59,16 @@ graph TD
     I --> J["Linear Head\n(768 -> 50257)"]
     J --> K["Softmax\nNext-token probabilities"]
 
-    style A fill:#1a1a2e,stroke:#e94560,color:#fff
-    style B fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style C fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style D fill:#1a1a2e,stroke:#16213e,color:#fff
-    style E fill:#1a1a2e,stroke:#e94560,color:#fff
-    style F fill:#1a1a2e,stroke:#e94560,color:#fff
-    style H fill:#1a1a2e,stroke:#e94560,color:#fff
-    style I fill:#1a1a2e,stroke:#16213e,color:#fff
-    style J fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style K fill:#1a1a2e,stroke:#51cf66,color:#fff
+    style A fill:#1f1f22,stroke:#e94560,color:#fff
+    style B fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style C fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style D fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style E fill:#1f1f22,stroke:#e94560,color:#fff
+    style F fill:#1f1f22,stroke:#e94560,color:#fff
+    style H fill:#1f1f22,stroke:#e94560,color:#fff
+    style I fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style J fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style K fill:#1f1f22,stroke:#51cf66,color:#fff
 ```
 
 ### The Transformer Block
@@ -134,11 +134,11 @@ graph LR
         V["V = X @ W_v"] --> MUL
     end
 
-    style I fill:#1a1a2e,stroke:#e94560,color:#fff
-    style O fill:#1a1a2e,stroke:#e94560,color:#fff
-    style Q fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style K fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style V fill:#1a1a2e,stroke:#0f3460,color:#fff
+    style I fill:#1f1f22,stroke:#e94560,color:#fff
+    style O fill:#1f1f22,stroke:#e94560,color:#fff
+    style Q fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style K fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style V fill:#1f1f22,stroke:#4a4a50,color:#fff
 ```
 
 The division by sqrt(d_k) -- sqrt(64) = 8 -- is scaling. Without it, the dot products grow large for high-dimensional vectors, pushing softmax into regions where gradients are nearly zero. This was one of the key insights in the original "Attention Is All You Need" paper.
@@ -183,13 +183,13 @@ graph LR
 
     Prefill --> Decode
 
-    style P1 fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style P2 fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style P3 fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style D1 fill:#1a1a2e,stroke:#e94560,color:#fff
-    style D2 fill:#1a1a2e,stroke:#e94560,color:#fff
-    style D3 fill:#1a1a2e,stroke:#e94560,color:#fff
-    style D4 fill:#1a1a2e,stroke:#e94560,color:#fff
+    style P1 fill:#1f1f22,stroke:#51cf66,color:#fff
+    style P2 fill:#1f1f22,stroke:#51cf66,color:#fff
+    style P3 fill:#1f1f22,stroke:#51cf66,color:#fff
+    style D1 fill:#1f1f22,stroke:#e94560,color:#fff
+    style D2 fill:#1f1f22,stroke:#e94560,color:#fff
+    style D3 fill:#1f1f22,stroke:#e94560,color:#fff
+    style D4 fill:#1f1f22,stroke:#e94560,color:#fff
 ```
 
 ### The Training Loop

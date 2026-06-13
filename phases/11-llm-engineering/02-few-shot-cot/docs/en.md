@@ -44,8 +44,8 @@ graph TD
 
     Z ~~~ F
 
-    style Z fill:#1a1a2e,stroke:#e94560,color:#fff
-    style F fill:#1a1a2e,stroke:#51cf66,color:#fff
+    style Z fill:#1f1f22,stroke:#e94560,color:#fff
+    style F fill:#1f1f22,stroke:#51cf66,color:#fff
 ```
 
 **When few-shot wins:** format-sensitive tasks, classification, structured extraction, domain-specific jargon, any task where the model needs to match a specific pattern.
@@ -76,11 +76,11 @@ graph LR
         Q2["Q: Roger has 5 balls.\nHe buys 2 cans of 3.\nHow many balls?"] --> R2["Roger starts with 5.\n2 cans of 3 = 6.\n5 + 6 = 11."] --> A2["A: 11"]
     end
 
-    style Q1 fill:#1a1a2e,stroke:#e94560,color:#fff
-    style A1 fill:#1a1a2e,stroke:#e94560,color:#fff
-    style Q2 fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style R2 fill:#1a1a2e,stroke:#ffa500,color:#fff
-    style A2 fill:#1a1a2e,stroke:#51cf66,color:#fff
+    style Q1 fill:#1f1f22,stroke:#e94560,color:#fff
+    style A1 fill:#1f1f22,stroke:#e94560,color:#fff
+    style Q2 fill:#1f1f22,stroke:#51cf66,color:#fff
+    style R2 fill:#1f1f22,stroke:#ffa500,color:#fff
+    style A2 fill:#1f1f22,stroke:#51cf66,color:#fff
 ```
 
 Why does this work mechanically? Each token a transformer generates becomes context for the next token. Without CoT, the model must compress all reasoning into the hidden state of a single forward pass. With CoT, the model externalizes intermediate computations as tokens. Each reasoning token extends the effective computation depth.
@@ -127,13 +127,13 @@ graph TD
     Path4 --> V
     Path5 --> V
 
-    style P fill:#1a1a2e,stroke:#ffa500,color:#fff
-    style Path1 fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style Path2 fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style Path3 fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style Path4 fill:#1a1a2e,stroke:#e94560,color:#fff
-    style Path5 fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style V fill:#1a1a2e,stroke:#51cf66,color:#fff
+    style P fill:#1f1f22,stroke:#ffa500,color:#fff
+    style Path1 fill:#1f1f22,stroke:#51cf66,color:#fff
+    style Path2 fill:#1f1f22,stroke:#51cf66,color:#fff
+    style Path3 fill:#1f1f22,stroke:#51cf66,color:#fff
+    style Path4 fill:#1f1f22,stroke:#e94560,color:#fff
+    style Path5 fill:#1f1f22,stroke:#51cf66,color:#fff
+    style V fill:#1f1f22,stroke:#51cf66,color:#fff
 ```
 
 Self-consistency improved GSM8K accuracy from 56.5% (single CoT) to 74.4% with N=40 on the original PaLM 540B experiments. On GPT-5 the improvement is small (97% to 98%) because base accuracy is already saturated. The technique shines most on models with 60-85% base CoT accuracy -- the sweet spot where single-path errors are frequent but not systematic. For reasoning models (o-series, R1) self-consistency is subsumed by the built-in internal sampling.
@@ -166,21 +166,21 @@ graph TD
 
     E5 -->|Best path| Final["Solution"]
 
-    style Root fill:#1a1a2e,stroke:#ffa500,color:#fff
-    style E2 fill:#1a1a2e,stroke:#e94560,color:#fff
-    style X fill:#1a1a2e,stroke:#e94560,color:#fff
-    style E5 fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style Final fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style B1 fill:#1a1a2e,stroke:#808080,color:#fff
-    style B2 fill:#1a1a2e,stroke:#808080,color:#fff
-    style B3 fill:#1a1a2e,stroke:#808080,color:#fff
-    style B1a fill:#1a1a2e,stroke:#808080,color:#fff
-    style B1b fill:#1a1a2e,stroke:#808080,color:#fff
-    style B3a fill:#1a1a2e,stroke:#808080,color:#fff
-    style B3b fill:#1a1a2e,stroke:#808080,color:#fff
-    style E1 fill:#1a1a2e,stroke:#808080,color:#fff
-    style E3 fill:#1a1a2e,stroke:#808080,color:#fff
-    style E4 fill:#1a1a2e,stroke:#808080,color:#fff
+    style Root fill:#1f1f22,stroke:#ffa500,color:#fff
+    style E2 fill:#1f1f22,stroke:#e94560,color:#fff
+    style X fill:#1f1f22,stroke:#e94560,color:#fff
+    style E5 fill:#1f1f22,stroke:#51cf66,color:#fff
+    style Final fill:#1f1f22,stroke:#51cf66,color:#fff
+    style B1 fill:#1f1f22,stroke:#808080,color:#fff
+    style B2 fill:#1f1f22,stroke:#808080,color:#fff
+    style B3 fill:#1f1f22,stroke:#808080,color:#fff
+    style B1a fill:#1f1f22,stroke:#808080,color:#fff
+    style B1b fill:#1f1f22,stroke:#808080,color:#fff
+    style B3a fill:#1f1f22,stroke:#808080,color:#fff
+    style B3b fill:#1f1f22,stroke:#808080,color:#fff
+    style E1 fill:#1f1f22,stroke:#808080,color:#fff
+    style E3 fill:#1f1f22,stroke:#808080,color:#fff
+    style E4 fill:#1f1f22,stroke:#808080,color:#fff
 ```
 
 ToT has three components:
@@ -211,15 +211,15 @@ graph LR
 
     Q --> T1 --> A1 --> O1 --> T2 --> A2 --> O2 --> T3 --> F
 
-    style Q fill:#1a1a2e,stroke:#ffa500,color:#fff
-    style T1 fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style A1 fill:#1a1a2e,stroke:#e94560,color:#fff
-    style O1 fill:#1a1a2e,stroke:#808080,color:#fff
-    style T2 fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style A2 fill:#1a1a2e,stroke:#e94560,color:#fff
-    style O2 fill:#1a1a2e,stroke:#808080,color:#fff
-    style T3 fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style F fill:#1a1a2e,stroke:#51cf66,color:#fff
+    style Q fill:#1f1f22,stroke:#ffa500,color:#fff
+    style T1 fill:#1f1f22,stroke:#51cf66,color:#fff
+    style A1 fill:#1f1f22,stroke:#e94560,color:#fff
+    style O1 fill:#1f1f22,stroke:#808080,color:#fff
+    style T2 fill:#1f1f22,stroke:#51cf66,color:#fff
+    style A2 fill:#1f1f22,stroke:#e94560,color:#fff
+    style O2 fill:#1f1f22,stroke:#808080,color:#fff
+    style T3 fill:#1f1f22,stroke:#51cf66,color:#fff
+    style F fill:#1f1f22,stroke:#51cf66,color:#fff
 ```
 
 ReAct outperforms pure CoT on knowledge-intensive tasks because it can ground its reasoning in real data. On HotpotQA (multi-hop question answering), ReAct with GPT-4 achieves 35.1% exact match vs 29.4% for CoT alone. The real power is that reasoning errors get corrected by observations -- the model can update its plan mid-execution.
@@ -291,13 +291,13 @@ graph LR
     O2 --> P3["Prompt 3:\nGenerate\nrecommendation"]
     P3 --> F["Final Output"]
 
-    style I fill:#1a1a2e,stroke:#808080,color:#fff
-    style P1 fill:#1a1a2e,stroke:#e94560,color:#fff
-    style O1 fill:#1a1a2e,stroke:#ffa500,color:#fff
-    style P2 fill:#1a1a2e,stroke:#e94560,color:#fff
-    style O2 fill:#1a1a2e,stroke:#ffa500,color:#fff
-    style P3 fill:#1a1a2e,stroke:#e94560,color:#fff
-    style F fill:#1a1a2e,stroke:#51cf66,color:#fff
+    style I fill:#1f1f22,stroke:#808080,color:#fff
+    style P1 fill:#1f1f22,stroke:#e94560,color:#fff
+    style O1 fill:#1f1f22,stroke:#ffa500,color:#fff
+    style P2 fill:#1f1f22,stroke:#e94560,color:#fff
+    style O2 fill:#1f1f22,stroke:#ffa500,color:#fff
+    style P3 fill:#1f1f22,stroke:#e94560,color:#fff
+    style F fill:#1f1f22,stroke:#51cf66,color:#fff
 ```
 
 Chaining beats single-prompt for three reasons:

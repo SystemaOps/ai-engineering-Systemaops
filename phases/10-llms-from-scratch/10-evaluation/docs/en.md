@@ -48,9 +48,9 @@ graph TD
     B -->|"rough model selection"| C
     C -->|"ambiguous cases"| H
 
-    style B fill:#1a1a2e,stroke:#ffa500,color:#fff
-    style C fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style H fill:#1a1a2e,stroke:#e94560,color:#fff
+    style B fill:#1f1f22,stroke:#ffa500,color:#fff
+    style C fill:#1f1f22,stroke:#51cf66,color:#fff
+    style H fill:#1f1f22,stroke:#e94560,color:#fff
 ```
 
 ### Why Benchmarks Break
@@ -101,9 +101,9 @@ graph LR
         W --> E["ELO Update\nK=32"]
     end
 
-    style P fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style J fill:#1a1a2e,stroke:#e94560,color:#fff
-    style E fill:#1a1a2e,stroke:#51cf66,color:#fff
+    style P fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style J fill:#1f1f22,stroke:#e94560,color:#fff
+    style E fill:#1f1f22,stroke:#51cf66,color:#fff
 ```
 
 ### Eval Frameworks

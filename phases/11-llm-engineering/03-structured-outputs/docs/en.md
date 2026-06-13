@@ -44,10 +44,10 @@ graph LR
         C --> D["Constrained Decoding\nToken-level enforcement\n100% compliance"]
     end
 
-    style A fill:#1a1a2e,stroke:#ff6b6b,color:#fff
-    style B fill:#1a1a2e,stroke:#ffa500,color:#fff
-    style C fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style D fill:#1a1a2e,stroke:#0f3460,color:#fff
+    style A fill:#1f1f22,stroke:#ff6b6b,color:#fff
+    style B fill:#1f1f22,stroke:#ffa500,color:#fff
+    style C fill:#1f1f22,stroke:#51cf66,color:#fff
+    style D fill:#1f1f22,stroke:#4a4a50,color:#fff
 ```
 
 **Prompt-based** ("Respond in valid JSON"): no enforcement. The model usually complies but sometimes does not. Reliability: ~90%. Failure mode: markdown fences, preamble text, truncated output, wrong structure.
@@ -111,10 +111,10 @@ graph TD
         V --> R["Structured Result:\n{product, price, in_stock}"]
     end
 
-    style U fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style TC fill:#1a1a2e,stroke:#e94560,color:#fff
-    style V fill:#1a1a2e,stroke:#ffa500,color:#fff
-    style R fill:#1a1a2e,stroke:#51cf66,color:#fff
+    style U fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style TC fill:#1f1f22,stroke:#e94560,color:#fff
+    style V fill:#1f1f22,stroke:#ffa500,color:#fff
+    style R fill:#1f1f22,stroke:#51cf66,color:#fff
 ```
 
 Tool use is preferred when the model needs to choose which function to call, not just fill in parameters. If you have 10 different extraction schemas and the model must pick the right one based on the input, tool use gives you both the schema selection and the structured output.

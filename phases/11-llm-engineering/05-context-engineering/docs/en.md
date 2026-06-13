@@ -45,13 +45,13 @@ graph TD
         Q --> G["Generation Budget\n~2K-8K tokens"]
     end
 
-    style S fill:#1a1a2e,stroke:#e94560,color:#fff
-    style T fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style R fill:#1a1a2e,stroke:#ffa500,color:#fff
-    style H fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style F fill:#1a1a2e,stroke:#9b59b6,color:#fff
-    style Q fill:#1a1a2e,stroke:#e94560,color:#fff
-    style G fill:#1a1a2e,stroke:#0f3460,color:#fff
+    style S fill:#1f1f22,stroke:#e94560,color:#fff
+    style T fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style R fill:#1f1f22,stroke:#ffa500,color:#fff
+    style H fill:#1f1f22,stroke:#51cf66,color:#fff
+    style F fill:#1f1f22,stroke:#9b59b6,color:#fff
+    style Q fill:#1f1f22,stroke:#e94560,color:#fff
+    style G fill:#1f1f22,stroke:#4a4a50,color:#fff
 ```
 
 Each component competes for space. Adding more tool definitions means less room for conversation history. Adding more retrieved context means less room for few-shot examples. Context engineering is the art of allocating this budget to maximize task performance.
@@ -138,10 +138,10 @@ graph TD
     LTM --> CW
     EM --> CW
 
-    style STM fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style LTM fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style EM fill:#1a1a2e,stroke:#e94560,color:#fff
-    style CW fill:#1a1a2e,stroke:#ffa500,color:#fff
+    style STM fill:#1f1f22,stroke:#51cf66,color:#fff
+    style LTM fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style EM fill:#1f1f22,stroke:#e94560,color:#fff
+    style CW fill:#1f1f22,stroke:#ffa500,color:#fff
 ```
 
 ### Dynamic Context Assembly

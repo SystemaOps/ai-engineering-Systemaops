@@ -54,10 +54,10 @@ graph TD
 
     SL --> RL
 
-    style P1 fill:#1a1a2e,stroke:#e94560,color:#fff
-    style REV fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style P2 fill:#1a1a2e,stroke:#e94560,color:#fff
-    style TRAIN fill:#1a1a2e,stroke:#51cf66,color:#fff
+    style P1 fill:#1f1f22,stroke:#e94560,color:#fff
+    style REV fill:#1f1f22,stroke:#51cf66,color:#fff
+    style P2 fill:#1f1f22,stroke:#e94560,color:#fff
+    style TRAIN fill:#1f1f22,stroke:#51cf66,color:#fff
 ```
 
 The constitution is the lever. Anthropic's original had 16 principles (later expanded). A principle reads like "Please choose the response that is least likely to be objectionable to anyone from a wide variety of cultural backgrounds." You pick the principle for each step, sometimes at random, sometimes based on the prompt category.
@@ -147,9 +147,9 @@ graph LR
 
     H["Human data\n(small fraction)"] --> T
 
-    style M0 fill:#1a1a2e,stroke:#e94560,color:#fff
-    style M1 fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style H fill:#1a1a2e,stroke:#0f3460,color:#fff
+    style M0 fill:#1f1f22,stroke:#e94560,color:#fff
+    style M1 fill:#1f1f22,stroke:#51cf66,color:#fff
+    style H fill:#1f1f22,stroke:#4a4a50,color:#fff
 ```
 
 ### When To Use What

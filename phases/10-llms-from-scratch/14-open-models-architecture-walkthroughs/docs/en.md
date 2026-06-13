@@ -127,9 +127,9 @@ graph LR
     S --> O["Output"]
 
     style EN fill:#eeeeee,stroke:#999,color:#999
-    style E1 fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style E2 fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style R fill:#1a1a2e,stroke:#e94560,color:#fff
+    style E1 fill:#1f1f22,stroke:#51cf66,color:#fff
+    style E2 fill:#1f1f22,stroke:#51cf66,color:#fff
+    style R fill:#1f1f22,stroke:#e94560,color:#fff
 ```
 
 Pros: same compute, more parameters, better capacity. Cons: the expert memory still has to live somewhere (so serving needs more VRAM than a dense equivalent), load-balancing the router is hard, and fine-tuning the router during alignment is its own research area.

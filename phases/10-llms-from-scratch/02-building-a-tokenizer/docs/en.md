@@ -40,12 +40,12 @@ graph LR
     D --> E[Special Tokens]
     E --> F[Token IDs]
 
-    style A fill:#1a1a2e,stroke:#e94560,color:#fff
-    style B fill:#1a1a2e,stroke:#e94560,color:#fff
-    style C fill:#1a1a2e,stroke:#e94560,color:#fff
-    style D fill:#1a1a2e,stroke:#e94560,color:#fff
-    style E fill:#1a1a2e,stroke:#e94560,color:#fff
-    style F fill:#1a1a2e,stroke:#e94560,color:#fff
+    style A fill:#1f1f22,stroke:#e94560,color:#fff
+    style B fill:#1f1f22,stroke:#e94560,color:#fff
+    style C fill:#1f1f22,stroke:#e94560,color:#fff
+    style D fill:#1f1f22,stroke:#e94560,color:#fff
+    style E fill:#1f1f22,stroke:#e94560,color:#fff
+    style F fill:#1f1f22,stroke:#e94560,color:#fff
 ```
 
 Each stage has a specific job:

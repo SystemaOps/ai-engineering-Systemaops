@@ -70,13 +70,13 @@ graph TD
         AR --> U["Update\n(identical on all GPUs)"]
     end
 
-    style B fill:#1a1a2e,stroke:#e94560,color:#fff
-    style G1 fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style G2 fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style G3 fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style G4 fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style AR fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style U fill:#1a1a2e,stroke:#51cf66,color:#fff
+    style B fill:#1f1f22,stroke:#e94560,color:#fff
+    style G1 fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style G2 fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style G3 fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style G4 fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style AR fill:#1f1f22,stroke:#51cf66,color:#fff
+    style U fill:#1f1f22,stroke:#51cf66,color:#fff
 ```
 
 ### Tensor Parallelism
@@ -155,13 +155,13 @@ graph TD
         FW --> RS
     end
 
-    style G1S fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style G2S fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style G3S fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style G4S fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style AG fill:#1a1a2e,stroke:#e94560,color:#fff
-    style FW fill:#1a1a2e,stroke:#51cf66,color:#fff
-    style RS fill:#1a1a2e,stroke:#e94560,color:#fff
+    style G1S fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style G2S fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style G3S fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style G4S fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style AG fill:#1f1f22,stroke:#e94560,color:#fff
+    style FW fill:#1f1f22,stroke:#51cf66,color:#fff
+    style RS fill:#1f1f22,stroke:#e94560,color:#fff
 ```
 
 ### DeepSpeed ZeRO
@@ -233,10 +233,10 @@ graph TD
 
     N1["Total: 8 x 16 x 128 = 16,384 GPUs"]
 
-    style G1 fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style G2 fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style G8 fill:#1a1a2e,stroke:#0f3460,color:#fff
-    style N1 fill:#1a1a2e,stroke:#e94560,color:#fff
+    style G1 fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style G2 fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style G8 fill:#1f1f22,stroke:#4a4a50,color:#fff
+    style N1 fill:#1f1f22,stroke:#e94560,color:#fff
 ```
 
 ## Build It
