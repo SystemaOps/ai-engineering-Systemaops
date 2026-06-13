@@ -110,6 +110,42 @@
       margin-top: 40px;
     }
     .access-note a { color: var(--accent); }
+
+    .purchase-thanks {
+      border: 2px solid var(--accent);
+      background: var(--blueprint-tint);
+      padding: 16px 20px;
+      margin: 24px 0 0;
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .activate-form {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 14px 0 6px;
+    }
+    .activate-input {
+      flex: 1;
+      min-width: 220px;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 11px 14px;
+      background: var(--bg);
+      color: var(--ink);
+      border: 2px solid var(--border);
+    }
+    .activate-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .activate-btn { cursor: pointer; background: none; }
+    .activate-msg { font-size: 0.85rem; min-height: 1.2em; margin-top: 6px; }
+    .activate-msg.is-error { color: var(--warn); }
+    .activate-msg.is-ok { color: var(--accent); }
   </style>
 </head>
 <body>
@@ -150,7 +186,9 @@
         <p class="access-tagline">The complete modern AI stack — math to multi-agent
         swarms — as one build-it-yourself path. 502 lessons. 502 tools you keep.</p>
 
-        <div class="access-price-card">
+        <div class="purchase-thanks" id="purchaseThanks" role="status" style="display:none"></div>
+
+        <div class="access-price-card" id="buyCard">
           <span class="price-soon">Launching soon</span>
           <p>One-time purchase. Lifetime access, including every future lesson and
           update. 7-day money-back guarantee.</p>
@@ -216,14 +254,16 @@
         </ul>
 
         <h2>Already purchased?</h2>
-        <p>License-key activation opens at launch. If you have any issue with access,
-        email <a href="mailto:info@systemaops.com">info@systemaops.com</a>.</p>
+        <div id="activateBox">
+          <p>License-key activation opens at launch. If you have any issue with access,
+          email <a href="mailto:info@systemaops.com">info@systemaops.com</a>.</p>
+        </div>
 
         <p class="access-note">By purchasing you agree to the
         <a href="terms.html">Terms of Service</a>,
         <a href="refunds.html">Refund Policy</a> (7-day money-back guarantee), and
-        <a href="privacy.html">Privacy Policy</a>. Payments are handled by a payment
-        processor acting as merchant of record.</p>
+        <a href="privacy.html">Privacy Policy</a>. Payments are securely processed by
+        Stripe; your card details never touch this site.</p>
       </div>
     </div>
   </main>
@@ -243,6 +283,7 @@
   </footer>
 
   <script src="data.js?v=20260613c"></script>
+  <script src="checkout.js?v=20260613c"></script>
   <script src="cmdpalette.js?v=20260613c" defer></script>
   <script src="pet.js?v=20260613c"></script>
   <script>
