@@ -33,8 +33,7 @@
     paymentLink: 'https://buy.stripe.com/cNi14ng9QcCF9VZ8ulfIs00',
 
     // Display price only. The real charge is whatever you set in Stripe.
-    // Fill this in (e.g. '$149' or '₹12,000') — blank just hides the number.
-    price: '',
+    price: '€149',
 
     // Support address shown for activation problems.
     supportEmail: 'info@systemaops.com',

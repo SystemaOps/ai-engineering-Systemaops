@@ -16,8 +16,12 @@ const README_PATH = path.join(REPO_ROOT, 'README.md');
 const ROADMAP_PATH = path.join(REPO_ROOT, 'ROADMAP.md');
 const GLOSSARY_PATH = path.join(REPO_ROOT, 'glossary', 'terms.md');
 const OUTPUT_PATH = path.join(__dirname, 'data.js');
+const SITEMAP_PATH = path.join(__dirname, 'sitemap.xml');
 
 const GITHUB_BASE = 'https://github.com/SystemaOps/ai-engineering-Systemaops/tree/main/';
+
+// Public origin for canonical/sitemap URLs (matches the og: tags).
+const SITE_ORIGIN = 'https://ai.systemaops.com';
 
 // Lessons readable without a purchase. One per altitude of the curriculum
 // so prospective buyers can sample the quality at every level. Lessons not
@@ -640,11 +644,51 @@ const ARTIFACTS = ${JSON.stringify(artifacts, null, 2)};
   fs.writeFileSync(OUTPUT_PATH, output, 'utf8');
   console.log(`\n✅ Generated ${OUTPUT_PATH}`);
 
+  writeSitemap(phases);
+
   // Capstone phase is open-ended (pick-your-own projects), so the README
   // "Where to start" estimates exclude it and call it out separately.
   const capstonePhase = phases.find(p => p.lessons.some(l => l.type === 'Capstone'));
   syncCounts(totalLessons, phases.length, artifacts.length, totalMinutes, phaseMinutes,
     capstonePhase ? capstonePhase.id : null);
+}
+
+// ─── Sitemap (referenced by robots.txt) ──────────────────────────────────
+// Static marketing/legal pages plus every lesson landing page. Paid lessons
+// are included: their locked preview is a real, indexable page that funnels
+// to checkout. Regenerated on every build so it never drifts from the
+// curriculum.
+function writeSitemap(phases) {
+  const today = new Date().toISOString().slice(0, 10);
+  const urls = [];
+  const add = (loc, priority) => urls.push({ loc, priority });
+
+  // Home + primary pages (clean URLs; .html also works via try_files).
+  add(SITE_ORIGIN + '/', '1.0');
+  ['catalog', 'prereqs', 'plan', 'glossary', 'access'].forEach(p =>
+    add(SITE_ORIGIN + '/' + p + '.html', '0.8'));
+  ['terms', 'refunds', 'privacy'].forEach(p =>
+    add(SITE_ORIGIN + '/' + p + '.html', '0.3'));
+
+  // Every lesson landing page.
+  for (const phase of phases) {
+    for (const lesson of phase.lessons) {
+      if (!lesson.url) continue;
+      const relPath = lesson.url.replace(GITHUB_BASE, '').replace(/\/+$/, '');
+      add(SITE_ORIGIN + '/lesson.html?path=' + encodeURIComponent(relPath),
+        lesson.free ? '0.7' : '0.5');
+    }
+  }
+
+  const body = urls.map(u =>
+    `  <url><loc>${u.loc}</loc><lastmod>${today}</lastmod><priority>${u.priority}</priority></url>`
+  ).join('\n');
+  const xml = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+    body + '\n</urlset>\n';
+
+  fs.writeFileSync(SITEMAP_PATH, xml, 'utf8');
+  console.log(`🗺️  Generated sitemap.xml (${urls.length} URLs)`);
 }
 
 // ─── Keep marketing counts in sync (single source of truth = this build) ──
