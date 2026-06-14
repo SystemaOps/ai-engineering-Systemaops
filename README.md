@@ -6,7 +6,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Proprietary-1a1a1a?style=flat-square&labelColor=fafaf5" alt="Proprietary License"></a>
   <a href="ROADMAP.md"><img src="https://img.shields.io/badge/lessons-502-1C7F7F?style=flat-square&labelColor=fafaf5" alt="502 lessons"></a>
   <a href="#contents"><img src="https://img.shields.io/badge/phases-20-1C7F7F?style=flat-square&labelColor=fafaf5" alt="20 phases"></a>
-  <a href="https://aiengineeringfromsystemaops.com"><img src="https://img.shields.io/badge/web-aiengineeringfromsystemaops.com-1C7F7F?style=flat-square&labelColor=fafaf5" alt="Website"></a>
+  <a href="https://ai.systemaops.com"><img src="https://img.shields.io/badge/web-ai.systemaops.com-1C7F7F?style=flat-square&labelColor=fafaf5" alt="Website"></a>
 </p>
 
 ```
@@ -108,7 +108,7 @@ flowchart LR
 Three ways in. Pick one.
 
 **Option A — read.** Open any completed lesson on
-[aiengineeringfromsystemaops.com](https://aiengineeringfromsystemaops.com) or expand a phase under
+[ai.systemaops.com](https://ai.systemaops.com) or expand a phase under
 [Contents](#contents). No setup, no cloning.
 
 **Option B — clone and run.**
@@ -1147,12 +1147,12 @@ Purchasing access grants a personal, non-transferable license to learn from the
 curriculum. Redistribution, resale, and teaching from the material require a
 separate commercial agreement — see [LICENSE](LICENSE). For team, school, or
 enterprise licensing, get in touch via
-[aiengineeringfromsystemaops.com](https://aiengineeringfromsystemaops.com).
+[ai.systemaops.com](https://ai.systemaops.com).
 
 Maintained by [Rohit Thumu](https://github.com/SystemaOps/).
 
 <sub>
   <a href="https://x.com/ghumare64">@ghumare64</a> &nbsp;·&nbsp;
-  <a href="https://aiengineeringfromsystemaops.com">aiengineeringfromsystemaops.com</a> &nbsp;·&nbsp;
+  <a href="https://ai.systemaops.com">ai.systemaops.com</a> &nbsp;·&nbsp;
   <a href="https://github.com/SystemaOps/ai-engineering-Systemaops/issues/new/choose">Report / Suggest</a>
 </sub>
