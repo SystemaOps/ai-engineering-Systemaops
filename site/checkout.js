@@ -28,12 +28,12 @@
 
   /* ── CONFIG — edit these four values, nothing else ───────────────────── */
   var CONFIG = {
-    // Paste your Stripe Payment Link URL (Dashboard → Payment Links).
+    // Stripe Payment Link (Dashboard → Payment Links).
     // Leave '' to keep the page in "notify me at launch" mode.
-    paymentLink: '',
+    paymentLink: 'https://buy.stripe.com/cNi14ng9QcCF9VZ8ulfIs00',
 
     // Display price only. The real charge is whatever you set in Stripe.
-    // e.g. '$149' or '₹12,000'.
+    // Fill this in (e.g. '$149' or '₹12,000') — blank just hides the number.
     price: '',
 
     // Support address shown for activation problems.
