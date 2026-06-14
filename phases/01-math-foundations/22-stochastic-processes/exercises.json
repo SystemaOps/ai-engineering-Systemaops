@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Random walk and √n scaling",
+      "difficulty": "warmup",
+      "prompt": "Simulate many 1D random walks of n steps (±1 each) and show that the typical distance from the origin grows like √n, not n. Report the average absolute displacement.",
+      "hint": "Each walk: sum of n random ±1 steps. Average |final position| over many trials; compare to sqrt(n).",
+      "solution": "```python\nimport random, math\ndef walk(n): return sum(random.choice((-1,1)) for _ in range(n))\nn=400; trials=20000\navg=sum(abs(walk(n)) for _ in range(trials))/trials\nprint(round(avg,1), round(math.sqrt(2*n/math.pi),1))   # ~16, ~16\n```\n\nAfter n steps the walk is typically ~√n from where it started, not ~n — the ± steps mostly cancel. (The exact mean absolute displacement is √(2n/π).) This √n diffusive scaling is the signature of Brownian motion and is exactly the rate at which noise accumulates in a diffusion model's forward process."
+    },
+    {
+      "title": "Markov chain stationary distribution",
+      "difficulty": "core",
+      "prompt": "Build a 3-state Markov chain transition matrix, find its stationary distribution two ways — by iterating the chain and via the eigenvector for eigenvalue 1 — and confirm they agree.",
+      "hint": "Stationary π satisfies πP = π (left eigenvector, eigenvalue 1). Or raise P to a high power and read a row.",
+      "solution": "```python\nimport numpy as np\nP=np.array([[0.7,0.2,0.1],[0.1,0.8,0.1],[0.2,0.3,0.5]])\n# method 1: power iteration\npi_iter=(np.linalg.matrix_power(P, 1000))[0]\n# method 2: left eigenvector for eigenvalue 1\nvals,vecs=np.linalg.eig(P.T)\npi_eig=np.real(vecs[:, np.argmin(abs(vals-1))]); pi_eig/=pi_eig.sum()\nprint(np.round(pi_iter,3), np.round(pi_eig,3))   # agree\n```\n\nThe stationary distribution is the long-run fraction of time spent in each state — the chain 'forgets' where it started and settles into π. It's the left eigenvector of P for eigenvalue 1 (πP = π), and also what P^k converges to. This is the theory behind PageRank (stationary distribution of a random web-surfer) and the convergence guarantee for MCMC samplers."
+    },
+    {
+      "title": "Forward diffusion as Brownian motion",
+      "difficulty": "stretch",
+      "prompt": "Simulate the forward diffusion process — repeatedly add small Gaussian noise to a data point until it becomes pure noise — and explain how this connects to Brownian motion and why the reverse process can generate data.",
+      "hint": "x_{t} = sqrt(1-β)·x_{t-1} + sqrt(β)·ε. After many steps the data washes out to N(0,1).",
+      "solution": "```python\nimport random, math\nx=5.0            # a 'data' value\nbeta=0.02\nfor t in range(300):\n    x = math.sqrt(1-beta)*x + math.sqrt(beta)*random.gauss(0,1)\nprint(round(x,3))   # near a draw from N(0,1) — original signal gone\n```\n\nThe forward process is a structured random walk: each step shrinks the signal slightly and injects a little Gaussian noise, so after enough steps the data is indistinguishable from `N(0,1)` — the continuous-time limit is Brownian motion. The key insight behind diffusion models: this corruption is *gradual and known*, so a network can be trained to undo one step at a time. Run that learned **reverse** process from pure noise and you walk backward into a fresh data sample — which is how image/video generators create from scratch."
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "SVD with NumPy, geometry in words",
+      "difficulty": "warmup",
+      "prompt": "Compute the SVD of a 3×2 matrix with numpy and verify U·Σ·Vᵀ reconstructs it. In one sentence each, say what U, Σ, and Vᵀ represent geometrically.",
+      "hint": "`np.linalg.svd(A, full_matrices=False)` returns U, s (singular values), Vt. Rebuild with U @ diag(s) @ Vt.",
+      "solution": "```python\nimport numpy as np\nA = np.array([[1.,2.],[3.,4.],[5.,6.]])\nU, s, Vt = np.linalg.svd(A, full_matrices=False)\nrecon = U @ np.diag(s) @ Vt\nprint(np.allclose(A, recon))   # True\n```\n\nAny linear map = **rotate, then scale, then rotate**. `Vᵀ` rotates the input space, `Σ` (the singular values) scales each axis by how much the map stretches it, and `U` rotates into the output space. The singular values rank the directions by importance — keeping only the largest ones is the basis of compression."
+    },
+    {
+      "title": "Low-rank compression",
+      "difficulty": "core",
+      "prompt": "Use truncated SVD to approximate a matrix with only its top-k singular values, and report the reconstruction error and compression ratio as k varies. Explain the rank-vs-quality tradeoff.",
+      "hint": "Keep the first k columns of U, first k of s, first k rows of Vt. Error = Frobenius norm of (A − A_k).",
+      "solution": "```python\nimport numpy as np\nrng = np.random.default_rng(0)\nA = rng.standard_normal((50, 40)) @ rng.standard_normal((40, 30))  # rank<=40\nU, s, Vt = np.linalg.svd(A, full_matrices=False)\nfor k in (1, 5, 20):\n    Ak = U[:, :k] @ np.diag(s[:k]) @ Vt[:k, :]\n    err = np.linalg.norm(A - Ak) / np.linalg.norm(A)\n    stored = k*(A.shape[0] + A.shape[1] + 1)\n    print(k, round(err, 3), f\"{stored/A.size:.2f}x of full\")\n```\n\nE ckart-Young guarantees the top-k SVD is the *best possible* rank-k approximation. Error drops fast as k grows because real matrices concentrate energy in the leading singular values. Storing U_k, s_k, V_k costs k(m+n+1) numbers instead of m·n — the same idea behind LoRA (a weight update stored as two thin low-rank factors)."
+    },
+    {
+      "title": "Least squares via pseudoinverse",
+      "difficulty": "stretch",
+      "prompt": "Solve an overdetermined system Ax ≈ b (more equations than unknowns) using the SVD-based Moore-Penrose pseudoinverse, and confirm it matches numpy's least-squares solver. Explain why SVD handles rank-deficient A gracefully.",
+      "hint": "A⁺ = V Σ⁺ Uᵀ, where Σ⁺ inverts non-zero singular values. x = A⁺ b.",
+      "solution": "```python\nimport numpy as np\nA = np.array([[1.,1.],[1.,2.],[1.,3.],[1.,4.]])\nb = np.array([6.,5.,7.,10.])\nU, s, Vt = np.linalg.svd(A, full_matrices=False)\ns_inv = np.array([1/si if si > 1e-12 else 0.0 for si in s])\nx = Vt.T @ (s_inv * (U.T @ b))\nprint(x, np.linalg.lstsq(A, b, rcond=None)[0])   # match\n```\n\nThe pseudoinverse gives the least-squares solution for any shape. SVD makes it robust: if A is rank-deficient (a zero or near-zero singular value), the normal-equations approach `(AᵀA)⁻¹Aᵀ` blows up, but SVD just **zeros out** the inverse of those tiny singular values, returning the minimum-norm solution instead of exploding. That numerical stability is why SVD underpins ridge regression and reliable solvers."
+    }
+  ]
+}

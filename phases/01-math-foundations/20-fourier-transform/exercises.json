@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Find the hidden frequencies",
+      "difficulty": "warmup",
+      "prompt": "Build a signal that is the sum of two sine waves at different frequencies, run numpy's FFT, and confirm the magnitude spectrum has peaks at exactly those two frequencies.",
+      "hint": "`np.fft.rfft` for real input; `np.fft.rfftfreq` gives the frequency of each bin.",
+      "solution": "```python\nimport numpy as np\nfs=128; t=np.arange(fs)/fs\nx=np.sin(2*np.pi*5*t) + 0.5*np.sin(2*np.pi*20*t)   # 5 Hz + 20 Hz\nX=np.abs(np.fft.rfft(x)); f=np.fft.rfftfreq(len(x), 1/fs)\npeaks=f[np.argsort(X)[-2:]]\nprint(sorted(peaks))   # [5.0, 20.0]\n```\n\nThe FFT decomposes the signal into its constituent sine waves; the two peaks sit exactly at 5 and 20 Hz with the taller peak at 5 Hz (larger amplitude). Patterns invisible in the time domain (is this a chord? a weekly cycle?) become obvious spikes in the frequency domain."
+    },
+    {
+      "title": "DFT vs FFT",
+      "difficulty": "core",
+      "prompt": "Implement the naive O(N²) DFT and confirm it matches numpy's O(N log N) FFT on the same input. Comment on the runtime difference as N grows.",
+      "hint": "Naive DFT: double loop over k and n. Compare with np.fft.fft and np.allclose.",
+      "solution": "```python\nimport numpy as np, cmath, math\ndef dft(x):\n    N=len(x)\n    return [sum(x[n]*cmath.exp(-2j*math.pi*k*n/N) for n in range(N)) for k in range(N)]\nx=np.random.rand(64)\nprint(np.allclose(dft(x), np.fft.fft(x)))   # True\n```\n\nSame answer, wildly different cost. The DFT's nested loops are O(N²); the Cooley-Tukey FFT exploits symmetry in the roots of unity to recurse, reaching O(N log N). For N=1e6 that's ~50,000× fewer operations — the difference between 'instant' and 'never finishes,' and the reason real-time audio/image processing is feasible at all."
+    },
+    {
+      "title": "Convolution via the frequency domain",
+      "difficulty": "stretch",
+      "prompt": "Demonstrate the convolution theorem: show that convolving two signals equals the inverse FFT of the product of their FFTs. Explain why this matters for CNNs and large-kernel operations.",
+      "hint": "conv(a,b) = IFFT(FFT(a) · FFT(b)), with zero-padding to avoid circular wrap-around.",
+      "solution": "```python\nimport numpy as np\na=np.array([1.,2.,3.,0.,0.,0.])\nb=np.array([0.,1.,0.5,0.,0.,0.])\ndirect=np.convolve(a, b)[:6]\nfft_conv=np.real(np.fft.ifft(np.fft.fft(a)*np.fft.fft(b)))\nprint(np.allclose(direct, fft_conv))   # True (with enough padding)\n```\n\nThe convolution theorem: **convolution in time = multiplication in frequency**. Direct convolution of length-N signals is O(N²); via FFT it's O(N log N), so large-kernel or long-signal convolutions are done in the frequency domain. It also explains CNNs conceptually — a conv layer is a learned frequency filter — and underlies fast methods for long-sequence and large-image operations. (Zero-pad to turn FFT's circular convolution into the linear one you want.)"
+    }
+  ]
+}

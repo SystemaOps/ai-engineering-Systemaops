@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Is it convex?",
+      "difficulty": "warmup",
+      "prompt": "Test whether f(x) = x⁴ − 3x² is convex using the second-derivative criterion, and identify the region(s) where it is and isn't. State the rule for 1D convexity.",
+      "hint": "f is convex where f''(x) ≥ 0. f''(x) = 12x² − 6.",
+      "solution": "```python\ndef f2(x): return 12*x*x - 6        # second derivative\nfor x in (-1.0, -0.5, 0.0, 0.5, 1.0):\n    print(x, 'convex' if f2(x) >= 0 else 'non-convex here')\n# convex for |x| >= sqrt(0.5) ≈ 0.707, non-convex near 0\n```\n\nA 1D function is convex exactly where **f''(x) ≥ 0** (curving up everywhere). x⁴−3x² fails this near the origin (it has a hump), so it's non-convex overall — it has two minima and a local max. Globally convex functions have a single bowl; this one doesn't, which is why a downhill method could land in either valley depending on where it starts."
+    },
+    {
+      "title": "Newton's method vs gradient descent",
+      "difficulty": "core",
+      "prompt": "Minimize a convex function with both gradient descent and Newton's method, and show Newton converges in far fewer iterations. Explain what the second-derivative (Hessian) information buys you.",
+      "hint": "Newton step: x −= f'(x)/f''(x). It jumps straight to the minimum of the local quadratic fit.",
+      "solution": "```python\ndef f1(x): return 2*x - 4       # f'(x) for f=(x-2)^2\ndef f2(x): return 2.0           # f''(x)\ndef gd(steps=50, x=10.0, lr=0.1):\n    for _ in range(steps): x -= lr*f1(x)\n    return x\ndef newton(steps=5, x=10.0):\n    for _ in range(steps): x -= f1(x)/f2(x)\n    return x\nprint(round(gd(),6), round(newton(1),6))   # GD needs many steps; Newton: 1\n```\n\nFor a quadratic, Newton's method reaches the exact minimum in **one step** because dividing the gradient by the curvature lands precisely at the bottom of the local parabola. Near any minimum, smooth functions look quadratic, giving Newton **quadratic convergence** (error squares each step) vs GD's linear crawl. The catch: Newton needs the Hessian (n² entries) and its inverse — infeasible for million-parameter nets, which is why deep learning uses first-order methods (SGD/Adam) and only *approximates* curvature."
+    },
+    {
+      "title": "Why non-convex SGD still works",
+      "difficulty": "stretch",
+      "prompt": "Explain the apparent paradox: convex problems guarantee a global optimum, neural-net losses are wildly non-convex, yet SGD reliably finds good solutions. Give the modern intuition.",
+      "hint": "In high dimensions, most local minima are nearly as good as the global one; the real obstacle is saddle points, which SGD's noise escapes.",
+      "solution": "Convexity guarantees one global minimum reachable by any downhill walk — true for linear/logistic regression, SVMs, LASSO. Neural nets break convexity completely, so in principle SGD could get stuck. In practice it doesn't, for a few high-dimensional reasons:\n\n1. **Local minima are mostly fine.** Empirically and theoretically, in very high dimensions the vast majority of local minima sit at nearly the same (low) loss as the global one — bad isolated minima become vanishingly unlikely.\n2. **The real obstacle is saddle points,** not bad minima (a critical point needs *all* Hessian eigenvalues positive to be a min — rare by chance). \n3. **SGD's gradient noise** kicks the iterate off saddles and out of sharp, brittle minima, biasing it toward flat minima that generalize better.\n\nSo we give up the *guarantee* of convex optimization but, thanks to the geometry of high-dimensional loss surfaces plus the helpful noise of stochastic updates, SGD finds solutions that are good enough — which is the entire empirical bet of deep learning."
+    }
+  ]
+}

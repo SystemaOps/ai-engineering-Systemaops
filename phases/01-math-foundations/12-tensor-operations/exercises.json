@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Broadcasting rules",
+      "difficulty": "warmup",
+      "prompt": "Predict the result shape of adding a (3,1) array to a (1,4) array, then verify. State the two broadcasting rules that explain it.",
+      "hint": "Align shapes from the right; a dimension of size 1 stretches to match the other.",
+      "solution": "```python\nimport numpy as np\na = np.arange(3).reshape(3,1)\nb = np.arange(4).reshape(1,4)\nprint((a + b).shape)   # (3, 4)\n```\n\n**Rules:** (1) align shapes from the trailing dimension; (2) a dimension of size 1 (or missing) is stretched to match the other. Here (3,1) and (1,4) each have a 1 that stretches, producing (3,4) — an outer-sum. This is how a bias vector `(features,)` adds to a batch `(batch, features)` without a loop; it's also how a wrong unsqueeze silently broadcasts garbage."
+    },
+    {
+      "title": "einsum fluency",
+      "difficulty": "core",
+      "prompt": "Express each of these with a single einsum: a dot product, a matrix multiply, and a batched matrix multiply. Verify against the non-einsum equivalents.",
+      "hint": "Repeated index = sum over it; an index missing from the output is contracted. 'i,i->', 'ik,kj->ij', 'bik,bkj->bij'.",
+      "solution": "```python\nimport numpy as np\na=np.arange(4.); b=np.arange(4.)\nprint(np.einsum('i,i->', a, b), a@b)                    # dot\nA=np.random.rand(2,3); B=np.random.rand(3,4)\nprint(np.allclose(np.einsum('ik,kj->ij',A,B), A@B))     # matmul\nX=np.random.rand(5,2,3); Y=np.random.rand(5,3,4)\nprint(np.allclose(np.einsum('bik,bkj->bij',X,Y), X@Y))  # batched\n```\n\neinsum reads as: 'these input index labels → this output.' Any index that appears in inputs but not the output is summed over. Once it clicks, attention (`bhqd,bhkd->bhqk`) and tensor contractions become one readable line each — no guessing which `.transpose()` and `.bmm()` combination is needed."
+    },
+    {
+      "title": "Trace the attention shapes",
+      "difficulty": "stretch",
+      "prompt": "For multi-head attention with batch B=2, sequence L=5, model dim d=8, and h=2 heads, write out the shape of Q, K, V after the head-split, the attention-score matrix, and the final output. State which axes the softmax and the score-matmul act on.",
+      "hint": "Split d into (h, d_head=d/h). Scores = Q·Kᵀ over the d_head axis; softmax over the key axis.",
+      "solution": "```\ninput x:            (B, L, d)      = (2, 5, 8)\nQ,K,V after proj:   (B, L, d)      = (2, 5, 8)\nsplit into heads:   (B, h, L, d_h) = (2, 2, 5, 4)   d_h = d/h = 4\nscores = Q @ K^T:   (B, h, L, L)   = (2, 2, 5, 5)   contract over d_h\nsoftmax:            over the LAST axis (keys)        (2, 2, 5, 5)\nout = scores @ V:   (B, h, L, d_h) = (2, 2, 5, 4)\nmerge heads:        (B, L, d)      = (2, 5, 8)\n```\n\n```python\nimport numpy as np\nB,L,d,h = 2,5,8,2; dh=d//h\nQ=np.random.rand(B,h,L,dh); K=np.random.rand(B,h,L,dh); V=np.random.rand(B,h,L,dh)\nscores = np.einsum('bhqd,bhkd->bhqk', Q, K) / dh**0.5   # (2,2,5,5)\nw = np.exp(scores - scores.max(-1, keepdims=True)); w /= w.sum(-1, keepdims=True)\nout = np.einsum('bhqk,bhkd->bhqd', w, V)                # (2,2,5,4)\nprint(scores.shape, out.shape)\n```\n\nThe two things people get wrong: the score matmul contracts the **head-dim** (`d_h`), and softmax normalizes over the **key** axis (the last one) so each query's attention weights sum to 1. Get either axis wrong and it runs without error but learns nothing."
+    }
+  ]
+}

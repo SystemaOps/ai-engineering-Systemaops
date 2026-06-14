@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Element-wise vs matrix multiply",
+      "difficulty": "warmup",
+      "prompt": "Given A = [[1,2],[3,4]] and B = [[5,6],[7,8]], compute both the element-wise (Hadamard) product and the matrix product by hand in code, and state when each is used in a neural network.",
+      "hint": "Hadamard: multiply matching positions. Matmul: row · column dot products.",
+      "solution": "```python\ndef hadamard(A, B):\n    return [[A[i][j]*B[i][j] for j in range(len(A[0]))] for i in range(len(A))]\ndef matmul(A, B):\n    return [[sum(A[i][k]*B[k][j] for k in range(len(B)))\n             for j in range(len(B[0]))] for i in range(len(A))]\n\nA=[[1,2],[3,4]]; B=[[5,6],[7,8]]\nprint(hadamard(A,B))  # [[5,12],[21,32]]\nprint(matmul(A,B))    # [[19,22],[43,50]]\n```\n\n**Matrix multiply** is the linear transform — every dense layer is `W @ x`. **Hadamard** appears in gating and masking: element-wise multiply by a mask zeros positions, and LSTM/GRU gates element-wise-scale a hidden state. Confusing them is a classic shape-bug source."
+    },
+    {
+      "title": "A Matrix class",
+      "difficulty": "core",
+      "prompt": "Build a minimal Matrix class supporting matrix multiplication and transpose, then verify (AB)ᵀ = BᵀAᵀ on two small matrices.",
+      "hint": "Store rows as a list of lists. Transpose swaps indices; matmul is the triple loop.",
+      "solution": "```python\nclass Matrix:\n    def __init__(self, rows): self.rows = rows\n    def __matmul__(self, o):\n        return Matrix([[sum(self.rows[i][k]*o.rows[k][j] for k in range(len(o.rows)))\n                        for j in range(len(o.rows[0]))] for i in range(len(self.rows))])\n    def T(self):\n        return Matrix([list(c) for c in zip(*self.rows)])\n\nA=Matrix([[1,2],[3,4]]); B=Matrix([[5,6],[7,8]])\nlhs=(A@B).T().rows\nrhs=(B.T()@A.T()).rows\nprint(lhs == rhs)   # True\n```\n\n`(AB)ᵀ = BᵀAᵀ` (note the reversed order) is used constantly when deriving backprop — the gradient w.r.t. an input involves the transpose of the weight matrix."
+    },
+    {
+      "title": "One dense layer from scratch",
+      "difficulty": "stretch",
+      "prompt": "Implement a single neural-network layer `relu(W @ x + b)` using only your from-scratch matrix/vector ops, for W shape (3,2), x length 2, b length 3. Confirm the output length is 3 and that negative pre-activations are zeroed.",
+      "hint": "Matrix-vector product gives length-3, add bias element-wise, apply max(0,·).",
+      "solution": "```python\ndef matvec(W, x): return [sum(w*xi for w, xi in zip(row, x)) for row in W]\ndef add(a, b): return [x+y for x, y in zip(a, b)]\ndef relu(v): return [max(0.0, x) for x in v]\n\nW=[[1,-1],[0,2],[-3,1]]; x=[2,1]; b=[0,0,5]\nz=add(matvec(W, x), b)\nprint(z)        # [1, 2, 0]  (-3*2+1*1+5=0)\nprint(relu(z))  # [1, 2, 0]\n```\n\nThis three-operation sequence — linear map, bias shift, nonlinearity — *is* the forward pass of one layer. Stack a few hundred of these and you have a deep network; everything else (attention, conv) is a structured special case of `W @ x + b`."
+    }
+  ]
+}

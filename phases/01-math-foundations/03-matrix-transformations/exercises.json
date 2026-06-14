@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Rotate a point",
+      "difficulty": "warmup",
+      "prompt": "Build a 2D rotation matrix for 90° and apply it to the point [1, 0]. Confirm the result is (approximately) [0, 1], and explain the sign convention.",
+      "hint": "R(θ) = [[cosθ, -sinθ], [sinθ, cosθ]]. 90° = π/2 radians.",
+      "solution": "```python\nimport math\ndef rot(theta): \n    c, s = math.cos(theta), math.sin(theta)\n    return [[c, -s], [s, c]]\ndef apply(M, v): return [M[0][0]*v[0]+M[0][1]*v[1], M[1][0]*v[0]+M[1][1]*v[1]]\n\nprint(apply(rot(math.pi/2), [1, 0]))   # ~[0.0, 1.0]\n```\n\nThe x-axis vector `[1,0]` rotates to `[0,1]` (the y-axis) — a positive (counter-clockwise) 90° turn. The `-sinθ` in the top-right is what makes positive angles go counter-clockwise; flip its sign for clockwise."
+    },
+    {
+      "title": "Order matters",
+      "difficulty": "core",
+      "prompt": "Show that composing transformations is non-commutative: apply (rotate 90° then scale x by 2) vs (scale x by 2 then rotate 90°) to the point [1, 0] and confirm the results differ. Which matrix multiplication order corresponds to which?",
+      "hint": "Composition is matrix product; the transform applied FIRST is on the RIGHT. AB ≠ BA in general.",
+      "solution": "```python\nimport math\ndef matmul(A,B): return [[sum(A[i][k]*B[k][j] for k in range(2)) for j in range(2)] for i in range(2)]\ndef apply(M,v): return [M[0][0]*v[0]+M[0][1]*v[1], M[1][0]*v[0]+M[1][1]*v[1]]\nR=[[0,-1],[1,0]]          # rotate 90\nS=[[2,0],[0,1]]           # scale x by 2\nprint(apply(matmul(S,R), [1,0]))  # scale∘rotate → [0,1]\nprint(apply(matmul(R,S), [1,0]))  # rotate∘scale → [0,2]\n```\n\nResults differ, so order matters. In `matmul(S,R)` the matrix R (applied first) sits on the right — composition reads right-to-left. This is why stacking neural-net layers or graphics transforms in the wrong order silently produces garbage."
+    },
+    {
+      "title": "Eigenvalues of a 2×2",
+      "difficulty": "stretch",
+      "prompt": "Compute the eigenvalues of [[2, 1], [1, 2]] from the characteristic equation det(A − λI) = 0 by hand in code, and explain what the eigenvectors mean geometrically and why this matters for PCA.",
+      "hint": "For [[a,b],[c,d]]: λ = (trace ± sqrt(trace² − 4·det)) / 2, trace=a+d, det=ad−bc.",
+      "solution": "```python\nimport math\ndef eigvals_2x2(a,b,c,d):\n    tr, det = a+d, a*d-b*c\n    disc = math.sqrt(tr*tr - 4*det)\n    return ((tr+disc)/2, (tr-disc)/2)\n\nprint(eigvals_2x2(2,1,1,2))   # (3.0, 1.0)\n```\n\nEigenvalues are **3** and **1**. An eigenvector is a direction the matrix only *stretches*, never rotates: along the λ=3 direction ([1,1]) the transform scales by 3, along λ=1 ([1,−1]) it leaves length unchanged. **PCA** eigendecomposes the covariance matrix — the eigenvector with the largest eigenvalue is the direction of maximum variance (the first principal component), and the eigenvalue is how much variance lies along it."
+    }
+  ]
+}

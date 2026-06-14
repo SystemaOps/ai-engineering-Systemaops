@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Numerical vs analytical derivative",
+      "difficulty": "warmup",
+      "prompt": "For f(x) = x², compute the derivative at x = 3 two ways: analytically (you know it's 2x) and numerically via finite differences. Confirm they agree, and note what happens to the numerical error as the step h shrinks.",
+      "hint": "Central difference: (f(x+h) − f(x−h)) / (2h). Try h = 1e-5.",
+      "solution": "```python\ndef f(x): return x*x\ndef numeric(f, x, h=1e-5): return (f(x+h) - f(x-h)) / (2*h)\n\nprint(numeric(f, 3))   # ~6.0000\nprint(2*3)             # 6  (analytical: f'(x)=2x)\n```\n\nThey match at ~6.0. Central differences are O(h²) accurate, but shrink h too far (≈1e-12) and floating-point cancellation in `f(x+h)−f(x−h)` *increases* error — the sweet spot is around 1e-5 to 1e-7. This is exactly the trick used for gradient-checking an autograd engine later."
+    },
+    {
+      "title": "Gradient descent in 1D",
+      "difficulty": "core",
+      "prompt": "Minimize f(x) = (x − 4)² with gradient descent from a starting point of your choice. Print the trajectory and confirm it converges to x = 4. Then show what a too-large learning rate does.",
+      "hint": "Update: x ← x − lr · f'(x), where f'(x) = 2(x−4). Try lr=0.1, then lr=1.1.",
+      "solution": "```python\ndef grad(x): return 2*(x-4)\ndef descend(lr, steps=20, x=0.0):\n    for _ in range(steps): x -= lr*grad(x)\n    return x\n\nprint(descend(0.1))   # ~4.0  (converges)\nprint(descend(1.1))   # diverges to huge magnitude\n```\n\nWith lr=0.1 it homes in on x=4 (the minimum). With lr=1.1 each step *overshoots* by more than it corrects, so x oscillates with growing amplitude and blows up. This is the learning-rate knife-edge that every real training run has to tune — too small wastes steps, too large diverges."
+    },
+    {
+      "title": "Train linear regression by hand",
+      "difficulty": "stretch",
+      "prompt": "Derive the gradient of mean-squared-error for a 1-feature linear model y = wx + b, then train w and b with manual gradient updates on a few points that lie roughly on y = 2x + 1. Confirm w→2, b→1.",
+      "hint": "MSE = mean((wx+b − y)²). ∂/∂w = mean(2(pred−y)·x), ∂/∂b = mean(2(pred−y)).",
+      "solution": "```python\nX=[1,2,3,4]; Y=[3,5,7,9]   # y = 2x + 1\nw=b=0.0; lr=0.01\nfor _ in range(2000):\n    preds=[w*x+b for x in X]\n    errs=[p-y for p,y in zip(preds,Y)]\n    dw=sum(2*e*x for e,x in zip(errs,X))/len(X)\n    db=sum(2*e for e in errs)/len(X)\n    w-=lr*dw; b-=lr*db\nprint(round(w,2), round(b,2))   # ~2.0 1.0\n```\n\nThis is the entire learning loop of every supervised model in miniature: predict → measure error → compute the gradient of the loss w.r.t. each parameter → step downhill. Swap the linear model for a deep network and the autograd engine for the hand-derived gradients, and nothing else changes."
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Inverse-CDF sampling",
+      "difficulty": "warmup",
+      "prompt": "Sample from an exponential distribution using only a uniform random generator and the inverse-CDF method. Confirm the sample mean is near the distribution's true mean (1/λ).",
+      "hint": "For Exp(λ), the inverse CDF is −ln(1−u)/λ with u ~ Uniform(0,1).",
+      "solution": "```python\nimport random, math\ndef sample_exp(lam):\n    u = random.random()\n    return -math.log(1 - u) / lam\nrandom.seed(0); lam = 2.0\nxs = [sample_exp(lam) for _ in range(100000)]\nprint(round(sum(xs)/len(xs), 3), 1/lam)   # ~0.5  0.5\n```\n\nInverse-CDF sampling works whenever you can invert the cumulative distribution: feed a uniform[0,1] through CDF⁻¹ and out come samples with the target distribution. It's the cleanest sampler when the inverse exists in closed form."
+    },
+    {
+      "title": "Temperature, top-k, top-p",
+      "difficulty": "core",
+      "prompt": "Given logits over a small vocabulary, implement temperature scaling, top-k filtering, and top-p (nucleus) filtering for next-token sampling. Show how temperature → 0 approaches greedy and high temperature flattens the distribution.",
+      "hint": "Temperature: divide logits by T before softmax. top-k: keep k largest, renormalize. top-p: keep smallest set whose cumulative prob ≥ p.",
+      "solution": "```python\nimport math\ndef softmax(z):\n    m=max(z); e=[math.exp(x-m) for x in z]; s=sum(e); return [v/s for v in e]\ndef with_temp(logits, T): return softmax([x/T for x in logits])\ndef top_k(probs, k):\n    idx=sorted(range(len(probs)), key=lambda i:-probs[i])[:k]\n    out=[0.0]*len(probs); s=sum(probs[i] for i in idx)\n    for i in idx: out[i]=probs[i]/s\n    return out\ndef top_p(probs, p):\n    order=sorted(range(len(probs)), key=lambda i:-probs[i]); out=[0.0]*len(probs); c=0.0\n    for i in order:\n        out[i]=probs[i]; c+=probs[i]\n        if c>=p: break\n    s=sum(out); return [x/s for x in out]\nlg=[2.0,1.0,0.1,-1.0]\nprint([round(x,3) for x in with_temp(lg,0.1)])  # near one-hot (greedy)\nprint([round(x,3) for x in with_temp(lg,2.0)])  # flatter\n```\n\n**Temperature** rescales confidence: T→0 concentrates all mass on the top logit (greedy/deterministic), T>1 flattens toward uniform (more random). **top-k** caps the candidate pool to the k most likely tokens; **top-p** keeps the smallest set covering probability mass p (adaptive size). Together they trade off coherence vs diversity — the dials behind every LLM's generation settings."
+    },
+    {
+      "title": "The reparameterization trick",
+      "difficulty": "stretch",
+      "prompt": "Explain why you cannot backpropagate through a plain `sample ~ N(μ, σ²)` node, and how the reparameterization trick fixes it so VAEs can train. Show the rewrite.",
+      "hint": "Move the randomness out of the path that carries gradients: z = μ + σ·ε, ε ~ N(0,1).",
+      "solution": "Sampling is **stochastic and non-differentiable**: there's no derivative of 'draw a random number' with respect to μ and σ, so gradients can't flow back from a loss computed on `z` to the network that produced μ and σ. Training would stall.\n\n**The trick:** push the randomness into an external, parameter-free variable:\n\n```python\n# non-differentiable:  z = normal(mu, sigma)\n# reparameterized:\nimport random\ndef sample(mu, sigma):\n    eps = random.gauss(0, 1)      # randomness lives HERE, no params\n    return mu + sigma * eps        # differentiable in mu and sigma\n```\n\nNow `z = μ + σ·ε` is a *deterministic, differentiable* function of μ and σ given a fixed ε. Gradients flow through μ (coefficient 1) and σ (coefficient ε), while ε just supplies the noise. This is what makes the VAE's encoder trainable by ordinary backprop — and the same move underlies many other 'differentiable sampling' methods."
+    }
+  ]
+}

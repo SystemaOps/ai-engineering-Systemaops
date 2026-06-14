@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Chain rule by hand",
+      "difficulty": "warmup",
+      "prompt": "For y = sigmoid(wx) with w = 0.5, x = 2, compute dy/dw using the chain rule. Use the fact that sigmoid'(z) = sigmoid(z)·(1 − sigmoid(z)).",
+      "hint": "z = wx. dy/dw = sigmoid'(z) · dz/dw = sigmoid(z)(1−sigmoid(z)) · x.",
+      "solution": "```python\nimport math\ndef sig(z): return 1/(1+math.exp(-z))\nw, x = 0.5, 2.0\nz = w*x\ndy_dw = sig(z)*(1-sig(z)) * x\nprint(round(dy_dw, 4))   # ~0.4534\n```\n\nThe chain rule multiplies local derivatives along the path: the loss's sensitivity to `w` is `(how y changes with z) × (how z changes with w)`. Reverse-mode autodiff just automates this multiplication across millions of such links."
+    },
+    {
+      "title": "A minimal autograd Value",
+      "difficulty": "core",
+      "prompt": "Build a tiny `Value` class supporting + and * that records its parents, and implement `.backward()` so that for `d = a*b + a` (a=2, b=3) you get a.grad = 4 and b.grad = 2.",
+      "hint": "Each op stores a local backward closure. Run a topological sort, set the output grad to 1, then apply closures in reverse.",
+      "solution": "```python\nclass Value:\n    def __init__(self, data, parents=()):\n        self.data=data; self.grad=0.0; self._parents=parents; self._back=lambda: None\n    def __add__(self, o):\n        o = o if isinstance(o, Value) else Value(o)\n        out = Value(self.data+o.data, (self, o))\n        def back(): self.grad += out.grad; o.grad += out.grad\n        out._back = back; return out\n    def __mul__(self, o):\n        o = o if isinstance(o, Value) else Value(o)\n        out = Value(self.data*o.data, (self, o))\n        def back(): self.grad += o.data*out.grad; o.grad += self.data*out.grad\n        out._back = back; return out\n    def backward(self):\n        topo=[]; seen=set()\n        def build(v):\n            if v not in seen:\n                seen.add(v)\n                for p in v._parents: build(p)\n                topo.append(v)\n        build(self); self.grad=1.0\n        for v in reversed(topo): v._back()\n\na=Value(2.0); b=Value(3.0)\nd=a*b + a\nd.backward()\nprint(a.grad, b.grad)   # 4.0 2.0\n```\n\n`d = a·b + a`, so ∂d/∂a = b + 1 = 4 and ∂d/∂b = a = 2 — matched automatically. This ~25-line engine is micrograd; PyTorch is the same idea with tensors and more ops."
+    },
+    {
+      "title": "Gradient-check the engine",
+      "difficulty": "stretch",
+      "prompt": "Verify your autograd's gradient against numerical finite differences for a small composite expression. Explain why gradient checking is the first thing you do when an autograd implementation looks wrong.",
+      "hint": "Compute the analytic grad via backward(), then perturb the input by ±h and use the central difference. They should match to ~1e-6.",
+      "solution": "```python\n# uses the Value class from the previous exercise\ndef f(x): return x*x*x + x*x        # x^3 + x^2, f'(x) = 3x^2 + 2x\n\nxv = Value(1.5); y = f(xv); y.backward()\nanalytic = xv.grad                  # from autodiff\n\nh=1e-6\nnumeric = (f(Value(1.5+h)).data - f(Value(1.5-h)).data)/(2*h)\nprint(analytic, numeric)            # ~9.75 9.75\nprint(abs(analytic-numeric) < 1e-4) # True\n```\n\nGradient checking compares the analytic gradient (fast, used in training) against a brute-force numerical one (slow, but obviously correct). A mismatch means a bug in a backward closure — a wrong sign or a missing `+=` for a reused variable. It's the unit test for autodiff: cheap to run on small inputs, and it catches the bugs that would otherwise just make training quietly fail to converge."
+    }
+  ]
+}

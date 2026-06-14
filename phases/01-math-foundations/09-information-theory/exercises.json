@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Entropy of a distribution",
+      "difficulty": "warmup",
+      "prompt": "Compute the Shannon entropy (in bits) of a fair coin and a biased coin [0.9, 0.1]. Explain why the fair coin has higher entropy.",
+      "hint": "H = −Σ p·log2(p). Skip zero-probability terms.",
+      "solution": "```python\nimport math\ndef entropy(p): return -sum(x*math.log2(x) for x in p if x > 0)\nprint(entropy([0.5, 0.5]))   # 1.0 bit\nprint(round(entropy([0.9, 0.1]), 3))   # 0.469 bits\n```\n\nThe fair coin has maximum entropy (1 bit) because it's maximally unpredictable — every outcome equally surprising. The biased coin is mostly predictable (usually heads), so it carries less information per flip. Entropy is the average surprise, and it's the floor on how few bits you can compress the outcomes into."
+    },
+    {
+      "title": "KL divergence",
+      "difficulty": "core",
+      "prompt": "Compute KL(P‖Q) for P=[0.5,0.5] and Q=[0.9,0.1], then compute KL(Q‖P), and show they differ. Explain what KL measures and why the asymmetry matters in ML.",
+      "hint": "KL(P‖Q) = Σ p·log2(p/q). It's the extra bits from coding P with a code built for Q.",
+      "solution": "```python\nimport math\ndef kl(p, q): return sum(pi*math.log2(pi/qi) for pi, qi in zip(p, q) if pi > 0)\nprint(round(kl([0.5,0.5], [0.9,0.1]), 3))   # 0.737\nprint(round(kl([0.9,0.1], [0.5,0.5]), 3))   # 0.531\n```\n\nKL(P‖Q) is the *extra* bits you pay encoding samples from P using a code optimized for Q — zero only when P=Q. It's **asymmetric**: KL(P‖Q) ≠ KL(Q‖P). The direction matters in practice — VAEs minimize KL(q‖p) (mode-seeking, q avoids regions where p is small), while forward KL (mode-covering) behaves differently. Picking the wrong direction changes what your model learns to do."
+    },
+    {
+      "title": "Cross-entropy = entropy + KL",
+      "difficulty": "stretch",
+      "prompt": "Show numerically that cross-entropy H(P,Q) = H(P) + KL(P‖Q), and explain why this identity means minimizing cross-entropy loss is equivalent to minimizing KL divergence to the true labels.",
+      "hint": "H(P,Q) = −Σ p·log2(q). Compute all three quantities and check the identity.",
+      "solution": "```python\nimport math\ndef H(p): return -sum(x*math.log2(x) for x in p if x>0)\ndef CE(p, q): return -sum(pi*math.log2(qi) for pi, qi in zip(p,q) if pi>0)\ndef KL(p, q): return sum(pi*math.log2(pi/qi) for pi,qi in zip(p,q) if pi>0)\nP=[0.7,0.3]; Q=[0.5,0.5]\nprint(round(CE(P,Q),4), round(H(P)+KL(P,Q),4))   # equal\n```\n\nThe identity holds exactly. Since H(P) (the entropy of the *true* labels) is fixed — it doesn't depend on the model — minimizing cross-entropy H(P,Q) over the model's predictions Q is **identical** to minimizing KL(P‖Q), i.e. making the predicted distribution match the true one. That's the theoretical justification for using cross-entropy as the loss in essentially every classifier and language model. Related: **perplexity** = 2^{cross-entropy} is the effective number of equally-likely choices the model is deciding among."
+    }
+  ]
+}

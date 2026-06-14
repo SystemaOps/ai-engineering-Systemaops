@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Pearson correlation by hand",
+      "difficulty": "warmup",
+      "prompt": "Implement Pearson correlation from scratch and compute it for a clearly linear pair and a clearly unrelated pair. State what value indicates no linear relationship.",
+      "hint": "r = cov(x,y) / (std(x)·std(y)). Center both, then dot / (norms).",
+      "solution": "```python\nimport math\ndef pearson(x, y):\n    n=len(x); mx=sum(x)/n; my=sum(y)/n\n    cov=sum((a-mx)*(b-my) for a,b in zip(x,y))\n    sx=math.sqrt(sum((a-mx)**2 for a in x)); sy=math.sqrt(sum((b-my)**2 for b in y))\n    return cov/(sx*sy)\nprint(round(pearson([1,2,3,4],[2,4,6,8]),3))    # 1.0\nprint(round(pearson([1,2,3,4],[1,0,1,0]),3))    # ~ -0.45 / near 0\n```\n\nr=+1 is perfect positive linear, −1 perfect negative, **0 means no *linear* relationship** (but a U-shape can have r≈0 while being perfectly related — Pearson only sees lines, which is why you also check Spearman or plots)."
+    },
+    {
+      "title": "Bootstrap a confidence interval",
+      "difficulty": "core",
+      "prompt": "Use bootstrap resampling to put a 95% confidence interval around the mean of a small sample, without assuming any distribution. Explain how the interval is read off the resampled means.",
+      "hint": "Resample with replacement many times, compute the statistic each time, take the 2.5th and 97.5th percentiles.",
+      "solution": "```python\nimport random\ndef bootstrap_ci(data, B=10000, alpha=0.05):\n    n=len(data); means=[]\n    for _ in range(B):\n        sample=[random.choice(data) for _ in range(n)]\n        means.append(sum(sample)/n)\n    means.sort()\n    lo=means[int(alpha/2*B)]; hi=means[int((1-alpha/2)*B)]\n    return lo, hi\nrandom.seed(0)\nprint(bootstrap_ci([12,15,14,10,13,16,11,14]))\n```\n\nResampling *with replacement* simulates 'what other samples could this population have produced,' and the spread of the resampled statistic estimates its sampling distribution. The middle 95% of those values is the CI. Bootstrap works for *any* metric (median, AUC, F1) with no formula or normality assumption — invaluable for ML metrics that have no closed-form variance."
+    },
+    {
+      "title": "Is 0.89 really better than 0.87?",
+      "difficulty": "stretch",
+      "prompt": "Two models score 0.87 and 0.89 on a test set of 200 examples. Outline how you'd decide whether the difference is real (not noise), and why a raw accuracy gap is not enough. Mention significance vs effect size.",
+      "hint": "Per-example correctness is paired binary data. Use McNemar's test or a bootstrap on the score difference; also report the CI width.",
+      "solution": "A 0.02 gap on 200 examples is 4 examples — well within sampling noise.\n\n**How to decide:**\n1. **Pair the predictions.** Both models ran on the *same* test set, so compare per-example: count where A is right & B wrong vs B right & A wrong. **McNemar's test** on those discordant pairs gives a p-value for 'are the models different.'\n2. **Or bootstrap the difference:** resample the test set many times, recompute (acc_B − acc_A) each time, and check whether the 95% CI excludes 0.\n3. **Report effect size + CI**, not just the point gap: 'B beats A by 0.02, 95% CI [−0.03, 0.07]' tells you it's *not* significant; a CI of [0.01, 0.03] would.\n\n```python\n# sketch: bootstrap the paired difference\n# correct_A, correct_B are 0/1 lists per example\n# diffs = [mean(resampled correct_B) - mean(resampled correct_A) for _ in range(B)]\n# real if the 2.5-97.5 percentile interval of diffs excludes 0\n```\n\n**Significance** (is it real?) is separate from **practical significance** (is it big enough to matter?). A massive test set can make a 0.001 gap 'significant' yet irrelevant; a small set can hide a real 0.05 gain. Always pair them, and prefer a bigger or repeated test set before shipping."
+    }
+  ]
+}

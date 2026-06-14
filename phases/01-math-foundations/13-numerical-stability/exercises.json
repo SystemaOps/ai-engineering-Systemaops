@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Watch it overflow",
+      "difficulty": "warmup",
+      "prompt": "Show that naive softmax on logits [1000, 1001, 1002] overflows, then fix it with the max-subtraction trick. Confirm the stable version sums to 1.",
+      "hint": "exp(1000) is inf in float. Subtract max(logits) before exponentiating.",
+      "solution": "```python\nimport math\nz = [1000, 1001, 1002]\n# naive: math.exp(1002) -> OverflowError\ndef softmax(z):\n    m = max(z)\n    e = [math.exp(x - m) for x in z]\n    s = sum(e)\n    return [v/s for v in e]\nout = softmax(z)\nprint(out, sum(out))   # valid distribution, sums to 1.0\n```\n\nfloat64 maxes out around e^709. Subtracting the max makes the largest exponent exactly 0 and the rest negative, so every `exp` is in [0,1] — mathematically identical output, no overflow. This single trick prevents a huge fraction of real-world NaN-loss incidents."
+    },
+    {
+      "title": "Catastrophic cancellation",
+      "difficulty": "core",
+      "prompt": "Demonstrate catastrophic cancellation: compute log(1+x) for a tiny x like 1e-16 the naive way versus with log1p, and show the naive version loses all precision. Explain what happened in the float bits.",
+      "hint": "1 + 1e-16 rounds to exactly 1.0 in float64, so log(1+x) returns 0. `math.log1p` is built for this.",
+      "solution": "```python\nimport math\nx = 1e-16\nprint(math.log(1 + x))   # 0.0  (wrong!)\nprint(math.log1p(x))     # 1e-16 (correct)\n```\n\nfloat64 has ~16 significant digits. `1 + 1e-16` can't be represented distinctly from `1.0`, so the `+1` *annihilates* x before `log` ever runs — that's catastrophic cancellation: subtracting/adding numbers of vastly different magnitude destroys the small one. Library functions like `log1p`, `expm1`, and `logaddexp` exist precisely to compute these forms without the intermediate that cancels."
+    },
+    {
+      "title": "bfloat16 vs float16 for training",
+      "difficulty": "stretch",
+      "prompt": "Explain why bfloat16 is preferred over float16 for training large models even though float16 has more mantissa bits, and what loss scaling does. Reference the dynamic range of each.",
+      "hint": "fp16: 5 exponent bits (range ~6e-5 to 65504). bf16: 8 exponent bits (same range as fp32) but fewer mantissa bits.",
+      "solution": "Both are 16 bits, but they split them differently:\n\n- **float16**: 1 sign / 5 exponent / 10 mantissa → max ~65504, smallest normal ~6e-5. Precise, but tiny **dynamic range**.\n- **bfloat16**: 1 sign / 8 exponent / 7 mantissa → the *same exponent range as float32* (~1e38), but coarser precision.\n\nTraining gradients span a huge range and routinely go below fp16's ~6e-5 floor, where they **underflow to zero** and learning stalls — and activations can exceed 65504 and overflow to inf. bf16's float32-like range avoids both; the lost mantissa precision barely matters because SGD is noisy anyway. That's why modern accelerators train in bf16.\n\n**Loss scaling** is the fp16 rescue: multiply the loss by a large constant S before backprop so gradients land in fp16's representable range, then divide the gradients by S before the optimizer step. bf16 usually needs no loss scaling at all — its range already covers the gradients."
+    }
+  ]
+}

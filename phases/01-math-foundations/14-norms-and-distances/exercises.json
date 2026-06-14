@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Three distances on one pair",
+      "difficulty": "warmup",
+      "prompt": "Implement L1, L2, and cosine distance from scratch and compute all three between [1, 2, 3] and [2, 4, 6]. Note which one calls them identical and why.",
+      "hint": "L1 = Σ|a−b|; L2 = sqrt(Σ(a−b)²); cosine distance = 1 − cosine similarity.",
+      "solution": "```python\nimport math\ndef l1(a,b): return sum(abs(x-y) for x,y in zip(a,b))\ndef l2(a,b): return math.sqrt(sum((x-y)**2 for x,y in zip(a,b)))\ndef cos_dist(a,b):\n    dot=sum(x*y for x,y in zip(a,b))\n    na=math.sqrt(sum(x*x for x in a)); nb=math.sqrt(sum(x*x for x in b))\n    return 1 - dot/(na*nb)\na,b=[1,2,3],[2,4,6]\nprint(round(l1(a,b),3), round(l2(a,b),3), round(cos_dist(a,b),6))\n```\n\nL1 and L2 report a large distance, but **cosine distance ≈ 0** because `b = 2a` points the same direction. When magnitude is noise (document length, embedding scale), cosine is right; when magnitude is signal (pixel intensities, physical measurements), L2 is right. Picking the wrong one silently changes who's a 'nearest neighbor.'"
+    },
+    {
+      "title": "Same data, different neighbors",
+      "difficulty": "core",
+      "prompt": "Construct a small set of points and a query such that the nearest neighbor under L2 differs from the nearest neighbor under cosine. Explain the result.",
+      "hint": "Make one candidate close in direction but far in magnitude, another close in magnitude but different direction.",
+      "solution": "```python\nimport math\ndef l2(a,b): return math.sqrt(sum((x-y)**2 for x,y in zip(a,b)))\ndef cos(a,b):\n    d=sum(x*y for x,y in zip(a,b))\n    return d/(math.hypot(*a)*math.hypot(*b))\nq=[1,1]\nA=[10,10]   # same direction, far away\nB=[1,0]     # close in distance, different direction\nprint('L2:', 'A' if l2(q,A)<l2(q,B) else 'B')        # B (closer)\nprint('cosine:', 'A' if cos(q,A)>cos(q,B) else 'B')  # A (same direction)\n```\n\nUnder **L2**, B wins — it's physically nearer. Under **cosine**, A wins — it points exactly along the query. Same data, opposite answer. This is why a vector database that uses cosine vs dot vs L2 returns different results, and why you must match the metric to how the embeddings were trained."
+    },
+    {
+      "title": "L1/L2 norms → LASSO/Ridge",
+      "difficulty": "stretch",
+      "prompt": "Explain geometrically why L1 regularization (LASSO) produces sparse weights while L2 (Ridge) shrinks them but keeps them non-zero. Reference the shape of each norm's constraint region.",
+      "hint": "Picture the loss contours touching the constraint ball. L1's ball is a diamond (corners on axes); L2's is a circle.",
+      "solution": "Regularized training minimizes loss subject to a budget on the weights — equivalently, the loss contours expand until they first touch the norm's constraint region.\n\n- **L2 (Ridge)**: the region `‖w‖₂ ≤ t` is a **circle/sphere** — smooth, no corners. The contour typically touches it at a generic point where *all* coordinates are small but non-zero. Result: weights shrink toward zero together.\n- **L1 (LASSO)**: the region `‖w‖₁ ≤ t` is a **diamond/cross-polytope** whose corners sit *on the axes* (where some coordinates are exactly 0). Expanding contours are far more likely to first touch a corner, **zeroing out** those weights. Result: sparsity — automatic feature selection.\n\n```python\n# the diamond's vertices lie on the axes -> exact zeros are 'natural' touch points\nprint([(1,0),(0,1),(-1,0),(0,-1)])  # |w|_1 = 1 corners\n```\n\nThat geometric difference — pointy diamond vs round ball — is the whole reason LASSO gives you a sparse model and Ridge gives you a small-but-dense one."
+    }
+  ]
+}

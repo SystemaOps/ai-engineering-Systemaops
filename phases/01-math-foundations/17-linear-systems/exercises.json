@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Solve Ax = b",
+      "difficulty": "warmup",
+      "prompt": "Solve the 2×2 system from a small A and b using numpy, then verify A·x reproduces b. State what x means if A is a data matrix and b a target.",
+      "hint": "`np.linalg.solve(A, b)`. Check with `A @ x`.",
+      "solution": "```python\nimport numpy as np\nA = np.array([[2.,1.],[1.,3.]]); b = np.array([5.,10.])\nx = np.linalg.solve(A, b)\nprint(x, np.allclose(A @ x, b))   # solution, True\n```\n\n`x` is the vector that makes `Ax` equal `b`. In regression, A is the data, b the targets, and x the weights — so 'solving the system' is exactly 'fitting the model' (when the system is square and consistent). For the usual over-determined case you can't solve exactly and fall back to least squares."
+    },
+    {
+      "title": "Normal equations for least squares",
+      "difficulty": "core",
+      "prompt": "For an over-determined system (more rows than unknowns), derive and solve the least-squares weights via the normal equations AᵀA x = Aᵀb, and confirm they match numpy's lstsq. Then show ridge adds λI.",
+      "hint": "x = (AᵀA)⁻¹Aᵀb. Ridge: x = (AᵀA + λI)⁻¹Aᵀb.",
+      "solution": "```python\nimport numpy as np\nA = np.array([[1.,1.],[1.,2.],[1.,3.],[1.,4.]])\nb = np.array([6.,5.,7.,10.])\nx = np.linalg.solve(A.T@A, A.T@b)\nprint(x, np.linalg.lstsq(A,b,rcond=None)[0])   # match\nlam=1.0\nx_ridge = np.linalg.solve(A.T@A + lam*np.eye(2), A.T@b)\nprint(x_ridge)\n```\n\nThe normal equations come from setting the gradient of ‖Ax−b‖² to zero. Ridge adds `λI` to `AᵀA`, which both regularizes (shrinks weights) and **guarantees invertibility** even when `AᵀA` is singular — the linear-algebra reason ridge regression is numerically safer than plain least squares."
+    },
+    {
+      "title": "Condition number and instability",
+      "difficulty": "stretch",
+      "prompt": "Construct a nearly-singular (ill-conditioned) matrix, show that a tiny change in b causes a large change in the solution x, quantify it with the condition number, and explain how ridge regularization helps.",
+      "hint": "Condition number = σ_max/σ_min (ratio of singular values). A high value means small input errors are amplified.",
+      "solution": "```python\nimport numpy as np\nA = np.array([[1.0, 1.0],[1.0, 1.0001]])   # nearly singular\nb  = np.array([2.0, 2.0])\nb2 = np.array([2.0, 2.0001])\nx1 = np.linalg.solve(A, b)\nx2 = np.linalg.solve(A, b2)\nprint('cond:', round(np.linalg.cond(A)))     # huge (~40000)\nprint('x change:', x2 - x1)                  # large despite tiny b change\n```\n\nThe condition number κ = σ_max/σ_min measures how much the system **amplifies input error**: a tiny perturbation in b produced a big swing in x because κ is enormous. Ill-conditioning is why naively inverting a near-singular covariance or feature matrix gives garbage weights. Ridge's `+λI` lifts the smallest singular value off zero, shrinking κ and stabilizing the solution — trading a little bias for a lot of robustness."
+    }
+  ]
+}

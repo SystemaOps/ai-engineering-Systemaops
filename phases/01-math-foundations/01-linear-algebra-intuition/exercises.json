@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Dot product by hand",
+      "difficulty": "warmup",
+      "prompt": "Implement the dot product of two vectors from scratch (no NumPy), then use it to compute the cosine similarity between [1, 2, 3] and [2, 4, 6]. What does the result tell you about their directions?",
+      "hint": "Dot product = sum of element-wise products. Cosine similarity = dot(a,b) / (|a||b|).",
+      "solution": "```python\nimport math\ndef dot(a, b): return sum(x*y for x, y in zip(a, b))\ndef norm(a): return math.sqrt(dot(a, a))\ndef cosine(a, b): return dot(a, b) / (norm(a) * norm(b))\n\nprint(cosine([1,2,3], [2,4,6]))   # 1.0\n```\n\nThe cosine is exactly **1.0** because `[2,4,6] = 2·[1,2,3]` — same direction, different magnitude. Cosine similarity ignores magnitude and measures only direction, which is why it's the standard metric for comparing embeddings: two documents about the same topic point the same way regardless of length."
+    },
+    {
+      "title": "Project one vector onto another",
+      "difficulty": "core",
+      "prompt": "Implement vector projection: project vector a onto vector b. Then project [3, 4] onto the x-axis [1, 0] and confirm the result is what you'd expect geometrically.",
+      "hint": "proj_b(a) = (dot(a,b) / dot(b,b)) * b. Projecting onto [1,0] should drop the y-component.",
+      "solution": "```python\ndef dot(a, b): return sum(x*y for x, y in zip(a, b))\ndef project(a, b):\n    s = dot(a, b) / dot(b, b)\n    return [s * x for x in b]\n\nprint(project([3, 4], [1, 0]))   # [3.0, 0.0]\n```\n\nProjecting `[3,4]` onto the x-axis gives `[3, 0]` — the shadow it casts on that axis. Projection is the core operation behind least-squares regression (project the target onto the column space of the features) and behind attention (a query projected onto each key)."
+    },
+    {
+      "title": "Rank and linear independence",
+      "difficulty": "stretch",
+      "prompt": "Determine whether the vectors [1, 2, 3], [2, 4, 6], and [1, 0, 1] are linearly independent by reducing the matrix they form to row-echelon form and counting non-zero rows (the rank). Explain what the rank tells you.",
+      "hint": "Stack them as rows and do Gaussian elimination. A row that becomes all zeros means a dependent vector.",
+      "solution": "```python\ndef rank(rows):\n    rows = [r[:] for r in rows]; r = 0; n = len(rows[0])\n    for c in range(n):\n        piv = next((i for i in range(r, len(rows)) if abs(rows[i][c]) > 1e-9), None)\n        if piv is None: continue\n        rows[r], rows[piv] = rows[piv], rows[r]\n        for i in range(len(rows)):\n            if i != r and abs(rows[i][c]) > 1e-9:\n                f = rows[i][c]/rows[r][c]\n                rows[i] = [a - f*b for a, b in zip(rows[i], rows[r])]\n        r += 1\n    return sum(1 for row in rows if any(abs(x) > 1e-9 for x in row))\n\nprint(rank([[1,2,3], [2,4,6], [1,0,1]]))   # 2\n```\n\nRank is **2**, not 3: `[2,4,6]` is just `2·[1,2,3]`, so it collapses to a zero row. The three vectors span only a 2D plane, not all of 3D space. Rank is exactly this — the number of *independent* directions — and it's why a rank-deficient weight matrix (or a low-rank LoRA update) captures fewer degrees of freedom than its shape suggests."
+    }
+  ]
+}

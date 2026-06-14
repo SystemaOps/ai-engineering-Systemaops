@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Momentum vs vanilla GD",
+      "difficulty": "warmup",
+      "prompt": "Implement vanilla gradient descent and GD-with-momentum, and run both on f(x) = x² from x = 10. Show momentum reaches the minimum in fewer steps. Explain what the velocity term does.",
+      "hint": "Vanilla: x −= lr·g. Momentum: v = β·v − lr·g; x += v. Use β=0.9.",
+      "solution": "```python\ndef grad(x): return 2*x\ndef vanilla(lr=0.1, steps=30, x=10.0):\n    for _ in range(steps): x -= lr*grad(x)\n    return x\ndef momentum(lr=0.1, beta=0.9, steps=30, x=10.0):\n    v=0.0\n    for _ in range(steps): v = beta*v - lr*grad(x); x += v\n    return x\nprint(round(vanilla(),4), round(momentum(),4))   # momentum far closer to 0\n```\n\nMomentum accumulates a running *velocity* of past gradients, so consistent downhill directions build speed while oscillating ones cancel out. On a long shallow valley it accelerates; across a narrow ravine it damps the zig-zag. It's the core idea SGD-with-momentum and Adam both build on."
+    },
+    {
+      "title": "Implement Adam",
+      "difficulty": "core",
+      "prompt": "Implement the Adam optimizer (first + second moment estimates with bias correction) and use it to minimize f(x) = x². Explain what dividing by the square root of the second moment achieves.",
+      "hint": "m = β1·m + (1−β1)g; v = β2·v + (1−β2)g²; bias-correct both; x −= lr·m̂/(√v̂+ε).",
+      "solution": "```python\ndef adam(grad, lr=0.1, b1=0.9, b2=0.999, eps=1e-8, steps=100, x=10.0):\n    m=v=0.0\n    for t in range(1, steps+1):\n        g=grad(x)\n        m=b1*m+(1-b1)*g; v=b2*v+(1-b2)*g*g\n        mh=m/(1-b1**t); vh=v/(1-b2**t)\n        x -= lr*mh/(vh**0.5+eps)\n    return x\nprint(round(adam(lambda x:2*x), 5))   # ~0.0\n```\n\nDividing by √v̂ gives each parameter its **own effective learning rate**: directions with large, noisy gradients (big v̂) get smaller steps, flat directions (small v̂) get larger ones. Bias correction (`/(1−β^t)`) compensates for m and v starting at zero. This per-parameter adaptivity is why Adam trains transformers robustly with little LR tuning."
+    },
+    {
+      "title": "Why saddle points, not minima",
+      "difficulty": "stretch",
+      "prompt": "Explain why, in high-dimensional loss landscapes, the obstacle to optimization is overwhelmingly saddle points rather than bad local minima — and what momentum/Adam do about them. Illustrate with the gradient behavior at a saddle.",
+      "hint": "A critical point is a min only if ALL curvature directions curve up. In d dimensions that's unlikely by chance. At a saddle the gradient is near zero but not a minimum.",
+      "solution": "At a critical point the gradient is zero; whether it's a minimum depends on the Hessian's eigenvalues — a minimum needs **all** of them positive (curving up in every direction). In `d` dimensions, for a random critical point each eigenvalue is roughly equally likely to be + or −, so the chance all `d` are positive vanishes as `d` grows. Hence high-dim losses are littered with **saddle points** (some directions up, some down), not the bad local minima people fear from 2D intuition.\n\n```python\n# f(x,y) = x^2 - y^2 has a saddle at the origin\ndef grad(x, y): return (2*x, -2*y)\nprint(grad(0.0, 0.0))   # (0, 0): gradient vanishes but it's NOT a min\n```\n\nPlain GD stalls near saddles because the gradient is tiny. Momentum carries velocity *through* the flat region, and Adam's per-parameter scaling amplifies progress along the low-curvature escape directions — which is a big part of why these optimizers train deep nets that vanilla GD can't."
+    }
+  ]
+}

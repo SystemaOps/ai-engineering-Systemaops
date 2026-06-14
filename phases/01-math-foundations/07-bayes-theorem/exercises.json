@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "The base-rate trap",
+      "difficulty": "warmup",
+      "prompt": "A disease affects 1 in 10,000 people. A test is 99% accurate (99% true-positive rate, 1% false-positive rate). You test positive. Compute the actual probability you have the disease using Bayes' theorem, and explain why it's nowhere near 99%.",
+      "hint": "P(D|+) = P(+|D)P(D) / [P(+|D)P(D) + P(+|¬D)P(¬D)].",
+      "solution": "```python\np_d = 1/10000          # prior\np_pos_d = 0.99         # true positive\np_pos_nd = 0.01        # false positive\nposterior = (p_pos_d*p_d) / (p_pos_d*p_d + p_pos_nd*(1-p_d))\nprint(round(posterior, 4))   # ~0.0098  → about 1%\n```\n\nOnly ~1%. Because the disease is so rare, the *huge* healthy population produces far more false positives than the tiny sick population produces true positives. The **prior (base rate) dominates** — ignoring it is the base-rate fallacy, and it's why a single positive screening test for a rare condition is usually followed by a second, independent test."
+    },
+    {
+      "title": "Sequential Bayesian updating",
+      "difficulty": "core",
+      "prompt": "Using a Beta-Binomial conjugate prior, start from a uniform Beta(1,1) belief about a coin's bias and update it after observing 8 heads in 10 flips. Report the posterior mean and explain how it blends prior and data.",
+      "hint": "Beta(α,β) + h heads + t tails → Beta(α+h, β+t). Mean = α/(α+β).",
+      "solution": "```python\nalpha, beta = 1, 1          # uniform prior\nheads, tails = 8, 2\nalpha += heads; beta += tails   # Beta(9, 3)\nprint(round(alpha/(alpha+beta), 3))   # 0.75\n```\n\nPosterior mean is 0.75 — pulled from the prior's 0.5 toward the data's 8/10=0.8, but not all the way, because the prior counts as a couple of pseudo-observations. Conjugacy means the update is just *adding counts*, so you can update belief flip-by-flip in real time — the math behind Bayesian A/B testing and Thompson sampling."
+    },
+    {
+      "title": "MAP = MLE + regularization",
+      "difficulty": "stretch",
+      "prompt": "Explain, with a short derivation, why MAP estimation with a Gaussian prior on the weights is equivalent to adding L2 regularization to the maximum-likelihood objective. State what the prior's variance corresponds to.",
+      "hint": "MAP maximizes log P(D|w) + log P(w). A zero-mean Gaussian prior gives log P(w) ∝ −‖w‖²/(2σ²).",
+      "solution": "MAP maximizes the log-posterior:\n\n```\nargmax_w  log P(D | w) + log P(w)\n```\n\nWith a zero-mean Gaussian prior `w ~ N(0, σ²I)`, `log P(w) = −‖w‖² / (2σ²) + const`. So:\n\n```\nargmax_w  log P(D|w) − (1/2σ²)‖w‖²\n  = argmin_w  [ −log P(D|w) + λ‖w‖² ],   λ = 1/(2σ²)\n```\n\nThe first term is the ordinary MLE loss (e.g. cross-entropy); the second is exactly **L2 / weight decay**. So weight decay isn't an arbitrary hack — it's a Gaussian prior saying \"weights should be small.\" A *tighter* prior (small σ²) means a *larger* λ, i.e. stronger regularization. This is the bridge from Bayesian reasoning to the `weight_decay` hyperparameter you set in every optimizer."
+    }
+  ]
+}

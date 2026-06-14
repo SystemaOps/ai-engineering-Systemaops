@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Graph + BFS",
+      "difficulty": "warmup",
+      "prompt": "Represent a small undirected graph as an adjacency list and implement breadth-first search from a start node, returning nodes in visit order. Confirm it visits closer nodes before farther ones.",
+      "hint": "Use a queue (collections.deque) and a visited set.",
+      "solution": "```python\nfrom collections import deque\ndef bfs(adj, start):\n    seen={start}; q=deque([start]); order=[]\n    while q:\n        u=q.popleft(); order.append(u)\n        for v in adj[u]:\n            if v not in seen: seen.add(v); q.append(v)\n    return order\ng={0:[1,2],1:[0,3],2:[0,3],3:[1,2,4],4:[3]}\nprint(bfs(g, 0))   # 0,1,2,3,4 — level by level\n```\n\nBFS explores in rings of increasing distance, so it finds shortest paths in unweighted graphs and naturally orders nodes by hops from the source — the traversal behind reachability, shortest-path, and the neighborhood aggregation in graph neural networks."
+    },
+    {
+      "title": "The graph Laplacian",
+      "difficulty": "core",
+      "prompt": "Compute the graph Laplacian L = D − A for a graph with two disconnected clusters, eigendecompose it, and show the number of zero eigenvalues equals the number of connected components.",
+      "hint": "D is the diagonal degree matrix, A the adjacency matrix. Count near-zero eigenvalues of L.",
+      "solution": "```python\nimport numpy as np\n# two triangles, disconnected\nA=np.array([[0,1,1,0,0,0],[1,0,1,0,0,0],[1,1,0,0,0,0],\n            [0,0,0,0,1,1],[0,0,0,1,0,1],[0,0,0,1,1,0]], float)\nD=np.diag(A.sum(1))\nL=D-A\nvals=np.linalg.eigvalsh(L)\nprint(np.round(vals,6))\nprint('components =', int(np.sum(np.abs(vals) < 1e-9)))   # 2\n```\n\nThe Laplacian's smallest eigenvalue is always 0; the **multiplicity of the 0 eigenvalue counts connected components**. Here two zeros → two clusters. The first *non-zero* eigenvalue (algebraic connectivity) and its eigenvector (the Fiedler vector) reveal the weakest cut — the basis of spectral clustering and a key tool in graph ML."
+    },
+    {
+      "title": "One round of GNN message passing",
+      "difficulty": "stretch",
+      "prompt": "Implement a single layer of GNN-style message passing as a normalized-adjacency matrix multiply (H' = Â H W), and explain why normalization by degree is needed and how stacking layers grows the receptive field.",
+      "hint": "Â = D^{-1/2}(A+I)D^{-1/2} (symmetric normalization with self-loops). H = node features, W = learnable weights.",
+      "solution": "```python\nimport numpy as np\nA=np.array([[0,1,0],[1,0,1],[0,1,0]], float)\nA_hat=A+np.eye(3)                      # add self-loops\nd=A_hat.sum(1); Dinv=np.diag(1/np.sqrt(d))\nA_norm=Dinv@A_hat@Dinv                 # symmetric normalization\nH=np.array([[1.,0.],[0.,1.],[1.,1.]]) # node features\nW=np.array([[1.,0.],[0.,1.]])         # learnable weights\nH2=A_norm@H@W                          # one GCN layer\nprint(np.round(H2,3))\n```\n\nMultiplying by the (normalized) adjacency makes each node's new feature a blend of its **neighbors'** features — that's 'message passing.' Degree normalization (`D^{-1/2}…D^{-1/2}`) stops high-degree hubs from dominating and keeps feature scales stable across layers. Stack k layers and information flows k hops, so a node's representation reflects its k-hop neighborhood — exactly how GCNs let connected data inform each node's prediction (the friends-influence-purchases intuition)."
+    }
+  ]
+}

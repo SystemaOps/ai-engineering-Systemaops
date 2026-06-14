@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Center before you reduce",
+      "difficulty": "warmup",
+      "prompt": "Given a small 2D dataset, mean-center it (subtract the per-feature mean) and confirm each column now has mean ~0. Explain why PCA requires centering first.",
+      "hint": "Subtract the column means. PCA finds directions of variance *about the mean*.",
+      "solution": "```python\ndata = [[2,1],[4,3],[6,5],[8,7]]\nn=len(data); cols=list(zip(*data))\nmeans=[sum(c)/n for c in cols]\ncentered=[[x-m for x,m in zip(row,means)] for row in data]\nnew_means=[sum(c)/n for c in zip(*centered)]\nprint([round(m,6) for m in new_means])   # [0.0, 0.0]\n```\n\nPCA looks for directions of maximum *variance*, which is defined relative to the mean. Without centering, the first principal component would point toward the data's offset from the origin rather than its spread — you'd capture *where* the cloud sits, not *how* it varies. Centering is non-negotiable; standardizing (also scaling to unit variance) matters when features are on different units."
+    },
+    {
+      "title": "PCA from scratch",
+      "difficulty": "core",
+      "prompt": "Implement PCA: center the data, compute the covariance matrix, eigendecompose it, and project onto the top component. Report the explained-variance ratio of the first component for data that lies mostly along one direction.",
+      "hint": "Cov = (Xᵀ X)/(n−1) on centered X. Eigenvalues give variance per component; ratio = λ_i / Σλ. Use numpy for the eigensolve.",
+      "solution": "```python\nimport numpy as np\nX = np.array([[2.0,1.0],[4.0,3.0],[6.0,5.0],[8.0,7.2]])\nXc = X - X.mean(axis=0)\ncov = (Xc.T @ Xc) / (len(X)-1)\nvals, vecs = np.linalg.eigh(cov)         # ascending\norder = vals.argsort()[::-1]\nvals, vecs = vals[order], vecs[:, order]\nratio = vals[0] / vals.sum()\nproj = Xc @ vecs[:, 0]                    # 1D projection\nprint(round(float(ratio), 4))            # ~0.999\n```\n\nThe first component explains ~99.9% of the variance because the points lie almost on a line — PCA found that line. The explained-variance ratio is how you decide how many components to keep: stack them until you've retained, say, 95% of variance (the 'elbow'). That's how 784-pixel MNIST digits compress to a few dozen dimensions with little loss."
+    },
+    {
+      "title": "PCA vs t-SNE/UMAP — pick the tool",
+      "difficulty": "stretch",
+      "prompt": "Without coding a full t-SNE, explain the key differences between PCA, t-SNE, and UMAP and state which you'd use for (a) preprocessing features before a linear model, (b) making a 2D scatter plot of clusters for a slide. Justify each choice.",
+      "hint": "PCA: linear, global, fast, invertible. t-SNE/UMAP: nonlinear, preserve local neighborhoods, for visualization only.",
+      "solution": "- **PCA** is a *linear* projection onto max-variance directions. It's fast, deterministic, preserves global structure and distances, and is invertible — but it can't unfold nonlinear manifolds (a Swiss roll stays rolled).\n- **t-SNE** is *nonlinear*, optimized to keep *local* neighbors close in 2D. Great-looking clusters, but: distances/cluster sizes between blobs are meaningless, it's stochastic, slow, and has no clean transform for new points.\n- **UMAP** is also nonlinear and neighborhood-preserving but faster than t-SNE, preserves more global structure, and can transform new data.\n\n**(a) Preprocessing for a linear model → PCA.** You want a fast, deterministic, *reusable* transform you can apply to train and test identically; t-SNE/UMAP coordinates aren't meaningful features and t-SNE can't even map new points.\n\n**(b) 2D cluster plot for a slide → UMAP (or t-SNE).** Here the goal is a readable picture of which points group together, exactly what neighborhood-preserving methods excel at. PCA's first two components often smear nonlinear clusters into an uninformative blob. Just don't over-read the spacing between clusters."
+    }
+  ]
+}

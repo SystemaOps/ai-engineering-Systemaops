@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Expected value and variance",
+      "difficulty": "warmup",
+      "prompt": "For a fair six-sided die, compute the expected value and variance from their definitions (not formulas you've memorized). Confirm E[X] = 3.5.",
+      "hint": "E[X] = Σ x·p(x); Var = Σ (x−E[X])²·p(x), with p(x)=1/6 each.",
+      "solution": "```python\nxs = range(1, 7); p = 1/6\nE = sum(x*p for x in xs)\nVar = sum((x-E)**2 * p for x in xs)\nprint(E, round(Var, 3))   # 3.5 2.917\n```\n\nE[X]=3.5 is the long-run average roll; variance ≈2.92 measures spread. These two moments underlie everything from weight initialization (control the variance of activations) to why batch norm normalizes mean and variance."
+    },
+    {
+      "title": "Numerically stable softmax",
+      "difficulty": "core",
+      "prompt": "Implement softmax, then show that the naive version overflows on large logits like [1000, 1001, 1002] while the stable version (subtract the max first) gives the correct distribution. Prove subtracting a constant doesn't change the output.",
+      "hint": "softmax(z)_i = e^{z_i}/Σe^{z_j}. Subtract max(z) from all logits before exponentiating.",
+      "solution": "```python\nimport math\ndef softmax_stable(z):\n    m = max(z)\n    e = [math.exp(x - m) for x in z]\n    s = sum(e)\n    return [v/s for v in e]\n\nprint(softmax_stable([1000, 1001, 1002]))   # [0.090, 0.245, 0.665]\n# naive: math.exp(1002) -> OverflowError\n```\n\nSoftmax is shift-invariant: e^{z_i−m}/Σe^{z_j−m} = (e^{−m}e^{z_i})/(e^{−m}Σe^{z_j}) = e^{z_i}/Σe^{z_j} — the e^{−m} cancels. So subtracting the max changes nothing mathematically but keeps every exponent ≤ 0, dodging overflow. Every framework's softmax does this; skipping it is a classic cause of NaN logits."
+    },
+    {
+      "title": "Cross-entropy from logits",
+      "difficulty": "stretch",
+      "prompt": "Compute the cross-entropy loss for a 3-class example with logits [2.0, 1.0, 0.1] and true class 0, working from logits directly (log-softmax), and explain why it equals the negative log-likelihood of the correct class.",
+      "hint": "CE = −log(softmax(logits)[true]) = −(z_true − logsumexp(z)). Use the stable log-sum-exp.",
+      "solution": "```python\nimport math\ndef logsumexp(z):\n    m = max(z); return m + math.log(sum(math.exp(x-m) for x in z))\ndef cross_entropy(logits, true):\n    return -(logits[true] - logsumexp(logits))\n\nprint(round(cross_entropy([2.0, 1.0, 0.1], 0), 4))   # 0.4170\n```\n\nCross-entropy for a one-hot target reduces to **−log P(correct class)** — exactly the negative log-likelihood. Minimizing it pushes the probability mass of the true class toward 1. Computing it from logits via log-sum-exp (instead of softmax-then-log) keeps it numerically stable, which is why `CrossEntropyLoss` takes raw logits, not probabilities."
+    }
+  ]
+}

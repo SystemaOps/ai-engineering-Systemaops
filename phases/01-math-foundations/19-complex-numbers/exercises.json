@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Multiplication is rotation",
+      "difficulty": "warmup",
+      "prompt": "Multiply the complex number 1+0j by i three times and observe the sequence of points. Explain why multiplying by i is a 90° rotation in the complex plane.",
+      "hint": "i = e^{iπ/2}. Multiplying by a unit complex number adds its angle.",
+      "solution": "```python\nz = 1+0j\nfor _ in range(4):\n    print(z); z *= 1j\n# (1+0j) -> 1j -> (-1+0j) -> -1j -> back to (1+0j)\n```\n\nThe point walks 1 → i → −1 → −i → 1, a full circle in four 90° steps. Every complex number can be written `r·e^{iθ}` (magnitude r, angle θ); multiplying **adds the angles and multiplies the magnitudes**. Since i = e^{iπ/2}, multiplying by it spins the plane 90°. This rotation-by-multiplication is exactly what RoPE uses to encode token positions."
+    },
+    {
+      "title": "Euler's formula",
+      "difficulty": "core",
+      "prompt": "Verify Euler's formula e^{iθ} = cos θ + i·sin θ numerically for a few angles, and use it to show how a complex exponential packages a cosine and a sine at the same frequency.",
+      "hint": "`cmath.exp(1j*theta)` vs `complex(cos(theta), sin(theta))`.",
+      "solution": "```python\nimport cmath, math\nfor th in (0, math.pi/4, math.pi/2, math.pi):\n    lhs = cmath.exp(1j*th)\n    rhs = complex(math.cos(th), math.sin(th))\n    print(round(abs(lhs-rhs), 12))   # ~0 each\n```\n\nEuler's formula says a unit complex exponential *is* a (cosine, sine) pair: its real part traces a cosine and its imaginary part a sine, both at frequency tied to θ. That's why one complex number can carry an oscillation that would otherwise need two real components — and why transformer sinusoidal position encodings (alternating sin/cos at many frequencies) are really the real and imaginary parts of complex exponentials e^{iωt}."
+    },
+    {
+      "title": "DFT from roots of unity",
+      "difficulty": "stretch",
+      "prompt": "Implement the Discrete Fourier Transform of a short real signal directly from the complex roots of unity, and confirm a pure cosine produces a spike at its frequency bin. Explain what each output coefficient encodes.",
+      "hint": "X[k] = Σ_n x[n]·e^{−2πi·kn/N}. A cosine at frequency f shows energy at bins f and N−f.",
+      "solution": "```python\nimport cmath, math\ndef dft(x):\n    N=len(x)\n    return [sum(x[n]*cmath.exp(-2j*math.pi*k*n/N) for n in range(N)) for k in range(N)]\n\nN=8\nsig=[math.cos(2*math.pi*2*n/N) for n in range(N)]  # frequency = 2 cycles\nX=dft(sig)\nprint([round(abs(c),2) for c in X])   # spikes at k=2 and k=6 (=N-2)\n```\n\nEach `X[k]` is a complex number whose **magnitude** is how much of frequency k is present and whose **angle** is that component's phase. The pure 2-cycle cosine lights up bins 2 and N−2 (real signals have symmetric spectra) and is ~0 elsewhere — the DFT 'found' the single frequency hiding in the time-domain samples. Doing this naively is O(N²); the FFT (next lesson) does the same in O(N log N)."
+    }
+  ]
+}
