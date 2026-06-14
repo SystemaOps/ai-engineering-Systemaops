@@ -40,7 +40,14 @@
     supportEmail: 'info@systemaops.com',
 
     // Where to send the buyer once their key activates.
-    afterActivate: 'catalog.html'
+    afterActivate: 'catalog.html',
+
+    // Hard enforcement. Leave false for the client-side gate (default).
+    // Set true ONLY when the license service is deployed (the gated
+    // compose layer) — then keys are validated server-side at /api/activate,
+    // the Stripe redirect is fulfilled at /api/issue, and Caddy blocks
+    // /content/* without a valid cookie. See deploy/STRIPE-SETUP.md.
+    backend: false
   };
 
   /* ── License keys ────────────────────────────────────────────────────
@@ -143,25 +150,79 @@
       e.preventDefault();
       var val = input.value.trim();
       if (!val) { msg.textContent = 'Enter your license key.'; msg.className = 'activate-msg is-error'; return; }
-      if (validateKey(val)) {
+
+      function ok() {
         grantAccess();
         msg.textContent = '✓ Activated! Taking you to the catalog…';
         msg.className = 'activate-msg is-ok';
         setTimeout(function () { window.location.href = CONFIG.afterActivate; }, 900);
-      } else {
-        msg.textContent = 'That key doesn\'t look right. Check for typos, or email ' +
-          CONFIG.supportEmail + '.';
+      }
+      function fail(text) {
+        msg.textContent = text || ('That key doesn\'t look right. Check for typos, or email ' +
+          CONFIG.supportEmail + '.');
         msg.className = 'activate-msg is-error';
+      }
+
+      if (CONFIG.backend) {
+        // Server validates the key and sets the access cookie Caddy enforces.
+        msg.textContent = 'Activating…'; msg.className = 'activate-msg';
+        fetch('/api/activate', {
+          method: 'POST', credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: val })
+        }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { r: r, j: j }; }); })
+          .then(function (o) { if (o.r.ok && o.j.ok) ok(); else fail(); })
+          .catch(function () { fail('Network error — please try again.'); });
+      } else if (validateKey(val)) {
+        ok();
+      } else {
+        fail();
       }
     });
   }
 
-  function showPurchaseThanks(el) {
-    if (!el) return;
+  function handleReturn(thanks, buy, activate) {
+    if (!thanks) return;
     var params = new URLSearchParams(window.location.search);
-    if (params.get('purchase') === 'success') {
-      el.style.display = '';
-      el.innerHTML =
+    var sid = params.get('session_id');
+
+    // Backend mode: the Stripe redirect carries the Checkout session id.
+    // Verify it server-side, which sets the access cookie and returns the
+    // reusable license key.
+    if (CONFIG.backend && sid) {
+      thanks.style.display = '';
+      thanks.innerHTML = 'Confirming your payment with Stripe…';
+      fetch('/api/issue', {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sid })
+      }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { r: r, j: j }; }); })
+        .then(function (o) {
+          if (o.r.ok && o.j.ok) {
+            grantAccess();
+            thanks.innerHTML = '<strong>Thanks for your purchase!</strong> You\'re unlocked ' +
+              'on this device. Save this license key to activate other devices:' +
+              '<br><code style="display:inline-block;margin-top:8px;font-size:1rem">' +
+              (o.j.key || '') + '</code>';
+            if (buy) renderBuyCard(buy);
+            if (activate) renderActivation(activate);
+          } else {
+            thanks.innerHTML = 'We couldn\'t confirm that payment automatically. ' +
+              'If you were charged, email <a href="mailto:' + CONFIG.supportEmail + '">' +
+              CONFIG.supportEmail + '</a> with your receipt and we\'ll sort it out.';
+          }
+        })
+        .catch(function () {
+          thanks.innerHTML = 'Network hiccup confirming your payment. Refresh, or email ' +
+            '<a href="mailto:' + CONFIG.supportEmail + '">' + CONFIG.supportEmail + '</a>.';
+        });
+      return;
+    }
+
+    // Client-side mode (or no session id): show the key-entry prompt.
+    if (params.get('purchase') === 'success' || sid) {
+      thanks.style.display = '';
+      thanks.innerHTML =
         '<strong>Thanks for your purchase!</strong> Your license key is in your ' +
         'email receipt from Stripe. Enter it below to unlock the full curriculum.';
     }
@@ -173,7 +234,7 @@
     var thanks = document.getElementById('purchaseThanks');
     if (buy) renderBuyCard(buy);
     if (activate) renderActivation(activate);
-    showPurchaseThanks(thanks);
+    handleReturn(thanks, buy, activate);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

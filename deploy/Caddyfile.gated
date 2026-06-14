@@ -1,0 +1,49 @@
+# HARD-GATE variant of Caddyfile. Enforces purchase server-side: paid
+# lesson content under /content/* returns 401 unless the visitor holds a
+# valid license cookie (checked via the license service's /auth/check).
+#
+# Enable with the gated compose layer:
+#   docker compose -f docker-compose.yml -f docker-compose.gated.yml up -d --build
+# (see deploy/STRIPE-SETUP.md). The default docker-compose.yml keeps using
+# the open deploy/Caddyfile, so nothing changes until you opt in.
+{$DOMAIN::80} {
+	root * /srv
+	encode zstd gzip
+
+	try_files {path} {path}.html
+
+	rewrite /path /prereqs.html
+	rewrite /roadmap /prereqs.html
+
+	header Cache-Control "public, max-age=300, stale-while-revalidate=604800"
+
+	@assets path *.css *.js *.png *.jpg *.jpeg *.svg *.webp *.woff2 *.woff *.ttf *.ico
+	header @assets Cache-Control "public, max-age=86400, stale-while-revalidate=2592000"
+
+	# Activation / fulfillment API → license service.
+	reverse_proxy /api/* license:8787
+
+	# Paid lesson content = everything under /content/* EXCEPT the four free
+	# preview lessons (keep this list in sync with FREE_PREVIEW in
+	# site/build.js). Gated requests are authorized by the license service;
+	# a missing/invalid cookie yields 401 and the lesson page shows the lock.
+	@paid {
+		path /content/*
+		not path /content/phases/00-setup-and-tooling/01-dev-environment/*
+		not path /content/phases/01-math-foundations/01-linear-algebra-intuition/*
+		not path /content/phases/03-deep-learning-core/03-backpropagation/*
+		not path /content/phases/14-agent-engineering/01-the-agent-loop/*
+	}
+	forward_auth @paid license:8787 {
+		uri /auth/check
+	}
+
+	# Paid content must not be cached by shared caches (auth is per-user).
+	header @paid Cache-Control "private, no-store"
+
+	# Free preview + everything else: moderate cache.
+	@content path /content/*
+	header @content Cache-Control "public, max-age=3600, stale-while-revalidate=86400"
+
+	file_server
+}

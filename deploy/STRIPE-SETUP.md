@@ -59,7 +59,12 @@ one per sale. Two common ways:
   of text after payment, but a *fixed* key shared by all buyers is the
   honor-system model — acceptable only if you accept sharing.
 
-### Generate keys
+### Generate keys (client-side mode)
+
+> These checksum keys are for the **default client-side gate**. If you've
+> turned on hard enforcement (below), generate keys with
+> `keygen.js` instead — the two schemes are different and not
+> interchangeable.
 
 Run this in any browser console **on your live site** (it reuses the same
 checksum the site validates against), or in Node:
@@ -90,28 +95,67 @@ The current gate is **client-side**:
   is enforced by JavaScript in `lesson.html`, not by the server.
 
 This **stops casual freeloading, not piracy.** For most solo digital
-courses that is an acceptable launch posture. If you want real
-enforcement, do the hardening below.
+courses that is an acceptable launch posture. When you want real
+enforcement, the backend below is already built — turn it on.
 
-## Hardening: the fulfillment backend (optional, later)
+## Hard enforcement (the license service — already built)
 
-Add a small service container to `docker-compose.yml` that turns the
-honor-system into a real gate:
+`deploy/license-service/` is a tiny Node service (zero npm dependencies)
+that turns the honor-system into a real gate:
 
-1. **Checkout:** keep the Payment Link, or move to Stripe Checkout
-   Sessions created by the service.
-2. **Webhook:** Stripe → your service on `checkout.session.completed`.
-   The service mints a **signed** key (HMAC/JWT with a server-only
-   secret) and emails it to the buyer automatically.
-3. **Activation:** `access.html` posts the key to the service, which
-   verifies the signature and sets a signed cookie.
-4. **Enforcement:** Caddy checks that cookie (via `forward_auth` to the
-   service) before serving `/content/*`. No cookie → 403.
+- **Keys are signed.** License keys carry an HMAC made with a server-only
+  `LICENSE_SECRET`, so they can't be forged from the browser code.
+- **Caddy blocks paid content.** `deploy/Caddyfile.gated` puts a
+  `forward_auth` check on `/content/*` (except the four free lessons), so
+  the server returns 401 for anyone without a valid access cookie — the
+  content is no longer served openly.
+- **Fulfillment is automatic.** After payment, Stripe redirects to
+  `access.html?session_id=...`; the page calls `/api/issue`, the service
+  verifies the session is paid via the Stripe API, sets the cookie, and
+  shows the buyer a reusable key for their other devices.
 
-Only two things change in this repo for the upgrade: `validateKey()` in
-`checkout.js` becomes a fetch to the service, and the `/content/*` route
-in `deploy/Caddyfile` gains a `forward_auth` directive. The buyer-facing
-UI on `access.html` stays exactly as it is now.
+### Turn it on
+
+1. **Stripe:** in your Payment Link's *After payment* redirect, use
+   `https://YOUR-DOMAIN/access.html?session_id={CHECKOUT_SESSION_ID}`
+   (Stripe substitutes the real id). Grab your **secret** key
+   (`sk_live_…`) from Developers → API keys.
+2. **Secrets:** `cp deploy/license-service/.env.example .env` at the repo
+   root and fill it in:
+   - `LICENSE_SECRET` — `openssl rand -hex 24` (keep it stable forever).
+   - `STRIPE_SECRET_KEY` — your `sk_live_…`.
+   - `COOKIE_SECURE=1` (you're on HTTPS in prod).
+   `.env` is gitignored; never commit it.
+3. **Site flag:** in `site/checkout.js` set `backend: true` in `CONFIG`
+   (and your `paymentLink` + `price`), then bump the `?v=` asset version.
+4. **Deploy the gated stack:**
+
+   ```
+   docker compose -f docker-compose.yml -f docker-compose.gated.yml up -d --build
+   ```
+
+That's it. The open `docker-compose.yml` alone still runs the original
+client-side site, so you can deploy that first and flip to gated later
+with zero code changes — only the flag, the `.env`, and the compose
+command differ.
+
+### Manual keys (optional)
+
+For comp keys, refunds, or selling outside Stripe, mint keys that the
+service will accept:
+
+```
+LICENSE_SECRET=<same as .env> node deploy/license-service/keygen.js 25
+LICENSE_SECRET=<same as .env> node deploy/license-service/keygen.js --check AIFS-XXXX-XXXX-XXXX-XXXX
+```
+
+Buyers enter these in the "Already purchased?" box; `/api/activate`
+verifies the signature and sets the cookie.
+
+### Free-preview list
+
+`deploy/Caddyfile.gated` lists the four free lesson paths that stay open.
+If you change `FREE_PREVIEW` in `site/build.js`, update that list to match.
 
 ---
 

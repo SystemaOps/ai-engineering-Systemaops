@@ -1,0 +1,21 @@
+# Opt-in hard-enforcement layer. Adds the license service and swaps the
+# site over to the gated Caddyfile. The base docker-compose.yml alone
+# keeps the original open behavior.
+#
+#   1. cp deploy/license-service/.env.example .env   # then fill it in
+#   2. docker compose -f docker-compose.yml -f docker-compose.gated.yml up -d --build
+#
+# See deploy/STRIPE-SETUP.md → "Hard enforcement".
+services:
+  site:
+    depends_on:
+      - license
+    volumes:
+      - ./deploy/Caddyfile.gated:/etc/caddy/Caddyfile:ro
+
+  license:
+    build: ./deploy/license-service
+    env_file: .env
+    expose:
+      - "8787"
+    restart: unless-stopped
