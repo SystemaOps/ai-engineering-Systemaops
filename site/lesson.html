@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lesson - AI Engineering from SystemaOps</title>
-  <link rel="icon" type="image/svg+xml" href="assets/brand/icon-color.svg?v=20260613e">
+  <link rel="icon" type="image/svg+xml" href="assets/brand/icon-color.svg?v=20260613f">
   <meta name="description" content="A lesson from the AI Engineering from SystemaOps curriculum. 502 lessons across 20 phases, four languages, every algorithm built from raw math.">
   <meta property="og:title" content="AI Engineering from SystemaOps · Lesson">
   <meta property="og:description" content="502 lessons. 20 phases. Write the backprop, the tokenizer, the attention mechanism, and the agent loop by hand.">
@@ -18,7 +18,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=VT323&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400..700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260613e">
+  <link rel="stylesheet" href="style.css?v=20260613f">
   <style>
     .scroll-progress {
       position: fixed;
@@ -1637,6 +1637,62 @@
       border-color: var(--accent);
       color: var(--accent);
     }
+
+    /* ── Exercises ─────────────────────────────────────────────────── */
+    .exercises-section { margin: 48px 0 8px; }
+    .exercises-h {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      border-bottom: 2px solid var(--rule);
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+    }
+    .exercises-intro { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px; }
+    .exercise {
+      border: 1px solid var(--rule-soft);
+      border-left: 3px solid var(--accent);
+      background: var(--bg-surface);
+      padding: 16px 20px;
+      margin-bottom: 16px;
+    }
+    .exercise-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .exercise-num {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--bg);
+      background: var(--accent);
+      width: 22px; height: 22px;
+      display: inline-flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .exercise-title { font-weight: 700; flex: 1; }
+    .exercise-diff {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 2px 7px;
+      border: 1px solid var(--rule-soft);
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .exercise-diff--warmup { border-color: var(--status-complete); color: var(--status-complete); }
+    .exercise-diff--stretch { border-color: var(--warn); color: var(--warn); }
+    .exercise-prompt { line-height: 1.7; }
+    .exercise-prompt p:last-child { margin-bottom: 0; }
+    .exercise-reveal { margin-top: 12px; border-top: 1px dashed var(--rule-soft); padding-top: 10px; }
+    .exercise-reveal summary {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      cursor: pointer;
+      color: var(--accent);
+      user-select: none;
+    }
+    .exercise-reveal summary:hover { text-decoration: underline; }
+    .exercise-reveal[open] summary { margin-bottom: 10px; }
+    .exercise-reveal-body { line-height: 1.7; }
+    .exercise-reveal-body p:last-child { margin-bottom: 0; }
   </style>
 </head>
 <body>
@@ -1699,12 +1755,12 @@
     <aside class="toc-sidebar" id="tocSidebar" aria-hidden="true"></aside>
   </div>
 
-  <script src="data.js?v=20260613e"></script>
-  <script src="checkout.js?v=20260613e"></script>
-  <script src="progress.js?v=20260613e"></script>
-  <script src="pet.js?v=20260613e"></script>
-  <script src="cmdpalette.js?v=20260613e" defer></script>
-  <script src="vendor/mermaid.min.js?v=20260613e"></script>
+  <script src="data.js?v=20260613f"></script>
+  <script src="checkout.js?v=20260613f"></script>
+  <script src="progress.js?v=20260613f"></script>
+  <script src="pet.js?v=20260613f"></script>
+  <script src="cmdpalette.js?v=20260613f" defer></script>
+  <script src="vendor/mermaid.min.js?v=20260613f"></script>
   <script>
     // Brand-matched mermaid theme. Both light and dark map onto the site
     // palette in style.css (paper/teal manual aesthetic) instead of the
@@ -2070,6 +2126,14 @@
                 if (!data) return;
                 try { renderQuiz(data); }
                 catch (err) { console.error('renderQuiz failed', err); }
+              });
+            fetch('content/' + path + '/exercises.json')
+              .then(function (res) { return res.ok ? res.json() : null; })
+              .catch(function () { return null; })
+              .then(function (data) {
+                if (!data) return;
+                try { renderExercises(data); }
+                catch (err) { console.error('renderExercises failed', err); }
               });
           })
           .catch(function (err) {
@@ -2976,6 +3040,65 @@
         if (lastMermaidTrigger && typeof lastMermaidTrigger.focus === 'function') {
           lastMermaidTrigger.focus();
         }
+      }
+
+      // Hands-on exercises with reveal-on-demand hints and solutions.
+      // Rendered as a section near the end of the lesson, before the AI
+      // panels. Each exercise: prompt (always shown) + optional hint and
+      // solution behind native <details> toggles.
+      function renderExercises(data) {
+        var items = data.exercises || data;
+        if (!items || !items.length) return;
+        var article = document.querySelector('.lesson-article');
+        if (!article) return;
+
+        var inner = '<h2 class="exercises-h">Exercises</h2>';
+        inner += '<p class="exercises-intro">Attempt each by hand before revealing the solution — the struggle is where the learning is.</p>';
+        items.forEach(function (ex, i) {
+          var diff = (ex.difficulty || '').toLowerCase();
+          inner += '<div class="exercise">';
+          inner += '<div class="exercise-head"><span class="exercise-num">' + (i + 1) + '</span>';
+          if (ex.title) inner += '<span class="exercise-title">' + escapeHtml(ex.title) + '</span>';
+          if (diff) inner += '<span class="exercise-diff exercise-diff--' + escapeHtml(diff) + '">' + escapeHtml(diff) + '</span>';
+          inner += '</div>';
+          inner += '<div class="exercise-prompt">' + parseMd(ex.prompt || '') + '</div>';
+          if (ex.hint) inner += '<details class="exercise-reveal"><summary>Hint</summary><div class="exercise-reveal-body">' + parseMd(ex.hint) + '</div></details>';
+          if (ex.solution) inner += '<details class="exercise-reveal"><summary>Show solution</summary><div class="exercise-reveal-body">' + parseMd(ex.solution) + '</div></details>';
+          inner += '</div>';
+        });
+
+        var section = document.createElement('section');
+        section.className = 'exercises-section';
+        section.id = 'exercises';
+        section.innerHTML = inner;
+
+        // Many lesson docs already carry a lightweight "## Exercises" list.
+        // The richer exercises.json supersedes it: find that heading and
+        // replace its whole section (heading + everything up to the next
+        // h2) with the rendered version. If there's no such heading, place
+        // it just before the AI panels at the end.
+        var docHeading = null;
+        var h2s = article.querySelectorAll('h2');
+        for (var h = 0; h < h2s.length; h++) {
+          if (h2s[h].textContent.trim().toLowerCase() === 'exercises') { docHeading = h2s[h]; break; }
+        }
+        if (docHeading) {
+          var node = docHeading.nextSibling;
+          while (node && !(node.nodeType === 1 && node.tagName === 'H2')) {
+            var nxt = node.nextSibling;
+            node.parentNode.removeChild(node);
+            node = nxt;
+          }
+          docHeading.parentNode.insertBefore(section, docHeading);
+          docHeading.parentNode.removeChild(docHeading);
+        } else {
+          var panels = article.querySelector('#aiPanels');
+          if (panels) panels.parentNode.insertBefore(section, panels);
+          else article.appendChild(section);
+        }
+
+        initCodeCopy();
+        renderMermaidBlocks();
       }
 
       function renderQuiz(data) {

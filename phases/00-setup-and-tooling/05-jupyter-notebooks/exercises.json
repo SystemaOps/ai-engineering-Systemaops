@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Time a cell",
+      "difficulty": "warmup",
+      "prompt": "Launch a notebook, then use a magic command to measure how long a single line takes to run many times, and another to time a whole cell once. Report both numbers.",
+      "hint": "`%timeit` for a line (auto-repeats), `%%time` for a whole cell (runs once).",
+      "solution": "```python\n%timeit sum(range(1_000_000))      # e.g. 12.3 ms ± 0.2 ms per loop\n```\n```python\n%%time\ntotal = sum(range(10_000_000))      # CPU times + Wall time, single run\n```\n\n`%timeit` repeats the line and reports a stable average — use it for micro-benchmarks. `%%time` runs the cell once and reports wall-clock — use it for one-off \"how long did this take\" checks."
+    },
+    {
+      "title": "Reproduce the hidden-state trap",
+      "difficulty": "core",
+      "prompt": "Deliberately create the classic notebook bug: a result that depends on cells being run out of order, so the notebook gives a different answer on a fresh kernel than it does interactively. Then show the one-step habit that catches it.",
+      "hint": "Define a variable, use it, then edit the defining cell *without* re-running downstream cells. The fix is Restart Kernel & Run All.",
+      "solution": "Run these in this order, then go back and change cell 1 to `x = 100` and re-run **only** cell 1:\n\n```python\n# cell 1\nx = 10\n```\n```python\n# cell 2\nresult = x * 2\nprint(result)   # shows 20 interactively…\n```\n\nInteractively `result` is still `20` (cell 2 never re-ran), but a colleague who does **Restart Kernel & Run All** gets `200`. The notebook's visible output now lies about its own code.\n\n**The habit:** before trusting or sharing a notebook, always *Restart Kernel & Run All*. If it doesn't reproduce top-to-bottom, it's broken — hidden kernel state was propping it up."
+    },
+    {
+      "title": "Promote a prototype to a script",
+      "difficulty": "stretch",
+      "prompt": "Take a small notebook experiment (load data → transform → print a metric) and refactor it into a runnable `.py` script with a `main()` and an `if __name__ == '__main__'` guard. Explain which work belongs in a notebook and which belongs in a script.",
+      "hint": "Notebooks are for exploration; scripts are for anything you'll run more than once or import. Move the settled logic into functions.",
+      "solution": "```python\n# train.py\nimport numpy as np\n\ndef load():\n    return np.random.randn(1000, 3)\n\ndef metric(x):\n    return float(x.mean())\n\ndef main():\n    data = load()\n    print(f\"mean = {metric(data):.4f}\")\n\nif __name__ == \"__main__\":\n    main()\n```\n```bash\npython train.py\n```\n\n**Explore in notebooks, ship in scripts.** Notebooks win for fast, visual, throwaway iteration. The moment logic is reused, scheduled, version-controlled as the source of truth, or run unattended, it belongs in a script: deterministic top-to-bottom, testable, and free of hidden state."
+    }
+  ]
+}

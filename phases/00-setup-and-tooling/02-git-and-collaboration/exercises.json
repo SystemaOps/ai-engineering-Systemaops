@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Identity and first commit",
+      "difficulty": "warmup",
+      "prompt": "Configure your git identity, initialize a fresh repository, and make your first commit containing a single `README.md`. Confirm the commit landed with the log.",
+      "hint": "Set `user.name` and `user.email` globally, then the add → commit → log cycle.",
+      "solution": "```bash\ngit config --global user.name \"Your Name\"\ngit config --global user.email \"you@example.com\"\n\nmkdir my-lab && cd my-lab\ngit init\necho \"# My AI Lab\" > README.md\ngit add README.md\ngit commit -m \"Initial commit\"\ngit log --oneline   # shows your one commit\n```"
+    },
+    {
+      "title": "Branch, experiment, merge",
+      "difficulty": "core",
+      "prompt": "From `main`, create a branch called `experiment`, make a change there, commit it, then merge it back into `main` — without ever committing the experiment directly on `main`. Show the history proving the branch was merged.",
+      "hint": "`git checkout -b` creates and switches; switch back to `main` before merging.",
+      "solution": "```bash\ngit checkout -b experiment\necho \"print('hello')\" > train.py\ngit add train.py && git commit -m \"Add training stub\"\n\ngit checkout main\ngit merge experiment\ngit log --oneline --graph   # shows the merge\n```\n\nBranching is how you try a risky idea (a new architecture, a refactor) without endangering known-good code on `main`. If the experiment fails, you just delete the branch (`git branch -D experiment`)."
+    },
+    {
+      "title": "A .gitignore that fits AI work",
+      "difficulty": "stretch",
+      "prompt": "Write a `.gitignore` appropriate for an AI project, then prove it works: create a fake 500 MB checkpoint and a virtual-env directory and show that `git status` does not list them. Explain why committing those would be a problem.",
+      "hint": "Model weights and environments are large and regenerable — they don't belong in version control. Patterns like `*.ckpt`, `*.pt`, `.venv/`.",
+      "solution": "```bash\ncat > .gitignore <<'EOF'\n# environments\n.venv/\n__pycache__/\n# model checkpoints / weights\n*.ckpt\n*.pt\n*.safetensors\n# data\ndata/\n*.csv\n# notebooks scratch\n.ipynb_checkpoints/\nEOF\n\nmkdir -p .venv && dd if=/dev/zero of=model.ckpt bs=1M count=500 2>/dev/null\ngit status            # model.ckpt and .venv/ are NOT listed\ngit add .gitignore && git commit -m \"Add .gitignore\"\n```\n\nGit stores every version of every file forever. A single committed 500 MB checkpoint bloats the repo permanently — even deleting it later leaves it in history. Keep weights in object storage or a model registry, not git."
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Orient on a fresh box",
+      "difficulty": "warmup",
+      "prompt": "You've just SSH'd into a fresh Ubuntu GPU instance. Without a GUI, find out where you are, what's in your home directory, how much disk is free, and how much memory the machine has — using four commands.",
+      "hint": "`pwd`, `ls -la ~`, `df -h`, `free -h`.",
+      "solution": "```bash\npwd            # where am I (usually /home/ubuntu)\nls -la ~       # what's in home, including dotfiles\ndf -h          # disk space per mount — watch /home and /\nfree -h        # RAM total/used/free\nnvidia-smi     # bonus: confirm the GPU is actually attached\n```\n\nThese four orient you instantly on any unfamiliar Linux box — the first thing to run before you start paying for GPU time downloading datasets that won't fit."
+    },
+    {
+      "title": "Fix 'Permission denied'",
+      "difficulty": "core",
+      "prompt": "A shell script you uploaded won't run — `Permission denied`. And a data directory owned by `root` won't let you write to it. Diagnose and fix both with the right permission/ownership commands, and explain what the `rwx` bits mean.",
+      "hint": "`ls -l` shows permissions/owner; `chmod +x` for execute; `chown -R` (with sudo) to take ownership.",
+      "solution": "```bash\nls -l run.sh                      # -rw-r--r-- : no execute bit\nchmod +x run.sh                   # add execute\n./run.sh                          # now runs\n\nls -ld /data                      # owned by root\nsudo chown -R $USER:$USER /data   # take ownership recursively\n```\n\nEach file has three permission triples — **owner / group / others** — each with read(r), write(w), execute(x). `-rw-r--r--` means owner can read+write, everyone else read-only, nobody can execute. Scripts need the **x** bit; directories you write to must be **owned by you** (or group-writable). `chmod` changes permissions, `chown` changes ownership."
+    },
+    {
+      "title": "Provision a GPU box",
+      "difficulty": "stretch",
+      "prompt": "Write the sequence of commands to take a bare Ubuntu instance to ready-for-AI: update packages, install build tools + git + a Python toolchain, clone a repo, and confirm the GPU is visible. Note the macOS habits that will trip you up here.",
+      "hint": "`apt update && apt upgrade`, `apt install build-essential git`, install `uv`, `git clone`, `nvidia-smi`.",
+      "solution": "```bash\nsudo apt update && sudo apt -y upgrade\nsudo apt install -y build-essential git curl\ncurl -LsSf https://astral.sh/uv/install.sh | sh   # Python toolchain\ngit clone https://github.com/you/your-repo.git && cd your-repo\nnvidia-smi                                        # GPU present?\n```\n\n**macOS → Linux gotchas:** there's no `brew` (use `apt`); paths are case-sensitive (`Data/` ≠ `data/`); the default shell may be bash, not zsh; `sudo` is required for system installs; and line endings matter — a script saved on Windows with CRLF will fail with a cryptic `bad interpreter` until you `dos2unix` it."
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Two versions, no conflict",
+      "difficulty": "warmup",
+      "prompt": "Create two separate virtual environments that hold *different* versions of the same package, and show that activating each gives the version it should — proving they're isolated.",
+      "hint": "Two `uv venv` directories; install a pinned version in each; check with `pip show` or an import.",
+      "solution": "```bash\nuv venv envA && source envA/bin/activate\nuv pip install 'rich==13.7.0'\npython -c 'import rich; print(rich.__version__)'   # 13.7.0\ndeactivate\n\nuv venv envB && source envB/bin/activate\nuv pip install 'rich==13.9.0'\npython -c 'import rich; print(rich.__version__)'   # 13.9.0\ndeactivate\n```\n\nEach environment has its own `site-packages`, so the two versions never collide. This is the entire cure for dependency hell."
+    },
+    {
+      "title": "Declare deps with groups",
+      "difficulty": "core",
+      "prompt": "Write a `pyproject.toml` that declares core runtime dependencies plus an optional `dev` group (tests, formatter), then install the project with and without the dev extras. Generate a lockfile for reproducibility.",
+      "hint": "`[project].dependencies` for core; `[project.optional-dependencies]` for groups. `uv pip install -e '.[dev]'`.",
+      "solution": "```toml\n# pyproject.toml\n[project]\nname = \"ai-lab\"\nversion = \"0.1.0\"\ndependencies = [\"numpy>=2.0\", \"requests>=2.31\"]\n\n[project.optional-dependencies]\ndev = [\"pytest>=8\", \"ruff>=0.6\"]\n```\n```bash\nuv pip install -e .          # core only\nuv pip install -e '.[dev]'   # core + dev tools\nuv pip compile pyproject.toml -o requirements.lock   # pinned lockfile\n```\n\nGroups keep heavy dev/test tools out of production installs, and the lockfile pins exact versions so every machine and CI runner resolves identically."
+    },
+    {
+      "title": "Diagnose a CUDA mismatch",
+      "difficulty": "stretch",
+      "prompt": "A teammate reports `torch.cuda.is_available()` returns False on a box that definitely has a GPU. Lay out the diagnostic steps to find whether it's a driver/toolkit version mismatch, and the fix.",
+      "hint": "Compare the driver's max supported CUDA (`nvidia-smi`) with the CUDA build PyTorch was compiled against (`torch.version.cuda`).",
+      "solution": "```bash\nnvidia-smi                       # top-right shows max CUDA the DRIVER supports, e.g. 12.4\npython -c 'import torch; print(torch.version.cuda)'   # CUDA build torch was compiled for, e.g. 12.1\npython -c 'import torch; print(torch.cuda.is_available())'\n```\n\n**Diagnosis:** if PyTorch's `version.cuda` is *newer* than the driver supports, CUDA init fails silently and `is_available()` is False. The driver is backward-compatible, not forward-compatible.\n\n**Fix:** install a PyTorch wheel built for a CUDA version ≤ the driver's max, in a clean env:\n```bash\nuv pip install torch --index-url https://download.pytorch.org/whl/cu121\n```\nNever mix a global pip torch with a conda torch, and never assume a CPU-only wheel can see the GPU — that's the other common cause."
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Filter a training log",
+      "difficulty": "warmup",
+      "prompt": "Given a training log file, use a pipe and `grep` to show only the lines containing the loss, and count how many epochs completed. Do it in one command line each.",
+      "hint": "`grep loss train.log`; pipe `grep` into `wc -l` to count.",
+      "solution": "```bash\ngrep -i loss train.log                 # only loss lines\ngrep -c 'Epoch' train.log              # count epoch lines\ntail -f train.log | grep --line-buffered loss   # live-follow just the loss\n```\n\nThe `tail -f | grep` combo is the everyday move: watch a running job and see only the lines you care about. `--line-buffered` makes grep emit matches immediately instead of buffering."
+    },
+    {
+      "title": "tmux for long runs",
+      "difficulty": "core",
+      "prompt": "Start a tmux session with two panes — one running a (placeholder) training command, one running a GPU/se resource monitor — then detach, and reattach as if you'd closed your laptop and SSH'd back in. Explain why this matters for remote training.",
+      "hint": "`tmux new -s train`, split with Ctrl-b %, detach with Ctrl-b d, reattach with `tmux attach -t train`.",
+      "solution": "```bash\ntmux new -s train\n# in pane 1:\npython train.py\n# split vertically: Ctrl-b then %\nwatch -n1 nvidia-smi      # (or htop / nvtop)\n# detach: Ctrl-b then d   — training keeps running\n\ntmux attach -t train     # later, after reconnecting over SSH\n```\n\nAn SSH session that drops kills every foreground process it owns — including an 8-hour training run. tmux keeps the session alive on the server independent of your connection, so you can detach, close the laptop, and reattach later with everything still running."
+    },
+    {
+      "title": "Sync to a remote box",
+      "difficulty": "stretch",
+      "prompt": "Copy a local project directory to a remote GPU machine efficiently, such that re-running the command only transfers files that changed (not the whole tree), and excludes junk like `.venv` and checkpoints. Explain why `rsync` beats `scp` here.",
+      "hint": "`rsync -avz --exclude` over SSH; rerun to see it transfer nothing when unchanged.",
+      "solution": "```bash\nrsync -avz --progress \\\n  --exclude '.venv' --exclude '*.ckpt' --exclude '__pycache__' \\\n  ./ gpu-box:~/project/\n# edit one file, rerun: only that file transfers\n```\n\n`scp` re-copies everything every time. `rsync` compares source and destination and sends **only the differences**, so syncing a multi-GB project after a one-line edit takes a second. `-z` compresses in flight, and `--exclude` keeps environments and giant checkpoints off the wire entirely."
+    }
+  ]
+}

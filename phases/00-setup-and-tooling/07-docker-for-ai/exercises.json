@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "A minimal AI image",
+      "difficulty": "warmup",
+      "prompt": "Write a Dockerfile that starts from a Python base, installs a couple of dependencies from `requirements.txt`, copies in a script, and runs it. Build it and run the container.",
+      "hint": "Order layers cheap-to-expensive: copy requirements and install *before* copying your code, so code edits don't bust the dependency cache.",
+      "solution": "```dockerfile\nFROM python:3.11-slim\nWORKDIR /app\nCOPY requirements.txt .\nRUN pip install --no-cache-dir -r requirements.txt\nCOPY . .\nCMD [\"python\", \"main.py\"]\n```\n```bash\ndocker build -t my-ai-app .\ndocker run --rm my-ai-app\n```\n\nCopying `requirements.txt` and installing *before* `COPY . .` means editing your code reuses the cached dependency layer — rebuilds take seconds instead of reinstalling everything."
+    },
+    {
+      "title": "Persist models with a volume",
+      "difficulty": "core",
+      "prompt": "Run a container that downloads/writes a model file, and arrange things so that file survives `docker run` again without re-downloading. Prove the file is still there on the host after the container exits.",
+      "hint": "Bind-mount a host directory to the container path your code writes to (`-v $(pwd)/models:/app/models`). Container filesystems are ephemeral; volumes are not.",
+      "solution": "```bash\nmkdir -p models\ndocker run --rm -v \"$(pwd)/models:/app/models\" my-ai-app \\\n  python -c \"open('/app/models/weights.bin','wb').write(b'x'*1024)\"\nls -lh models/weights.bin    # still on the host after the container is gone\n```\n\nWithout the `-v` mount, anything written inside the container vanishes when it exits (`--rm`). Mounting a host dir means downloaded weights, datasets, and checkpoints persist across rebuilds — essential when a model is many GB."
+    },
+    {
+      "title": "Two services with Compose",
+      "difficulty": "stretch",
+      "prompt": "Write a `docker-compose.yml` that runs two services that talk to each other — an inference app and a vector database — on the same network, with the DB's data persisted. Explain how the app addresses the DB.",
+      "hint": "Compose puts services on one network; each is reachable by its service name as hostname. Use a named volume for the DB.",
+      "solution": "```yaml\nservices:\n  app:\n    build: .\n    ports: [\"8000:8000\"]\n    environment:\n      - QDRANT_URL=http://vectordb:6333   # service name = hostname\n    depends_on: [vectordb]\n  vectordb:\n    image: qdrant/qdrant:latest\n    volumes:\n      - qdrant_data:/qdrant/storage\nvolumes:\n  qdrant_data:\n```\n```bash\ndocker compose up -d --build\n```\n\nCompose creates a shared network where each service is reachable by its **service name** (`app` reaches the DB at `http://vectordb:6333`) — no IPs, no host networking. The named volume `qdrant_data` keeps the index across `compose down`/`up`. This is the same pattern your own site uses to add the license-service container."
+    }
+  ]
+}

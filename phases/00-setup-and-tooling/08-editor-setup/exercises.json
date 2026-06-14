@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Editor + the shell command",
+      "difficulty": "warmup",
+      "prompt": "Install VS Code, enable the `code` command so you can open folders from the terminal, and install the core extensions this lesson names for AI work. Verify `code` works from the shell.",
+      "hint": "In VS Code: Command Palette → 'Shell Command: Install code command in PATH'. Core extensions: Python, Pylance, Jupyter, GitLens.",
+      "solution": "```bash\ncode --version          # confirms the CLI is on PATH\ncode .                  # opens the current folder\n# install extensions from the terminal:\ncode --install-extension ms-python.python\ncode --install-extension ms-python.vscode-pylance\ncode --install-extension ms-toolsai.jupyter\ncode --install-extension eamodio.gitlens\n```\n\nThe `code .` habit — open a project folder straight from the terminal — is small but you'll do it thousands of times."
+    },
+    {
+      "title": "Format-on-save + type checks",
+      "difficulty": "core",
+      "prompt": "Configure your editor so Python files auto-format on every save and basic type errors show inline as you type. Put the config in the project's `.vscode/settings.json` so it travels with the repo.",
+      "hint": "`editor.formatOnSave`, a formatter (Ruff/Black), and `python.analysis.typeCheckingMode`.",
+      "solution": "```json\n// .vscode/settings.json\n{\n  \"editor.formatOnSave\": true,\n  \"editor.defaultFormatter\": \"charliermarsh.ruff\",\n  \"python.analysis.typeCheckingMode\": \"basic\",\n  \"[python]\": { \"editor.codeActionsOnSave\": { \"source.organizeImports\": \"explicit\" } }\n}\n```\n\nCommitting `.vscode/settings.json` means every contributor (and future-you on a new machine) gets identical formatting and type-checking with zero setup. Format-on-save ends all whitespace/style diffs; `basic` type checking catches the `None`-attribute and wrong-argument bugs that otherwise surface only at runtime."
+    },
+    {
+      "title": "Edit on a GPU box over SSH",
+      "difficulty": "stretch",
+      "prompt": "Set up Remote SSH so you can open a folder on a remote GPU machine and edit/run code there as if it were local, with the heavy compute staying on the remote. Outline the steps and why this beats editing locally + scp-ing files.",
+      "hint": "The Remote-SSH extension; an entry in `~/.ssh/config`; then 'Connect to Host'. The VS Code server runs remotely; your UI is local.",
+      "solution": "```sshconfig\n# ~/.ssh/config\nHost gpu-box\n    HostName 203.0.113.10\n    User ubuntu\n    IdentityFile ~/.ssh/id_ed25519\n```\nThen in VS Code: install **Remote - SSH**, Command Palette → *Remote-SSH: Connect to Host* → `gpu-box`, and open the remote folder.\n\nVS Code installs a lightweight server on the remote; your editor UI runs locally but the **filesystem, terminal, Python interpreter, and GPU all live on the remote**. Beats local-edit + `scp`: no constant file syncing, the integrated terminal already has the GPU and CUDA, and `torch.cuda.is_available()` is True without copying anything. Your laptop stays a thin client."
+    }
+  ]
+}

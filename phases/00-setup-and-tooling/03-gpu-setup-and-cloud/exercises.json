@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Is there a GPU?",
+      "difficulty": "warmup",
+      "prompt": "Determine whether PyTorch can see a GPU on your machine, and print its name if so. If you have no local GPU, state which of the lesson's three options you'll use instead.",
+      "hint": "`torch.cuda.is_available()` plus `torch.cuda.get_device_name(0)`.",
+      "solution": "```python\nimport torch\nif torch.cuda.is_available():\n    print(\"GPU:\", torch.cuda.get_device_name(0))\nelse:\n    print(\"No CUDA GPU — use Google Colab (free T4) or a cloud GPU.\")\n```\n\nFrom the shell, `nvidia-smi` shows the same hardware plus live memory/utilization. No GPU at home is fine for phases 1-3; Colab's free T4 covers most of the rest."
+    },
+    {
+      "title": "Measure the speedup",
+      "difficulty": "core",
+      "prompt": "Benchmark a large matrix multiplication (e.g. 4096×4096) on CPU and on GPU, and report the speedup factor. Make sure you time the GPU correctly — naive timing will undercount because GPU calls are asynchronous.",
+      "hint": "Use `torch.cuda.synchronize()` before stopping the timer, and do a warm-up matmul first so you don't measure kernel-compile time.",
+      "solution": "```python\nimport torch, time\n\ndef bench(device, n=4096, iters=10):\n    x = torch.randn(n, n, device=device)\n    y = torch.randn(n, n, device=device)\n    (x @ y)  # warm-up\n    if device == \"cuda\": torch.cuda.synchronize()\n    t0 = time.time()\n    for _ in range(iters): z = x @ y\n    if device == \"cuda\": torch.cuda.synchronize()\n    return (time.time() - t0) / iters\n\ncpu = bench(\"cpu\")\nprint(f\"CPU: {cpu*1000:.1f} ms\")\nif torch.cuda.is_available():\n    gpu = bench(\"cuda\")\n    print(f\"GPU: {gpu*1000:.1f} ms  ({cpu/gpu:.0f}x faster)\")\n```\n\nExpect a 1-2 order-of-magnitude speedup. The `synchronize()` calls matter: without them you'd time only the kernel *launch*, not the work, and the GPU would look impossibly fast."
+    },
+    {
+      "title": "Will the model fit?",
+      "difficulty": "stretch",
+      "prompt": "Using the fp16 rule of thumb from the lesson, write a function that estimates the largest model (in billions of parameters) that fits in a given amount of VRAM for inference, and apply it to a 24 GB card. Then explain why training needs far more.",
+      "hint": "fp16 = 2 bytes per parameter. Leave headroom for activations/KV-cache. Training adds gradients + optimizer state (Adam ≈ 2 extra copies).",
+      "solution": "```python\ndef max_params_billions(vram_gb, bytes_per_param=2, overhead=0.8):\n    usable = vram_gb * 1e9 * overhead\n    return usable / bytes_per_param / 1e9\n\nprint(f\"{max_params_billions(24):.1f}B params (fp16 inference, 24GB)\")\n# ~9.6B — so a 7B model fits comfortably, 13B is tight.\n```\n\nInference in fp16 needs ~2 bytes/param plus room for activations and (for LLMs) the KV cache. **Training** needs the weights *plus* gradients (another 2 bytes/param) *plus* Adam's two moment buffers — roughly 4× the inference footprint before activations — which is why a 7B model you can *run* on 24 GB needs multiple high-end GPUs to *train*."
+    }
+  ]
+}

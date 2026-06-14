@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Keys out of code",
+      "difficulty": "warmup",
+      "prompt": "Store an API key in a `.env` file (never in source), load it into your program at runtime, and confirm it's readable — without ever printing the full key. Make sure `.env` is gitignored.",
+      "hint": "`python-dotenv`'s `load_dotenv()` reads `.env` into `os.environ`. Print only a masked prefix to confirm.",
+      "solution": "```bash\necho 'ANTHROPIC_API_KEY=sk-ant-xxxxx' > .env\necho '.env' >> .gitignore\n```\n```python\nimport os\nfrom dotenv import load_dotenv\nload_dotenv()\nkey = os.environ[\"ANTHROPIC_API_KEY\"]\nprint(\"loaded:\", key[:7] + \"…\")   # masked — never log the whole key\n```\n\nKeys in source get committed, pushed, and scraped within minutes. The `.env` + gitignore pattern keeps secrets on the machine; in production you'd inject them as real environment variables instead of a file."
+    },
+    {
+      "title": "Same call, two ways",
+      "difficulty": "core",
+      "prompt": "Make the same LLM request twice — once with the official SDK, once with a raw HTTP POST — and confirm both return the same kind of response. This is the skill that lets you debug when an SDK hides something.",
+      "hint": "The SDK is a thin wrapper over an HTTPS POST with the key in a header and a JSON body. Use `requests` for the raw version.",
+      "solution": "```python\n# SDK\nfrom anthropic import Anthropic\nclient = Anthropic()\nmsg = client.messages.create(\n    model=\"claude-sonnet-4-6\", max_tokens=64,\n    messages=[{\"role\": \"user\", \"content\": \"Say hi in 3 words\"}])\nprint(msg.content[0].text)\n\n# Raw HTTP — identical request underneath\nimport os, requests\nr = requests.post(\"https://api.anthropic.com/v1/messages\",\n    headers={\"x-api-key\": os.environ[\"ANTHROPIC_API_KEY\"],\n             \"anthropic-version\": \"2023-06-01\",\n             \"content-type\": \"application/json\"},\n    json={\"model\": \"claude-sonnet-4-6\", \"max_tokens\": 64,\n          \"messages\": [{\"role\": \"user\", \"content\": \"Say hi in 3 words\"}]})\nprint(r.json()[\"content\"][0][\"text\"])\n```\n\nKnowing the raw shape means that when the SDK throws an opaque error, you can reproduce the call with `curl`/`requests` and see exactly what the server said."
+    },
+    {
+      "title": "Survive rate limits",
+      "difficulty": "stretch",
+      "prompt": "Wrap an API call so that a 429 (rate limit) or transient 5xx is retried with exponential backoff, while a 401 (bad key) fails immediately. Explain why you treat those two errors differently.",
+      "hint": "Retry only errors that might succeed later. Backoff = base * 2**attempt, ideally with jitter. Respect a `retry-after` header if present.",
+      "solution": "```python\nimport time, random, requests\n\ndef call_with_retry(make_request, max_attempts=5):\n    for attempt in range(max_attempts):\n        resp = make_request()\n        if resp.status_code == 401:\n            raise RuntimeError(\"Bad API key — retrying won't help\")\n        if resp.status_code in (429, 500, 502, 503):\n            wait = float(resp.headers.get(\"retry-after\",\n                        2 ** attempt + random.random()))\n            time.sleep(wait)\n            continue\n        resp.raise_for_status()\n        return resp.json()\n    raise RuntimeError(\"Exhausted retries\")\n```\n\nA 429 or 503 is *temporary* — the same request will likely succeed after a pause, so backing off is correct. A 401 is *deterministic* — the key is wrong, so retrying just wastes time and quota. Jitter spreads retries so many clients don't all wake up and re-hammer the server in lockstep."
+    }
+  ]
+}

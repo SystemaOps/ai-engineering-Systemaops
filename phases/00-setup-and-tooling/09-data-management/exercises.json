@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Load and inspect a dataset",
+      "difficulty": "warmup",
+      "prompt": "Use the Hugging Face `datasets` library to load a small dataset, then print its splits, the number of rows, and one example. Note where it got cached on disk.",
+      "hint": "`load_dataset(name)` returns a `DatasetDict`; index a split and a row like a dict.",
+      "solution": "```python\nfrom datasets import load_dataset\nds = load_dataset(\"imdb\")\nprint(ds)                      # shows splits: train/test and row counts\nprint(ds[\"train\"][0])          # one example\n```\n\nThe data is cached under `~/.cache/huggingface/datasets/`, so the second load is instant and offline. Deleting that directory forces a fresh download."
+    },
+    {
+      "title": "Reproducible splits",
+      "difficulty": "core",
+      "prompt": "Split a dataset into train/validation/test with a fixed random seed so that re-running gives the exact same partition every time. Verify reproducibility by splitting twice and comparing the first test index.",
+      "hint": "`train_test_split(test_size=..., seed=...)`. Do it twice and compare a sample id.",
+      "solution": "```python\nfrom datasets import load_dataset\nds = load_dataset(\"imdb\", split=\"train\")\n\ndef split(seed=42):\n    tmp = ds.train_test_split(test_size=0.2, seed=seed)\n    val_test = tmp[\"test\"].train_test_split(test_size=0.5, seed=seed)\n    return tmp[\"train\"], val_test[\"train\"], val_test[\"test\"]\n\na = split(); b = split()\nprint(a[2][0][\"text\"][:40] == b[2][0][\"text\"][:40])   # True — identical test set\n```\n\nA fixed seed makes the split deterministic, so a metric difference between two runs reflects your *model* change, not a reshuffled test set. Without it, every experiment is measured against a different yardstick and results aren't comparable."
+    },
+    {
+      "title": "Pick the right file format",
+      "difficulty": "stretch",
+      "prompt": "Take a moderately large table, save it as CSV and as Parquet, and compare file size and load time. Explain when you'd reach for CSV, Parquet, and Arrow respectively.",
+      "hint": "Parquet is columnar + compressed; CSV is row-text. Time `pd.read_csv` vs `pd.read_parquet`.",
+      "solution": "```python\nimport pandas as pd, numpy as np, time, os\ndf = pd.DataFrame(np.random.randn(1_000_000, 10))\n\ndf.to_csv(\"d.csv\", index=False)\ndf.to_parquet(\"d.parquet\")\nfor f in (\"d.csv\", \"d.parquet\"):\n    t = time.time(); pd.read_parquet(f) if f.endswith('parquet') else pd.read_csv(f)\n    print(f, f\"{os.path.getsize(f)/1e6:.1f} MB\", f\"{time.time()-t:.2f}s\")\n```\n\n**CSV**: human-readable, universal, but bloated and slow — fine for tiny files and interop. **Parquet**: columnar + compressed, much smaller and far faster to load specific columns — the default for datasets on disk. **Arrow**: in-memory columnar format for zero-copy sharing between processes/libraries — what `datasets` uses under the hood. Rule of thumb: ship Parquet, compute on Arrow, export CSV only when a human or legacy tool demands it."
+    }
+  ]
+}

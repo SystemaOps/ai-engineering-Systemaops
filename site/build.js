@@ -552,6 +552,13 @@ function emitContent() {
         files++;
         bytes += fs.statSync(quizPath).size;
       }
+      const exercisesPath = path.join(lessonDir, 'exercises.json');
+      if (fs.existsSync(exercisesPath)) {
+        fs.mkdirSync(destBase, { recursive: true });
+        fs.copyFileSync(exercisesPath, path.join(destBase, 'exercises.json'));
+        files++;
+        bytes += fs.statSync(exercisesPath).size;
+      }
       copyInto(path.join(lessonDir, 'code'), path.join(destBase, 'code'), manifest.code);
       copyInto(path.join(lessonDir, 'outputs'), path.join(destBase, 'outputs'), manifest.outputs);
 

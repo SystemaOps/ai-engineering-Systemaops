@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "A tensor debug print",
+      "difficulty": "warmup",
+      "prompt": "Write a `debug_print(name, tensor)` helper that shows a tensor's shape, dtype, device, and whether it contains any NaN/Inf — the four facts you need most when tensor code misbehaves. Demonstrate it on a tensor that secretly contains a NaN.",
+      "hint": "`tensor.shape`, `.dtype`, `.device`, `torch.isnan(t).any()`.",
+      "solution": "```python\nimport torch\n\ndef debug_print(name, t):\n    print(f\"{name}: shape={tuple(t.shape)} dtype={t.dtype} device={t.device} \"\n          f\"nan={torch.isnan(t).any().item()} inf={torch.isinf(t).any().item()}\")\n\nx = torch.tensor([1.0, 2.0, float('nan')])\ndebug_print(\"x\", x)   # ... nan=True\n```\n\nFor tensor code this beats a step debugger: a single line shows shape, dtype, device, and value-health together, which is exactly the cluster of facts behind most failures."
+    },
+    {
+      "title": "Profile to find the bottleneck",
+      "difficulty": "core",
+      "prompt": "Profile a small training-style loop with `cProfile`, sort by cumulative time, and identify which function dominates. Explain why you profile before optimizing.",
+      "hint": "`cProfile.run('main()', sort='cumtime')` or the `pstats` API for the top N.",
+      "solution": "```python\nimport cProfile, pstats, io\n\ndef slow(): return sum(i*i for i in range(2_000_000))\ndef fast(): return 42\ndef main():\n    for _ in range(5): slow(); fast()\n\npr = cProfile.Profile(); pr.enable(); main(); pr.disable()\npstats.Stats(pr).sort_stats('cumtime').print_stats(5)\n```\n\nThe report shows `slow` dominating cumulative time, `fast` negligible. **Profile first** because intuition about hotspots is usually wrong — you'll spend hours optimizing a function that's 2% of runtime while the real cost (often data loading or a CPU↔GPU transfer) goes untouched. Measure, then optimize the top of the list."
+    },
+    {
+      "title": "Catch a silent bug",
+      "difficulty": "stretch",
+      "prompt": "Demonstrate one of the silent AI bugs from the lesson — a tensor left on the wrong device causing a crash, or data leakage where a feature secretly encodes the label — and show the check that catches it before it wastes a training run.",
+      "hint": "Device: operate on a CPU tensor and a CUDA tensor together. Leakage: a feature column that's a function of the target.",
+      "solution": "**Wrong-device bug:**\n```python\nimport torch\nif torch.cuda.is_available():\n    a = torch.randn(3, device=\"cuda\")\n    b = torch.randn(3)            # forgot .to('cuda')\n    try: a + b\n    except RuntimeError as e: print(\"caught:\", e)   # expected cuda vs cpu\n```\nGuard with an assertion in your training step: `assert x.device == model_device`.\n\n**Data leakage:**\n```python\nimport numpy as np\ny = np.random.randint(0, 2, 1000)\nX_bad = y + np.random.normal(0, 0.001, 1000)   # 'feature' ≈ label\nprint(\"corr:\", np.corrcoef(X_bad, y)[0, 1])    # ~1.0 → leakage!\n```\nA feature with near-perfect correlation to the target (or accuracy that looks too good) is the tell. Both bugs never raise during a normal run — the device one crashes loudly *if* you're lucky, the leakage one silently produces a model that aces the test set and fails in production. Check device equality and suspiciously high single-feature correlations *before* committing GPU hours."
+    }
+  ]
+}
