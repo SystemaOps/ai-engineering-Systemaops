@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Lag features",
+      "difficulty": "warmup",
+      "prompt": "Convert a time series into a supervised learning table using lag features (predict value at t from values at t−1, t−2, t−3). Show the resulting (X, y) rows and note how many rows you lose.",
+      "hint": "Row t's features are [series[t-1], series[t-2], series[t-3]], target is series[t]. The first 3 points can't form a row.",
+      "solution": "```python\ndef make_lags(series, k=3):\n    X, y = [], []\n    for t in range(k, len(series)):\n        X.append(series[t-k:t][::-1])   # [t-1, t-2, t-3]\n        y.append(series[t])\n    return X, y\nX, y = make_lags([10,12,13,15,16,18])\nfor xi, yi in zip(X, y): print(xi, '->', yi)\n```\n\nLagging turns 'predict the next value' into ordinary supervised regression on the previous k values — now any model (linear, trees) applies. You lose the first k rows (no history yet). Rolling statistics (mean/std over a window) are common extra features alongside lags."
+    },
+    {
+      "title": "Walk-forward validation",
+      "difficulty": "core",
+      "prompt": "Implement walk-forward (expanding-window) validation that always trains on past data and tests on the immediate future, and explain why a random train/test split is invalid for time series.",
+      "hint": "Train on [0:i], test on [i:i+h], advance. Never let a test point precede a train point in time.",
+      "solution": "```python\ndef walk_forward(n, init=4, horizon=1):\n    i=init\n    while i+horizon<=n:\n        yield list(range(0,i)), list(range(i,i+horizon))\n        i+=horizon\nfor tr, te in walk_forward(8):\n    print('train', tr, 'test', te)\n```\n\nEach split trains only on the **past** and tests on the **next** chunk, mirroring real deployment. A **random split is invalid** because it puts future points in the training set and past points in the test set — the model 'sees the future,' so validation scores are wildly optimistic and meaningless. Temporal order must be preserved; the expanding (or sliding) window is how."
+    },
+    {
+      "title": "Stationarity matters",
+      "difficulty": "stretch",
+      "prompt": "Explain what stationarity means, why many time-series models require it, and how to test for and achieve it (differencing). Decompose the intuition of trend + seasonality + residual.",
+      "hint": "Stationary = constant mean/variance/autocorrelation over time. Differencing (y_t − y_{t−1}) removes trend; seasonal differencing removes cycles.",
+      "solution": "**Stationarity** means the series' statistical properties — mean, variance, autocorrelation — **don't change over time**. A series with an upward trend or growing variance is non-stationary.\n\n**Why it matters:** classical models (ARIMA, etc.) assume the relationships they learn are stable across time. If the mean drifts, a model fit on early data is wrong later — 'past predicts future' only holds when the generating process is stable. Spurious correlations between two trending series are a classic trap.\n\n**Decomposition:** a series ≈ **trend** (long-run direction) + **seasonality** (repeating cycles, e.g. weekly/yearly) + **residual** (what's left). You model or remove the structured parts and study the residual.\n\n**Testing + fixing:**\n- Test with the Augmented Dickey-Fuller test (or just plot rolling mean/variance and look for drift).\n- **Differencing** `y_t − y_{t-1}` removes a linear trend; apply twice for a quadratic trend.\n- **Seasonal differencing** `y_t − y_{t-s}` removes a cycle of period s.\n- Log or Box-Cox transforms stabilize growing variance.\n\n```python\ndef difference(series): return [series[t]-series[t-1] for t in range(1,len(series))]\nprint(difference([10,12,15,19,24]))   # [2,3,4,5] -> trend removed, now stationary-ish\n```\n\nGet the series stationary first, model the residual, then add the trend/seasonality back for the final forecast."
+    }
+  ]
+}

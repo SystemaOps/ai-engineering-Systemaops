@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Chain steps into one object",
+      "difficulty": "warmup",
+      "prompt": "Build a minimal pipeline abstraction that chains a list of (fit/transform) steps plus a final estimator, exposing one fit and one predict. Explain why a single object beats a loose notebook of cells.",
+      "hint": "Each step has fit(X) and transform(X); the estimator has fit(X,y)/predict(X). fit threads data through transforms.",
+      "solution": "```python\nclass Pipeline:\n    def __init__(self, steps): self.steps=steps   # [(transformer...), estimator]\n    def fit(self, X, y):\n        for t in self.steps[:-1]: X=t.fit(X).transform(X)\n        self.steps[-1].fit(X, y); return self\n    def predict(self, X):\n        for t in self.steps[:-1]: X=t.transform(X)\n        return self.steps[-1].predict(X)\n```\n\nA pipeline packages preprocessing + model into one fitted object. Versus scattered notebook cells, it's **reproducible** (same steps, same order, every time), **serializable** (ship the whole thing), and — critically — it makes leakage hard, because transforms are `fit` on training data only and merely `transform` at predict time."
+    },
+    {
+      "title": "Pipelines prevent leakage",
+      "difficulty": "core",
+      "prompt": "Show the leakage bug that happens when you scale (or impute) BEFORE splitting into train/test, versus the correct order, and explain how a pipeline inside cross-validation fixes it automatically.",
+      "hint": "Fitting the scaler on all data lets test statistics influence training. Correct: fit scaler on train fold only.",
+      "solution": "```python\n# WRONG: scaler sees the whole dataset, incl. test\n# mu, sigma = mean(ALL X), std(ALL X)   -> test info leaks into training\n#\n# RIGHT: fit on train only\n# scaler.fit(X_train); X_train = scaler.transform(X_train)\n#                      X_test  = scaler.transform(X_test)\n```\n\nIf you compute the scaler's mean/std (or an imputer's median, or a target encoding) on the **full** dataset before splitting, the test set's statistics bleed into training — your validation score is optimistic and collapses in production. A **pipeline inside cross-validation** fixes this for free: for each fold, `fit` runs only on that fold's training portion and `transform` is applied to its validation portion, so every preprocessing step is re-fit per fold with no peeking. This is the single biggest practical reason to wrap preprocessing in a pipeline rather than doing it by hand."
+    },
+    {
+      "title": "ColumnTransformer + serialization",
+      "difficulty": "stretch",
+      "prompt": "Describe how to apply different preprocessing to numeric vs categorical columns within one pipeline (a ColumnTransformer), and why serializing the *fitted* pipeline — not just the model — is what guarantees train/prod parity.",
+      "hint": "Route column subsets to different transformers, then concatenate. Serialize the whole fitted object so prod uses the exact same learned statistics.",
+      "solution": "**Mixed-type preprocessing:** a ColumnTransformer routes column subsets to different transformers and concatenates the results — e.g. numeric columns → impute median + standardize; categorical columns → impute mode + one-hot. All of it is one step inside the pipeline, fit jointly:\n\n```\nColumnTransformer([\n  ('num', Pipeline([Imputer('median'), StandardScaler()]), numeric_cols),\n  ('cat', Pipeline([Imputer('most_frequent'), OneHotEncoder()]), categorical_cols),\n])  ->  model\n```\n\n**Why serialize the fitted pipeline, not just the model:** the model's weights are useless without the *exact same* preprocessing — the same medians, the same scaler mean/std, the same one-hot category list learned at training time. If production recomputes those from live data (different medians, an unseen category, different column order), inputs silently differ from what the model trained on and predictions drift. Pickling/serializing the **whole fitted pipeline** captures every learned statistic, so `pipeline.predict(raw_row)` in production reproduces training behavior byte-for-byte. The model is an artifact; the fitted pipeline is the product."
+    }
+  ]
+}

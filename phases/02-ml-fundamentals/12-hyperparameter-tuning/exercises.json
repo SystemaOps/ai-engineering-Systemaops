@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Grid search",
+      "difficulty": "warmup",
+      "prompt": "Implement grid search over two hyperparameters given a scoring function, returning the best combination. Count how many evaluations it costs and how that scales with more parameters.",
+      "hint": "Nested loop over all value combinations; track the argmax score.",
+      "solution": "```python\nimport itertools\ndef grid_search(grid, score):\n    best=None; best_s=-1\n    for combo in itertools.product(*grid.values()):\n        params=dict(zip(grid.keys(), combo))\n        s=score(params)\n        if s>best_s: best_s, best = s, params\n    return best, best_s\ngrid={'lr':[0.01,0.1,0.3], 'depth':[2,4,6]}\nprint(grid_search(grid, lambda p: -(p['lr']-0.1)**2 - (p['depth']-4)**2))\n```\n\nGrid search tries *every* combination — exhaustive and reproducible, but the cost is the **product** of the per-parameter counts. 6 parameters × 5 values = 5⁶ ≈ 15,625 runs. It explodes combinatorially, which is why it's only practical for 2-3 parameters."
+    },
+    {
+      "title": "Why random search wins",
+      "difficulty": "core",
+      "prompt": "Explain why random search usually finds good hyperparameters faster than grid search when only a few parameters actually matter. Illustrate with the 'distinct values explored per dimension' argument.",
+      "hint": "With a budget of N trials, grid wastes evaluations on unimportant dimensions; random search samples N distinct values along EVERY dimension.",
+      "solution": "Most hyperparameter spaces have **low effective dimensionality** — only 1-2 parameters strongly affect the score; the rest barely matter.\n\nWith a budget of, say, 9 trials on 2 parameters:\n- **Grid (3×3):** explores only **3 distinct values** of each parameter. If parameter A is the one that matters, you've sampled its axis at just 3 points.\n- **Random (9 draws):** explores up to **9 distinct values** of *each* parameter, because every draw is a new value on every axis.\n\nSo random search effectively gives the important dimension 3× the resolution for the same budget, and doesn't waste trials varying parameters that don't matter. Bergstra & Bengio (2012) showed this is why random search reliably matches or beats grid search at a fraction of the cost. For larger budgets, **Bayesian optimization** does better still by *modeling* the score surface and sampling where improvement is likely."
+    },
+    {
+      "title": "Bayesian optimization loop",
+      "difficulty": "stretch",
+      "prompt": "Describe the components of a Bayesian-optimization loop (surrogate model + acquisition function) and how they make tuning sample-efficient. Then explain how to avoid overfitting the validation set during heavy tuning.",
+      "hint": "Surrogate (e.g. Gaussian process) predicts score + uncertainty; acquisition (e.g. Expected Improvement) balances exploit vs explore. Nested CV / a held-out test guard against val overfitting.",
+      "solution": "**The loop:**\n1. **Surrogate model** — fit a cheap probabilistic model (classically a Gaussian process) mapping hyperparameters → predicted score *with uncertainty*, using the trials seen so far.\n2. **Acquisition function** — e.g. Expected Improvement, scores each candidate by how much better it might be than the current best, balancing **exploitation** (near known-good points) and **exploration** (high-uncertainty regions).\n3. Evaluate the acquisition's argmax (one real, expensive training run), add the result, refit the surrogate, repeat.\n\nThis is sample-efficient because every expensive evaluation is *chosen* to be informative, rather than blind like grid/random — it typically finds strong configs in tens of trials instead of thousands.\n\n**Avoiding validation overfitting:** the more configurations you try, the more likely one scores well on the validation set *by luck* (multiple-comparisons problem). Defenses: (1) use **cross-validation** so each config's score averages over folds; (2) keep a **completely held-out test set** never touched during tuning and report final numbers there; (3) for rigorous estimates use **nested CV** (an inner loop tunes, an outer loop evaluates). Otherwise your 'best' config is partly fit to validation noise and will regress in production."
+    }
+  ]
+}

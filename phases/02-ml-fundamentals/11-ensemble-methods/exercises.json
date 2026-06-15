@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Majority vote beats one voter",
+      "difficulty": "warmup",
+      "prompt": "Show numerically that majority voting over many independent weak classifiers (each 60% accurate) beats any single one. Compute the ensemble accuracy for an odd number of voters.",
+      "hint": "Ensemble is correct when more than half the independent voters are correct — a binomial tail probability.",
+      "solution": "```python\nfrom math import comb\ndef ensemble_acc(n, p=0.6):\n    return sum(comb(n,k)*p**k*(1-p)**(n-k) for k in range(n//2+1, n+1))\nfor n in (1, 5, 25, 101):\n    print(n, round(ensemble_acc(n), 3))\n# 0.6 -> 0.683 -> 0.846 -> 0.979\n```\n\nThis is Condorcet's jury theorem: with **independent** voters each better than chance, majority vote accuracy climbs toward 1 as you add voters. The crucial word is *independent* — identical voters add nothing. Real ensembles spend their effort making members **decorrelated** (different data, features, or algorithms)."
+    },
+    {
+      "title": "Bagging reduces variance",
+      "difficulty": "core",
+      "prompt": "Build a bagging ensemble: train several models on bootstrap resamples and average their predictions. Demonstrate that the averaged prediction has lower variance than a single model. Explain why bias is unchanged.",
+      "hint": "Bootstrap = sample-with-replacement of the training set. Average the predictions; variance of the mean of m decorrelated estimators is ~1/m of one.",
+      "solution": "```python\nimport random\ndef bootstrap(data):\n    return [random.choice(data) for _ in range(len(data))]\n# each base model trained on its own bootstrap sample; predict() averaged\n# variance of the ensemble mean of m near-independent models ~ var_single/m\n```\n\nEach model sees a different bootstrap sample, so their errors are partly **decorrelated**. Averaging m such predictions cuts variance roughly by a factor up to m (limited by residual correlation) — while leaving **bias unchanged**, because each model is unbiased for the same target and the average of unbiased estimators is still unbiased. That's exactly why random forests (bagged trees + feature randomness) turn high-variance deep trees into a stable, accurate model."
+    },
+    {
+      "title": "Bagging vs boosting vs stacking",
+      "difficulty": "stretch",
+      "prompt": "For each of bagging, boosting, and stacking: explain how it combines models and which error component (bias or variance) it primarily targets. Why does boosting reduce bias where bagging can't?",
+      "hint": "Bagging = parallel + average (variance). Boosting = sequential, each model fixes the last's errors (bias). Stacking = a meta-model learns to combine base models.",
+      "solution": "- **Bagging** trains many models *in parallel* on bootstrap samples and **averages** them. Targets **variance**: averaging decorrelated models reduces variance, bias unchanged. (Random forests.)\n- **Boosting** trains models *sequentially*, each new one focusing on the examples the ensemble still gets wrong (AdaBoost reweights them; gradient boosting fits the residual). Targets **bias**: the ensemble keeps adding capacity aimed at current errors, so a sum of weak (high-bias) learners becomes a strong low-bias model. (XGBoost, LightGBM.)\n- **Stacking** trains diverse base models, then trains a **meta-model** on their out-of-fold predictions to learn the best combination. Targets **both**, by letting a learner discover where each base model is trustworthy.\n\n**Why boosting reduces bias and bagging can't:** bagging averages models that all make the *same systematic error* (same bias) — averaging can't remove a shared bias. Boosting instead *adds* new models specifically aimed at the residual error, so it actively reduces bias step by step (at the risk of eventually overfitting, hence learning rate + early stopping). Rule of thumb: high-variance base learner → bag it; high-bias base learner → boost it."
+    }
+  ]
+}

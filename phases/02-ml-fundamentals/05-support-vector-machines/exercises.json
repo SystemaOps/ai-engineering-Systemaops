@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Hinge loss",
+      "difficulty": "warmup",
+      "prompt": "Implement hinge loss for a binary SVM (labels ±1) and show it's zero for correctly-classified points beyond the margin but positive for points inside the margin or misclassified.",
+      "hint": "hinge = max(0, 1 − y·f(x)), where f(x)=wx+b and y∈{−1,+1}.",
+      "solution": "```python\ndef hinge(y, score): return max(0.0, 1 - y*score)\nprint(hinge(+1, 2.0))   # 0.0  (correct, beyond margin)\nprint(hinge(+1, 0.5))   # 0.5  (correct but inside margin)\nprint(hinge(+1, -1.0))  # 2.0  (misclassified)\n```\n\nHinge loss only penalizes points that are misclassified *or* sitting inside the margin (score between −1 and +1 in the wrong sense). Points safely beyond the margin contribute zero loss — so the SVM only cares about the hard cases near the boundary, which become the support vectors."
+    },
+    {
+      "title": "Train a linear SVM",
+      "difficulty": "core",
+      "prompt": "Train a linear SVM from scratch via gradient descent on the primal objective (hinge loss + L2 regularization), and identify which training points are support vectors. Explain what C controls.",
+      "hint": "Objective: (λ/2)‖w‖² + mean hinge. Subgradient: if margin violated, w ← w − lr(λw − y·x); else w ← w − lr·λw.",
+      "solution": "```python\nX=[[2,2],[1,3],[-2,-2],[-1,-3]]; Y=[1,1,-1,-1]\nw=[0.0,0.0]; b=0.0; lam=0.01; lr=0.1\nfor _ in range(2000):\n    for x,y in zip(X,Y):\n        score=sum(wi*xi for wi,xi in zip(w,x))+b\n        if y*score < 1:                      # margin violated -> support vector region\n            w=[wi-lr*(lam*wi - y*xi) for wi,xi in zip(w,x)]; b+=lr*y\n        else:\n            w=[wi-lr*lam*wi for wi in w]\nsvs=[x for x,y in zip(X,Y) if y*(sum(wi*xi for wi,xi in zip(w,x))+b) <= 1.001]\nprint('support vectors:', svs)\n```\n\nSupport vectors are the points on or inside the margin — they alone determine the boundary; deleting any other point wouldn't move it. **C** (here ≈ 1/λ) sets the margin-vs-error tradeoff: large C punishes misclassifications hard → a narrow margin that fits training data tightly (risk of overfitting); small C tolerates some violations for a wider, more general margin."
+    },
+    {
+      "title": "The kernel trick",
+      "difficulty": "stretch",
+      "prompt": "Explain how the kernel trick lets an SVM separate data that's not linearly separable (like concentric circles) without ever computing the high-dimensional feature map. Show the RBF kernel and why it corresponds to an infinite-dimensional space.",
+      "hint": "The dual SVM uses only dot products x·x'. A kernel K(x,x') computes the dot product in a transformed space directly. RBF: exp(−γ‖x−x'‖²).",
+      "solution": "Concentric circles can't be split by a line in 2D, but lifting to a feature like `(x, y, x²+y²)` makes the inner circle separable by a flat plane (height). The catch: explicit high-dimensional maps are expensive or infinite.\n\n**The trick:** the SVM's dual form depends on the data *only through dot products* `x·x'`. A kernel computes the dot product in the transformed space **directly**, skipping the map:\n\n```python\nimport math\ndef rbf(x, xp, gamma=0.5):\n    return math.exp(-gamma*sum((a-b)**2 for a,b in zip(x, xp)))\nprint(round(rbf([0,0],[0,0]),3), round(rbf([0,0],[3,3]),3))  # 1.0, ~0.0\n```\n\nThe **RBF kernel** `exp(−γ‖x−x'‖²)` measures similarity that decays with distance. Expanding its Taylor series shows it equals a dot product in an **infinite-dimensional** feature space — yet you compute it with one cheap expression. So the SVM draws a linear boundary in that infinite space, which maps back to a curved boundary (e.g. a circle) in the original space — all without ever materializing the features. γ controls how local the influence of each point is."
+    }
+  ]
+}

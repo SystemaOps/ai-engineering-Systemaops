@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Standardize a feature",
+      "difficulty": "warmup",
+      "prompt": "Implement z-score standardization (subtract mean, divide by std) and apply it to a feature. Explain why distance- and gradient-based models need it, and the critical rule about computing the statistics.",
+      "hint": "z = (x − μ)/σ using TRAINING-set μ and σ, then apply the same to test data.",
+      "solution": "```python\ndef standardize(train, test):\n    mu=sum(train)/len(train)\n    var=sum((x-mu)**2 for x in train)/len(train)\n    sd=var**0.5\n    z=lambda v:[(x-mu)/sd for x in v]\n    return z(train), z(test)\nprint(standardize([10,20,30,40], [25])[1])   # [-0.447...]\n```\n\nWithout scaling, a feature measured in thousands dominates one measured in fractions — KNN/SVM distances and gradient-descent steps get skewed toward the large-magnitude feature. **Critical rule:** compute μ and σ on the **training set only**, then apply them to validation/test. Fitting the scaler on all data leaks test information into training and inflates your scores."
+    },
+    {
+      "title": "Target encoding and its leakage trap",
+      "difficulty": "core",
+      "prompt": "Implement target encoding for a categorical feature (replace each category with the mean target for that category) and explain the data-leakage risk plus the standard mitigation.",
+      "hint": "Naive target encoding uses each row's own target in its category mean → leakage. Fix with out-of-fold / smoothing.",
+      "solution": "```python\ndef target_encode(cats, y):\n    sums={}; counts={}\n    for c,t in zip(cats,y): sums[c]=sums.get(c,0)+t; counts[c]=counts.get(c,0)+1\n    means={c: sums[c]/counts[c] for c in sums}\n    return [means[c] for c in cats]\nprint(target_encode(['a','a','b','b'], [1,0,1,1]))  # [0.5,0.5,1.0,1.0]\n```\n\nTarget encoding is powerful for high-cardinality categories (cities, user IDs) but **leaks**: if a row's own target is included in its category mean, the model peeks at the answer — especially for rare categories where the mean is dominated by that one row. Mitigations: **out-of-fold encoding** (compute each fold's means from the *other* folds), **smoothing** toward the global mean for rare categories, or adding noise. Skip these and you get glorious validation scores that collapse in production."
+    },
+    {
+      "title": "TF-IDF from scratch",
+      "difficulty": "stretch",
+      "prompt": "Build a TF-IDF vectorizer from scratch over a tiny corpus and explain why it beats raw word counts for text classification — specifically what the IDF term does to common vs rare words.",
+      "hint": "TF = term freq in a doc; IDF = log(N / docs containing term). TF-IDF = TF × IDF.",
+      "solution": "```python\nimport math\ndef tfidf(corpus):\n    docs=[d.split() for d in corpus]; N=len(docs)\n    vocab=sorted({w for d in docs for w in d})\n    df={w: sum(w in d for d in docs) for w in vocab}\n    out=[]\n    for d in docs:\n        row={}\n        for w in vocab:\n            tf=d.count(w)/len(d)\n            idf=math.log(N/df[w])\n            row[w]=round(tf*idf, 3)\n        out.append(row)\n    return out\nfor r in tfidf(['the cat sat','the dog ran','the cat ran']):\n    print({k:v for k,v in r.items() if v>0})\n```\n\nRaw counts let ubiquitous words ('the', 'is') dominate, even though they carry no discriminative signal. **IDF = log(N / docs-containing-word)** downweights words appearing in many documents (→ near 0 for 'the') and boosts rare, document-specific words. Multiplying by TF rewards words frequent *in this doc but rare overall* — exactly the terms that distinguish topics. That reweighting is why TF-IDF features outperform bag-of-counts for classification and retrieval."
+    }
+  ]
+}

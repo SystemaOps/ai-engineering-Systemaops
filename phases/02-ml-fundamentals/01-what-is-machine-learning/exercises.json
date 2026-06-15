@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Classify the learning type",
+      "difficulty": "warmup",
+      "prompt": "For each task, state whether it's supervised, unsupervised, or reinforcement learning, and why: (a) predicting house prices from past sales, (b) grouping customers by behavior with no labels, (c) training a bot to play chess by winning/losing.",
+      "hint": "Supervised = labeled input→output pairs; unsupervised = structure with no labels; RL = learn from reward signal.",
+      "solution": "- **(a) Supervised** — you have (features, known price) pairs; the model learns the input→output mapping. It's a *regression* task (continuous target).\n- **(b) Unsupervised** — no labels, the algorithm finds structure (clusters) on its own.\n- **(c) Reinforcement learning** — no labeled 'correct move,' just a reward (win/loss) the agent maximizes over many games.\n\nThe deciding question is *what signal supervises learning*: explicit labels (supervised), nothing but the data's shape (unsupervised), or a reward from acting in an environment (RL)."
+    },
+    {
+      "title": "Nearest-centroid classifier",
+      "difficulty": "core",
+      "prompt": "Implement a nearest-centroid classifier from scratch: compute each class's mean (centroid) from training data, then classify a new point by which centroid is closest. Evaluate it against a random-guess baseline.",
+      "hint": "Centroid of a class = element-wise mean of its points. Predict argmin distance to centroids.",
+      "solution": "```python\nimport math\ndef train(X, y):\n    classes = {}\n    for xi, yi in zip(X, y): classes.setdefault(yi, []).append(xi)\n    return {c: [sum(col)/len(pts) for col in zip(*pts)] for c, pts in classes.items()}\ndef predict(centroids, x):\n    dist = lambda a,b: sum((p-q)**2 for p,q in zip(a,b))\n    return min(centroids, key=lambda c: dist(centroids[c], x))\n\nX=[[1,1],[1,2],[8,8],[9,8]]; y=[0,0,1,1]\nc=train(X,y)\nacc=sum(predict(c,xi)==yi for xi,yi in zip(X,y))/len(y)\nprint(acc)   # 1.0 vs random baseline 0.5\n```\n\nThe model 'learned' two centroids and beats the 50% random baseline. Always compare to a trivial baseline (random, or always-predict-majority) — a model that can't beat it has learned nothing, no matter how fancy."
+    },
+    {
+      "title": "ML or just rules?",
+      "difficulty": "stretch",
+      "prompt": "For each, decide whether machine learning or hand-written deterministic rules is the better tool, and justify: (a) converting Celsius to Fahrenheit, (b) detecting spam email, (c) checking if a password meets length/character requirements, (d) recommending movies.",
+      "hint": "Use ML when the rules are unknown, numerous, or change over time; use deterministic code when the rule is exact and stable.",
+      "solution": "- **(a) Celsius→Fahrenheit → rules.** The relationship is an exact formula (F = C·9/5 + 32). ML would be absurd — you'd approximate a function you already know perfectly.\n- **(b) Spam detection → ML.** The 'rules' are numerous, fuzzy, and *adversarial* — spammers change tactics, so hand-written rules rot. ML learns patterns and can be retrained.\n- **(c) Password validation → rules.** Exact, stated requirements ('≥12 chars, 1 digit'). Deterministic, auditable, no data needed.\n- **(d) Movie recommendations → ML.** Preferences are personal, high-dimensional, and have no closed-form rule; learning from behavior at scale is the only tractable approach.\n\nThe heuristic: **reach for ML when the rule is unknown, too complex to enumerate, or non-stationary; reach for code when the rule is exact and stable.** Using ML where a formula exists adds cost, opacity, and error for nothing."
+    }
+  ]
+}

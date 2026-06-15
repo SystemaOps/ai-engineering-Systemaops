@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Sigmoid + a single prediction",
+      "difficulty": "warmup",
+      "prompt": "Implement the sigmoid function and use it to turn a logistic model's raw score wx+b into a probability for one example. Show the probability is always in (0,1) and what score gives exactly 0.5.",
+      "hint": "sigmoid(z) = 1/(1+e^{−z}). It crosses 0.5 at z=0.",
+      "solution": "```python\nimport math\ndef sigmoid(z): return 1/(1+math.exp(-z))\nfor z in (-4, 0, 4):\n    print(z, round(sigmoid(z), 3))   # 0.018, 0.5, 0.982\n```\n\nSigmoid squashes any real score into (0,1), so it reads as a probability. The decision boundary is z = wx+b = 0 (probability 0.5); positive scores lean class 1, negative lean class 0. Unlike linear regression's unbounded output, this is a calibrated yes/no with a confidence."
+    },
+    {
+      "title": "Why cross-entropy, not MSE",
+      "difficulty": "core",
+      "prompt": "Train logistic regression with binary cross-entropy loss on a tiny separable dataset and confirm it classifies correctly. Then explain why MSE is the wrong loss for classification.",
+      "hint": "BCE gradient is beautifully simple: dL/dz = (sigmoid(z) − y). MSE on sigmoid gives a non-convex surface with vanishing gradients.",
+      "solution": "```python\nimport math\ndef sig(z): return 1/(1+math.exp(-z))\nX=[0.5,1.0,3.0,4.0]; Y=[0,0,1,1]; w=b=0.0; lr=0.3\nfor _ in range(3000):\n    for x,y in zip(X,Y):\n        p=sig(w*x+b); g=p-y      # dBCE/dz\n        w-=lr*g*x; b-=lr*g\nprint([round(sig(w*x+b)) for x in X])   # [0,0,1,1]\n```\n\nWith the sigmoid, **MSE is non-convex** — its loss surface has flat regions where the gradient nearly vanishes (sigmoid saturates), so gradient descent stalls and can land in bad spots. **Binary cross-entropy is convex** for logistic regression and its gradient `(p − y)` stays informative even when predictions are confidently wrong, driving fast, reliable convergence. That's why every classifier uses cross-entropy, not squared error."
+    },
+    {
+      "title": "Precision/recall and the threshold",
+      "difficulty": "stretch",
+      "prompt": "From a set of predicted probabilities and true labels, compute precision, recall, and F1 at threshold 0.5, then show how raising the threshold trades recall for precision. Explain when you'd move it.",
+      "hint": "Precision = TP/(TP+FP), recall = TP/(TP+FN), F1 = harmonic mean. Predict 1 when prob ≥ threshold.",
+      "solution": "```python\ndef metrics(probs, y, thr):\n    pred=[1 if p>=thr else 0 for p in probs]\n    tp=sum(p==1 and t==1 for p,t in zip(pred,y))\n    fp=sum(p==1 and t==0 for p,t in zip(pred,y))\n    fn=sum(p==0 and t==1 for p,t in zip(pred,y))\n    prec=tp/(tp+fp) if tp+fp else 0; rec=tp/(tp+fn) if tp+fn else 0\n    f1=2*prec*rec/(prec+rec) if prec+rec else 0\n    return round(prec,2), round(rec,2), round(f1,2)\nprobs=[0.9,0.6,0.55,0.4,0.3]; y=[1,1,0,1,0]\nprint(metrics(probs,y,0.5))   # threshold 0.5\nprint(metrics(probs,y,0.8))   # higher: precision up, recall down\n```\n\nThe 0.5 threshold is just a default. **Raise it** to demand higher confidence — fewer false positives (higher precision) but you miss more positives (lower recall). **Lower it** to catch more positives at the cost of false alarms. You move it based on which error is costlier: a cancer screen wants high recall (don't miss sick patients), a spam filter wants high precision (don't junk real mail). F1 balances the two when you need a single number."
+    }
+  ]
+}

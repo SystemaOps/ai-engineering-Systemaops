@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Gini impurity",
+      "difficulty": "warmup",
+      "prompt": "Implement Gini impurity and compute it for a pure node (all one class) and a 50/50 mixed node. Explain what a split is trying to do to impurity.",
+      "hint": "Gini = 1 − Σ p_c². Pure = 0, max for two classes = 0.5.",
+      "solution": "```python\ndef gini(labels):\n    n=len(labels); counts={}\n    for l in labels: counts[l]=counts.get(l,0)+1\n    return 1 - sum((c/n)**2 for c in counts.values())\nprint(gini([1,1,1,1]))       # 0.0  (pure)\nprint(gini([0,0,1,1]))       # 0.5  (max mix)\n```\n\nGini measures how 'mixed' a node's labels are: 0 = perfectly pure, 0.5 = maximally mixed (two classes). A decision-tree split chooses the feature and threshold that most **reduces** the weighted impurity of the child nodes — driving each branch toward purity."
+    },
+    {
+      "title": "Best split by information gain",
+      "difficulty": "core",
+      "prompt": "Given a feature and labels, find the threshold that maximizes information gain (parent impurity minus weighted child impurity). Confirm it picks the cleanest separation.",
+      "hint": "For each candidate threshold, split into left/right, compute weighted Gini, and gain = parent − weighted children.",
+      "solution": "```python\ndef gini(ls):\n    n=len(ls);\n    if n==0: return 0\n    c={};\n    for l in ls: c[l]=c.get(l,0)+1\n    return 1-sum((v/n)**2 for v in c.values())\ndef best_split(x, y):\n    parent=gini(y); best=(None,-1)\n    for t in sorted(set(x)):\n        L=[yi for xi,yi in zip(x,y) if xi<=t]; R=[yi for xi,yi in zip(x,y) if xi>t]\n        if not L or not R: continue\n        wgini=(len(L)*gini(L)+len(R)*gini(R))/len(y)\n        gain=parent-wgini\n        if gain>best[1]: best=(t,gain)\n    return best\nx=[1,2,3,10,11,12]; y=[0,0,0,1,1,1]\nprint(best_split(x,y))   # threshold ~3, gain 0.5 (perfect split)\n```\n\nThe tree greedily picks the split with the highest information gain — here threshold 3 cleanly separates the classes (gain = full parent impurity). Recursing this on each child builds the tree; pre-pruning (max depth, min samples) stops it before it memorizes noise."
+    },
+    {
+      "title": "Why a forest beats a tree",
+      "difficulty": "stretch",
+      "prompt": "Explain how a random forest reduces variance versus a single deep tree, covering both bootstrap sampling and feature randomization. Why does averaging many *decorrelated* trees help, and what's the catch with MDI feature importance?",
+      "hint": "A single deep tree is low-bias/high-variance. Averaging reduces variance only if the trees' errors are decorrelated — hence bagging + random feature subsets.",
+      "solution": "A single deep tree fits training data almost perfectly — **low bias, high variance** (small data changes produce very different trees). Averaging many trees reduces variance, but only if their errors are **decorrelated**; identical trees would just reproduce the same mistake. Random forests force decorrelation two ways:\n\n1. **Bootstrap sampling (bagging):** each tree trains on a random resample-with-replacement of the data, so they see different examples.\n2. **Feature randomization:** at each split, only a random subset of features is considered, so trees can't all key off the same dominant feature.\n\nAveraging these decorrelated trees keeps the low bias while slashing variance — that's why forests (and boosted trees) dominate tabular ML.\n\n**The MDI catch:** mean-decrease-in-impurity importance is biased toward high-cardinality and continuous features (they offer more split points, so they accumulate spurious impurity reductions). For trustworthy importances, prefer **permutation importance** — shuffle a feature's values and measure the real drop in validation performance."
+    }
+  ]
+}

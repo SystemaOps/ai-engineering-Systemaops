@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Fit a line with gradient descent",
+      "difficulty": "warmup",
+      "prompt": "Implement single-feature linear regression trained by gradient descent on MSE, fit it to points near y = 3x − 2, and confirm the learned slope and intercept.",
+      "hint": "pred = wx+b; dw = mean(2(pred−y)x), db = mean(2(pred−y)); step against the gradient.",
+      "solution": "```python\nX=[1,2,3,4,5]; Y=[1,4,7,10,13]   # y = 3x - 2\nw=b=0.0; lr=0.01\nfor _ in range(5000):\n    preds=[w*x+b for x in X]; e=[p-y for p,y in zip(preds,Y)]\n    dw=sum(2*ei*x for ei,x in zip(e,X))/len(X); db=sum(2*ei for ei in e)/len(X)\n    w-=lr*dw; b-=lr*db\nprint(round(w,2), round(b,2))   # 3.0 -2.0\n```\n\nGradient descent walks (w,b) downhill on the MSE surface until it reaches the line that minimizes squared error. This is the same loop as every model — only the prediction function and parameter count change."
+    },
+    {
+      "title": "Normal equation vs gradient descent",
+      "difficulty": "core",
+      "prompt": "Solve the same regression in closed form with the normal equation and confirm it matches gradient descent. State when you'd prefer each approach.",
+      "hint": "w = (XᵀX)⁻¹Xᵀy with a bias column of ones added to X. Use numpy.",
+      "solution": "```python\nimport numpy as np\nX=np.array([[1,1],[1,2],[1,3],[1,4],[1,5]], float)  # bias col + feature\ny=np.array([1,4,7,10,13], float)\nw=np.linalg.solve(X.T@X, X.T@y)\nprint(np.round(w,2))   # [-2.  3.]  (intercept, slope)\n```\n\nThe normal equation gives the exact optimum in one shot. **Prefer it** when features are few (it costs O(n³) to invert/solve the n×n `XᵀX`) and the matrix is well-conditioned. **Prefer gradient descent** when features or samples are large (it scales to millions, streams in mini-batches, and extends to non-linear models where no closed form exists) — which is why deep learning is gradient-descent all the way down."
+    },
+    {
+      "title": "Ridge tames overfitting",
+      "difficulty": "stretch",
+      "prompt": "On a small, noisy dataset with correlated features, show that ordinary least squares produces large, unstable weights while ridge regression (L2 penalty) shrinks them. Explain the bias-variance trade you're making.",
+      "hint": "Ridge: w = (XᵀX + λI)⁻¹Xᵀy. Compare ‖w‖ for λ=0 vs λ>0.",
+      "solution": "```python\nimport numpy as np\nrng=np.random.default_rng(0)\nx=rng.standard_normal(20)\nX=np.column_stack([x, x+1e-3*rng.standard_normal(20)])  # near-duplicate features\ny=2*x + 0.1*rng.standard_normal(20)\ndef fit(lam): return np.linalg.solve(X.T@X + lam*np.eye(2), X.T@y)\nprint('OLS   ‖w‖:', round(np.linalg.norm(fit(0)), 1))\nprint('Ridge ‖w‖:', round(np.linalg.norm(fit(1.0)), 1))\n```\n\nWith near-duplicate features, `XᵀX` is nearly singular, so OLS produces huge weights that swing wildly with tiny data changes (high variance). Ridge's `+λI` shrinks the weights toward zero, sacrificing a little **bias** (the fit can't perfectly match training data) for a large drop in **variance** (stable, generalizable weights). λ is the dial: 0 = pure OLS, large = heavy shrinkage. This is the L2-prior connection from the Bayes lesson made practical."
+    }
+  ]
+}

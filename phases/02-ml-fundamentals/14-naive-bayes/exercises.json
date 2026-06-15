@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Why Laplace smoothing",
+      "difficulty": "warmup",
+      "prompt": "Show the zero-probability problem in Naive Bayes: a word never seen in a class makes the whole class probability zero. Then fix it with Laplace (add-one) smoothing.",
+      "hint": "P(word|class) = count/total. If count=0, the product collapses to 0. Smoothed: (count+1)/(total+vocab_size).",
+      "solution": "```python\ndef p_word(count, total, vocab, alpha=1):\n    return (count + alpha) / (total + alpha*vocab)\nprint(p_word(0, 100, 5000))    # 0.0002, not 0\nprint(p_word(0, 100, 5000, 0)) # 0.0 -> kills the whole product\n```\n\nNaive Bayes multiplies per-word probabilities. A single unseen word with probability 0 zeroes the entire class score — one new word makes a confident classifier go blind. **Laplace smoothing** adds a pseudo-count (α) to every word so nothing is ever exactly zero, at the cost of a tiny bias. It's also why these products are computed in **log space** (sum of logs) to avoid float underflow."
+    },
+    {
+      "title": "Multinomial NB classifier",
+      "difficulty": "core",
+      "prompt": "Implement a Multinomial Naive Bayes text classifier with Laplace smoothing and log-space scoring, train it on a tiny spam/ham corpus, and classify a new message.",
+      "hint": "Score(class) = log P(class) + Σ count(word)·log P(word|class). Pick the argmax.",
+      "solution": "```python\nimport math\ndef train(docs, labels):\n    vocab=set(w for d in docs for w in d.split())\n    classes={}\n    for d,l in zip(docs,labels):\n        c=classes.setdefault(l, {'wc':{}, 'total':0, 'n':0}); c['n']+=1\n        for w in d.split(): c['wc'][w]=c['wc'].get(w,0)+1; c['total']+=1\n    return classes, vocab\ndef predict(classes, vocab, text, N):\n    V=len(vocab); best=None; best_s=-1e9\n    for c,st in classes.items():\n        s=math.log(st['n']/N)\n        for w in text.split():\n            s+=math.log((st['wc'].get(w,0)+1)/(st['total']+V))\n        if s>best_s: best_s,best=s,c\n    return best\ndocs=['buy cheap meds','cheap watches','meeting at noon','project update']\nlab=['spam','spam','ham','ham']\nclasses,vocab=train(docs,lab)\nprint(predict(classes, vocab, 'cheap meds', len(docs)))   # spam\n```\n\nThe model just counts words per class and applies Bayes with the naive 'words are independent' assumption. Despite that assumption being false, it's fast, needs little data, and is a strong baseline for text."
+    },
+    {
+      "title": "Wrong assumption, right answer",
+      "difficulty": "stretch",
+      "prompt": "Explain why Naive Bayes' independence assumption is mathematically false for text yet still yields correct classifications, and when it beats logistic regression. Frame it in bias-variance terms.",
+      "hint": "NB gets the probability *calibration* wrong but the class *ranking* right. It's high-bias/low-variance — wins on small/high-dim data.",
+      "solution": "The 'naive' assumption says every word is conditionally independent given the class — obviously false ('San' and 'Francisco' co-occur). So NB's **probability estimates are miscalibrated** (often pushed toward 0 or 1 because correlated evidence is double-counted).\n\nBut classification only needs the **argmax**, not calibrated probabilities. Even with distorted magnitudes, the *ranking* of classes is usually correct — the right class still scores highest. So the wrong assumption rarely flips the decision.\n\n**Bias-variance view:** the independence assumption is a strong **bias** that drastically cuts the number of parameters to estimate (one probability per word per class, no interactions). That gives **very low variance**, so NB shines when data is scarce and dimensionality is high (lots of words, few documents) — exactly the regime where logistic regression, with its many interacting weights, overfits. As data grows, logistic regression's lower bias lets it overtake. Rule of thumb: small/high-dimensional/sparse text → Naive Bayes is a tough baseline; abundant data → prefer logistic regression or gradient boosting."
+    }
+  ]
+}

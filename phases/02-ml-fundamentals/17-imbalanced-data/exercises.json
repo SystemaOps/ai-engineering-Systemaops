@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Accuracy is a lie here",
+      "difficulty": "warmup",
+      "prompt": "For a 99.9%-negative fraud dataset, show that a model predicting 'not fraud' for everything scores 99.9% accuracy yet is useless. Compute precision and recall for the positive class to expose it.",
+      "hint": "TP=0 for the all-negative model → recall=0. Accuracy ignores which class you're right about.",
+      "solution": "```python\nn=10000; pos=10            # 0.1% fraud\n# 'always negative' model:\ntp=0; fn=pos; tn=n-pos; fp=0\nacc=(tp+tn)/n\nrecall=tp/(tp+fn)\nprint(f'accuracy={acc:.3f}  recall={recall:.3f}')   # 0.999  0.000\n```\n\n99.9% accuracy, **0% recall** — it catches *zero* fraud. Accuracy is dominated by the majority class, so on imbalanced data it rewards ignoring the minority entirely. Use metrics that focus on the positive class: precision, recall, F1, AUPRC, or Matthews correlation."
+    },
+    {
+      "title": "SMOTE vs duplication",
+      "difficulty": "core",
+      "prompt": "Implement the core of SMOTE (create a synthetic minority point by interpolating between a minority sample and one of its minority neighbors) and explain why this is better than randomly duplicating minority rows.",
+      "hint": "synthetic = a + rand·(neighbor − a), where neighbor is a minority k-NN of a.",
+      "solution": "```python\nimport random\ndef smote_point(a, neighbor):\n    r=random.random()\n    return [ai + r*(ni-ai) for ai, ni in zip(a, neighbor)]\na=[1.0,2.0]; nb=[1.4,2.6]\nprint([round(v,3) for v in smote_point(a, nb)])   # a point on the segment a-nb\n```\n\nRandom **duplication** copies existing minority rows verbatim — the model sees the same points repeatedly and **overfits** to them (memorizes those exact coordinates). **SMOTE** instead synthesizes *new* points along the lines between a minority sample and its minority neighbors, filling in the region the minority occupies. That broadens the decision region for the rare class without exact repeats, generalizing better. (Caveat: apply SMOTE on the training fold only, after splitting, or you leak.)"
+    },
+    {
+      "title": "Pick the right remedy",
+      "difficulty": "stretch",
+      "prompt": "Compare class weighting, threshold tuning, and resampling (SMOTE/undersampling) for imbalanced data: how each works, its cost, and which to reach for first. Why is threshold tuning often the cheapest big win?",
+      "hint": "Weighting changes the loss; resampling changes the data; threshold tuning changes the decision cutoff at inference, no retraining.",
+      "solution": "- **Class weighting** — scale the loss so minority errors count more (e.g. weight ∝ 1/class-frequency). Cheap, no data change, keeps all data; just a hyperparameter. Can destabilize training at extreme ratios.\n- **Resampling** — oversample the minority (SMOTE) or undersample the majority. SMOTE enriches the minority region but can create noise near class borders and must be done *inside* CV to avoid leakage; undersampling throws away majority data (fast, but loses information).\n- **Threshold tuning** — train normally, then move the decision threshold away from 0.5 to trade precision↔recall using the precision-recall curve. **No retraining**, applied at inference.\n\n**Reach for threshold tuning first:** most models already output usable *scores/probabilities*; the imbalance mostly broke the *default 0.5 cutoff*, not the ranking. Sliding the threshold to your operating point (driven by the cost of false negatives vs false positives) is free, instant, and often recovers most of the lost recall — before you touch the data or loss. Then layer class weights, and only resort to SMOTE/undersampling if the ranking itself (AUPRC) is still poor. In production these combine: weighted training + SMOTE on the train fold + a threshold chosen on validation for the business cost."
+    }
+  ]
+}

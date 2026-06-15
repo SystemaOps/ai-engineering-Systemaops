@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Z-score and IQR outliers",
+      "difficulty": "warmup",
+      "prompt": "Implement both Z-score and IQR outlier detection on a 1D dataset with one obvious outlier, and explain when IQR is more robust than Z-score.",
+      "hint": "Z-score: |x−μ|/σ > 3. IQR: outside [Q1−1.5·IQR, Q3+1.5·IQR].",
+      "solution": "```python\ndef zscore_outliers(data, thr=3):\n    mu=sum(data)/len(data); sd=(sum((x-mu)**2 for x in data)/len(data))**0.5\n    return [x for x in data if abs(x-mu)/sd > thr]\ndef iqr_outliers(data):\n    s=sorted(data); n=len(s); q1=s[n//4]; q3=s[3*n//4]; iqr=q3-q1\n    lo,hi=q1-1.5*iqr, q3+1.5*iqr\n    return [x for x in data if x<lo or x>hi]\nd=[10,11,9,12,10,200]\nprint(zscore_outliers(d), iqr_outliers(d))   # both flag 200\n```\n\n**IQR is more robust** because it uses quartiles (rank-based), which a single extreme value barely moves. Z-score uses mean and std, both of which the outlier itself **inflates** — a big enough outlier can raise σ so much that it no longer looks anomalous (it masks itself). Use IQR (or median/MAD) when outliers may be large or numerous."
+    },
+    {
+      "title": "Model normal, not anomalies",
+      "difficulty": "core",
+      "prompt": "Explain why anomaly detection is usually framed as 'model what's normal and flag deviations' rather than 'classify anomalies', and what that implies about training data. Give the three anomaly types and a method suited to each.",
+      "hint": "Anomalies are rare, diverse, and often novel — you can't get a representative labeled set of them.",
+      "solution": "You **model normality and flag deviations** because anomalies are **rare, diverse, and often unprecedented**. You can't assemble a representative labeled set of 'all the ways things go wrong' — and tomorrow's fraud/failure may look nothing like yesterday's. Normal behavior, by contrast, is abundant and consistent, so you learn its distribution and call anything far from it anomalous. Implication: training data is mostly (or entirely) *normal* examples; it's an unsupervised / one-class problem, not a balanced classification one.\n\n**Three anomaly types + a fit:**\n- **Point** anomaly — a single value far from the rest (a $1M transaction). → Z-score/IQR, Isolation Forest.\n- **Contextual** anomaly — normal in general but abnormal *in context* (30°C is fine in summer, anomalous in winter). → models conditioned on context (time-of-year, seasonal baselines).\n- **Collective** anomaly — a *set* of points abnormal together though each is fine alone (a sustained burst of small requests = DDoS). → sequence/window models, autoencoders on subsequences.\n\nIsolation Forest is a strong default for tabular point anomalies: it randomly partitions the space and anomalies get **isolated in fewer splits** because they sit in sparse regions."
+    },
+    {
+      "title": "Unsupervised vs supervised tradeoff",
+      "difficulty": "stretch",
+      "prompt": "Compare unsupervised anomaly detection with supervised classification (when some labeled anomalies exist). Explain the tradeoff between catching novel anomalies and precision, and when you'd combine both.",
+      "hint": "Supervised: high precision on KNOWN anomaly types, blind to novel ones. Unsupervised: catches novel deviations but more false positives.",
+      "solution": "**Supervised** (train on labeled normal + anomaly examples): high **precision** on the anomaly *types it has seen* — it learns their signatures sharply. But it's **blind to novel anomalies**: a new fraud pattern that doesn't resemble the training anomalies sails through. It also needs enough labeled anomalies, which are scarce.\n\n**Unsupervised / one-class** (model normal only): catches **any** deviation, including never-before-seen ones — great novelty coverage. But it flags *everything* unusual, including benign rare-but-legitimate events, so **precision is lower** (more false alarms), and it can't use the label information you do have.\n\n**The tradeoff:** novelty coverage vs precision. Supervised maximizes precision on known threats; unsupervised maximizes coverage of unknown ones.\n\n**Combine them** when you have *some* labels and face *evolving* threats (fraud, intrusion): run an unsupervised detector as a wide net for novel anomalies, and a supervised model for high-precision flagging of known patterns. Route unsupervised hits to human review, and feed confirmed cases back as labels to grow the supervised model — a flywheel that keeps coverage high while precision improves over time."
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Name the three error sources",
+      "difficulty": "warmup",
+      "prompt": "State the three components of expected prediction error, give a one-line definition of each, and identify which one you can never reduce no matter how good your model is.",
+      "hint": "Error = bias² + variance + irreducible noise.",
+      "solution": "Expected error decomposes as **bias² + variance + irreducible noise**:\n- **Bias²** — error from the model being too simple to capture the true pattern (systematic, consistent wrongness).\n- **Variance** — error from the model being too sensitive to the particular training sample (it changes a lot if you resample data).\n- **Irreducible noise** — randomness in the data/labels themselves (measurement error, inherent unpredictability).\n\nYou can trade bias against variance via model complexity and regularization, but the **noise floor is irreducible** — no model can do better than it, because the label genuinely isn't a deterministic function of the features. Chasing past it = overfitting noise."
+    },
+    {
+      "title": "See the tradeoff with model complexity",
+      "difficulty": "core",
+      "prompt": "Fit polynomials of increasing degree to a small noisy dataset and show that train error keeps dropping while test error falls then rises (a U-shape). Identify the underfit and overfit ends.",
+      "hint": "Low degree = high bias (both errors high); high degree = high variance (train low, test high). Use numpy polyfit.",
+      "solution": "```python\nimport numpy as np\nrng=np.random.default_rng(0)\nx=np.linspace(0,1,15); y=np.sin(2*np.pi*x)+0.2*rng.standard_normal(15)\nxt=np.linspace(0,1,50); yt=np.sin(2*np.pi*xt)\nfor deg in (1, 3, 12):\n    c=np.polyfit(x,y,deg)\n    tr=np.mean((np.polyval(c,x)-y)**2)\n    te=np.mean((np.polyval(c,xt)-yt)**2)\n    print(f'deg {deg:2d}  train {tr:.3f}  test {te:.3f}')\n```\n\n- **deg 1**: both errors high → **underfit** (high bias, model too rigid).\n- **deg 3**: both low → the sweet spot.\n- **deg 12**: train ~0 but test large → **overfit** (high variance, fitting noise).\n\nTrain error always drops with complexity, so it can't tell you when to stop. The U-shaped *test* curve does — its minimum is the bias-variance balance point."
+    },
+    {
+      "title": "How regularizers trade bias for variance",
+      "difficulty": "stretch",
+      "prompt": "Explain in bias-variance terms what each of these does: L2 weight decay, L1, dropout, and early stopping. Which component does each reduce, and at what cost?",
+      "hint": "All four constrain the model's effective capacity → less variance, slightly more bias.",
+      "solution": "All four **reduce variance by shrinking effective model capacity**, paying a little **bias** in return:\n\n- **L2 (weight decay):** penalizes large weights → smoother function that's less sensitive to individual training points. Lowers variance; adds bias by pulling weights toward zero.\n- **L1:** penalizes absolute weights → drives some to *exactly* zero (sparsity / feature selection). Lowers variance and improves interpretability; bias rises as features are dropped.\n- **Dropout:** randomly zeroes activations during training → forces redundant, robust representations and acts like averaging an ensemble of sub-networks. Strongly reduces variance; mild bias from training a 'thinned' net.\n- **Early stopping:** halts training before the model fully memorizes the data → caps effective capacity by limiting how far weights move. Reduces variance; bias rises if you stop too early.\n\nThe unifying view: an unregularized flexible model sits at high-variance/low-bias; each technique slides it leftward along the tradeoff toward the test-error minimum. Tune the strength (λ, dropout rate, patience) to land *at* that minimum, not past it."
+    }
+  ]
+}

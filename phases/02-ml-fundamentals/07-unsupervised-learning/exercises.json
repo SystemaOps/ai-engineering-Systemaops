@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "K-Means by hand",
+      "difficulty": "warmup",
+      "prompt": "Implement Lloyd's algorithm for K-Means (assign points to nearest centroid, recompute centroids, repeat) on a small 2-cluster dataset and confirm it separates the clusters.",
+      "hint": "Loop: assign each point to nearest centroid, then move each centroid to the mean of its assigned points.",
+      "solution": "```python\nimport math\ndef kmeans(X, k=2, iters=20):\n    centroids=[X[0], X[-1]]\n    for _ in range(iters):\n        groups=[[] for _ in range(k)]\n        for x in X:\n            i=min(range(k), key=lambda c: math.dist(x, centroids[c]))\n            groups[i].append(x)\n        centroids=[[sum(col)/len(g) for col in zip(*g)] if g else centroids[i]\n                   for i,g in enumerate(groups)]\n    return centroids, groups\nX=[[1,1],[1,2],[2,1],[8,8],[9,8],[8,9]]\nc,g=kmeans(X)\nprint([len(grp) for grp in g])   # [3, 3]\n```\n\nK-Means alternates assignment and update until centroids stop moving. It's fast and simple but assumes **spherical, similar-sized clusters** and needs K chosen upfront — it'll happily force-split data that has no such structure."
+    },
+    {
+      "title": "Choose K with the elbow / silhouette",
+      "difficulty": "core",
+      "prompt": "For K-Means, compute within-cluster sum of squares (inertia) across several K values and describe how the elbow method picks K. Then state what the silhouette score adds.",
+      "hint": "Inertia = Σ distance² from each point to its centroid; it always decreases with K. The 'elbow' is where the drop flattens.",
+      "solution": "```python\nimport math\ndef inertia(X, centroids, groups):\n    return sum(math.dist(x, centroids[i])**2\n               for i,g in enumerate(groups) for x in g)\n# run kmeans for k=1..5, record inertia, look for the bend\n# (sketch — reuse kmeans() from the warmup)\n```\n\nInertia falls monotonically as K rises (more clusters = tighter fit), so you can't just minimize it — K = N would give zero. The **elbow** is the K where additional clusters stop buying much reduction, signaling diminishing returns. The **silhouette score** is sharper: for each point it compares its average distance to its own cluster vs the nearest other cluster, scoring −1 to +1. High average silhouette means well-separated, cohesive clusters — it can validate K without eyeballing a bend, and even flag when *no* K clusters well."
+    },
+    {
+      "title": "When DBSCAN beats K-Means",
+      "difficulty": "stretch",
+      "prompt": "Explain why DBSCAN succeeds on non-spherical clusters and noisy data where K-Means fails, using the concepts of core points, density reachability, and the eps/minPts parameters. Give a concrete failure case for K-Means.",
+      "hint": "DBSCAN groups by density, not distance-to-centroid. It doesn't need K and labels low-density points as noise.",
+      "solution": "**K-Means failure case:** two interleaved crescents (or concentric rings). K-Means draws spherical Voronoi cells around centroids, so it slices each crescent in half rather than recovering the true shapes — it fundamentally assumes round, convex blobs.\n\n**DBSCAN** clusters by **density** instead:\n- A **core point** has at least `minPts` neighbors within radius `eps`.\n- Points are **density-reachable** if you can hop core-to-core within `eps`; a cluster is a maximal set of mutually reachable points — so clusters follow whatever shape the dense region takes (crescents, rings, blobs).\n- Points in no dense region are labeled **noise/outliers** rather than forced into a cluster.\n\nAdvantages: it finds **arbitrarily shaped** clusters, **doesn't need K** (it discovers the count), and **handles outliers** natively — ideal for anomaly detection. The cost is sensitivity to `eps`/`minPts` and trouble when clusters have very different densities. Rule of thumb: K-Means for clean spherical groups, DBSCAN for irregular shapes and noisy data."
+    }
+  ]
+}

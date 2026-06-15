@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Variance threshold filter",
+      "difficulty": "warmup",
+      "prompt": "Implement a variance-threshold filter that drops near-constant features, and explain why a feature with almost no variance is useless to a model.",
+      "hint": "Compute each feature's variance; drop those below a small threshold.",
+      "solution": "```python\ndef variance_threshold(cols, thr=0.01):\n    keep=[]\n    for j, col in enumerate(cols):\n        mu=sum(col)/len(col); var=sum((x-mu)**2 for x in col)/len(col)\n        if var > thr: keep.append(j)\n    return keep\ncols=[[1,1,1,1], [1,2,3,4], [5,5,5,6]]  # feature 0 is constant\nprint(variance_threshold(cols))   # [1, 2]\n```\n\nA near-constant feature takes (almost) the same value for every sample, so it can't help distinguish them — there's no signal to learn from. Dropping these is the cheapest, safest first pass: it's unsupervised (no leakage risk) and shrinks dimensionality for free."
+    },
+    {
+      "title": "Mutual information catches nonlinearity",
+      "difficulty": "core",
+      "prompt": "Explain why mutual information detects feature-target relationships that Pearson correlation misses, with a concrete example (e.g. y = x²). Outline how you'd rank features by MI.",
+      "hint": "Correlation only measures linear association; MI measures any statistical dependence. y=x² has ~0 correlation but high MI.",
+      "solution": "**Pearson correlation** measures only **linear** association. Take `y = x²` with x symmetric around 0: as x goes negative y rises and as x goes positive y rises too, so the linear trend cancels — correlation ≈ 0 — even though y is *perfectly determined* by x.\n\n```python\nimport numpy as np\nx=np.linspace(-1,1,101); y=x**2\nprint(round(np.corrcoef(x,y)[0,1], 3))   # ~0.0  (but y depends entirely on x!)\n```\n\n**Mutual information** measures *any* statistical dependence: MI(x,y) = how much knowing x reduces uncertainty about y, capturing nonlinear and non-monotonic relationships. For `y=x²` MI is high, correctly flagging x as informative.\n\n**Ranking by MI:** estimate MI between each feature and the target (binning for discrete, or k-NN estimators for continuous), then rank features by MI descending and keep the top ones. MI as a *filter* is model-agnostic and catches the nonlinear predictors correlation-based selection would wrongly discard — though it scores features individually, so it can miss features useful only in combination (where wrapper methods help)."
+    },
+    {
+      "title": "Filter vs wrapper vs embedded",
+      "difficulty": "stretch",
+      "prompt": "Compare the three feature-selection families — filter (e.g. MI), wrapper (e.g. RFE / forward selection), embedded (e.g. L1) — on how they work, cost, and risk of overfitting the selection. Which would you start with on 500 features?",
+      "hint": "Filter: model-agnostic, cheap, ignores interactions. Wrapper: uses the model, expensive, captures interactions, can overfit. Embedded: selection during training, good cost/quality balance.",
+      "solution": "- **Filter** (variance threshold, correlation, mutual information): score each feature against the target *independently of any model*. **Cheapest** and fast, no overfitting to a specific model — but **ignores feature interactions** and redundancy (two correlated useful features both score high).\n- **Wrapper** (RFE, forward/backward selection): repeatedly **train the actual model** on feature subsets and keep what improves validation score. **Captures interactions** and is tailored to your model, but **expensive** (many model fits) and **can overfit the selection** to the validation set if not cross-validated.\n- **Embedded** (L1/LASSO, tree feature importances): selection happens **during training** — L1 drives useless weights to exactly zero. Good **balance** of cost and quality, model-aware, single fit.\n\n**On 500 features, start with a filter** (drop zero-variance, then MI or correlation) to cheaply cut obvious junk down to a manageable set — this de-risks and speeds everything after. Then apply an **embedded** method (L1 or tree importance) for a model-aware second cut. Reserve **wrapper** methods (RFE) for a final polish on the surviving handful, where their cost is affordable and interaction effects matter most. Always evaluate the selected set on a held-out fold to confirm it generalizes, since selection itself can overfit."
+    }
+  ]
+}

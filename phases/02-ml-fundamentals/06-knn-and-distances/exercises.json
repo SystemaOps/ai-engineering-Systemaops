@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "KNN classify from scratch",
+      "difficulty": "warmup",
+      "prompt": "Implement K-nearest-neighbors classification with Euclidean distance and majority vote, and classify a query point against a small labeled set for K=3.",
+      "hint": "Compute distance to every training point, take the K smallest, vote on their labels.",
+      "solution": "```python\nimport math\ndef knn(X, y, q, k=3):\n    d=sorted(range(len(X)), key=lambda i: math.dist(X[i], q))[:k]\n    votes={}\n    for i in d: votes[y[i]]=votes.get(y[i],0)+1\n    return max(votes, key=votes.get)\nX=[[1,1],[1,2],[2,1],[8,8],[9,8]]; y=[0,0,0,1,1]\nprint(knn(X,y,[1.5,1.5]))   # 0\n```\n\nKNN does no training — it stores everything and decides at query time by polling the K closest points. Simple and surprisingly effective on low-dimensional data, but every prediction is O(N) over the whole dataset."
+    },
+    {
+      "title": "Metric changes the answer",
+      "difficulty": "core",
+      "prompt": "Show that the choice of distance metric (Euclidean vs cosine) can change KNN's prediction for the same query, and explain which to use for direction-dominated data like text embeddings.",
+      "hint": "Build a case where a far-but-aligned point and a near-but-misaligned point compete.",
+      "solution": "```python\nimport math\ndef l2(a,b): return math.dist(a,b)\ndef cosd(a,b):\n    dot=sum(x*y for x,y in zip(a,b))\n    return 1 - dot/(math.hypot(*a)*math.hypot(*b))\nq=[1,1]\nA=[10,10]  # same direction, far\nB=[2,0]    # near, different direction\nprint('L2 nearest:', 'A' if l2(q,A)<l2(q,B) else 'B')      # B\nprint('cosine nearest:', 'A' if cosd(q,A)<cosd(q,B) else 'B')  # A\n```\n\nUnder Euclidean distance B wins (physically closer); under cosine A wins (same direction). For **text/embedding data**, magnitude often reflects length or frequency rather than meaning, so cosine — which compares direction — is the right metric. Picking the wrong one silently changes who counts as a 'neighbor' and corrupts predictions, recommendations, and vector search."
+    },
+    {
+      "title": "The curse of dimensionality",
+      "difficulty": "stretch",
+      "prompt": "Demonstrate why KNN degrades in high dimensions: show that as dimensionality grows, the ratio of nearest-to-farthest neighbor distance approaches 1, making 'nearest' meaningless. Explain the consequence.",
+      "hint": "Sample random points in d dimensions; compute min and max pairwise distance from a query; track (max−min)/min as d increases.",
+      "solution": "```python\nimport random, math\ndef contrast(d, n=500):\n    q=[random.random() for _ in range(d)]\n    pts=[[random.random() for _ in range(d)] for _ in range(n)]\n    ds=[math.dist(q,p) for p in pts]\n    return (max(ds)-min(ds))/min(ds)\nfor d in (2, 10, 100, 1000):\n    print(d, round(contrast(d), 3))\n# contrast shrinks toward ~0 as d grows\n```\n\nAs dimensions grow, all pairwise distances concentrate — the nearest and farthest points become almost equidistant, so 'nearest neighbor' loses meaning and KNN's votes become near-random. Volume grows exponentially with d, so any fixed dataset becomes hopelessly sparse. Consequences: KNN (and distance-based methods generally) need either low intrinsic dimensionality, dimensionality reduction (PCA/UMAP) first, or learned embeddings that compress the signal into few meaningful dimensions before distances are computed."
+    }
+  ]
+}

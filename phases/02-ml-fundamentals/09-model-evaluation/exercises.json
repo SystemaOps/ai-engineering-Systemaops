@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "K-fold cross-validation",
+      "difficulty": "warmup",
+      "prompt": "Implement K-fold cross-validation splitting (return the train/test index sets for each fold) for K=5 over 10 samples, and explain why CV gives a more reliable score than a single train/test split.",
+      "hint": "Partition indices into K folds; each fold is the test set once while the rest train.",
+      "solution": "```python\ndef kfold(n, k=5):\n    idx=list(range(n)); folds=[idx[i::k] for i in range(k)]\n    for i in range(k):\n        test=folds[i]; train=[j for j in idx if j not in test]\n        yield train, test\nfor tr, te in kfold(10, 5):\n    print('test:', te)\n```\n\nA single split's score depends on *which* points happened to land in the test set — high variance, especially on small data. K-fold rotates every point through the test set exactly once and averages the K scores, giving a lower-variance estimate plus a spread (std) that tells you how stable the model is."
+    },
+    {
+      "title": "Why stratify, and ROC-AUC",
+      "difficulty": "core",
+      "prompt": "Explain why stratified K-fold matters for imbalanced data, then compute ROC-AUC from predicted scores and labels. State what AUC measures that accuracy doesn't.",
+      "hint": "Stratified folds preserve class proportions. AUC = probability a random positive scores higher than a random negative.",
+      "solution": "```python\ndef auc(scores, y):\n    pos=[s for s,t in zip(scores,y) if t==1]\n    neg=[s for s,t in zip(scores,y) if t==0]\n    wins=sum((p>n) + 0.5*(p==n) for p in pos for n in neg)\n    return wins/(len(pos)*len(neg))\nprint(auc([0.9,0.8,0.3,0.2], [1,1,0,0]))   # 1.0\n```\n\n**Stratified** K-fold keeps each fold's class ratio equal to the whole dataset's. Without it, a rare class (say 5%) can be absent from some folds entirely, making those scores meaningless. **AUC** is the probability that a random positive is ranked above a random negative — it evaluates the *ranking* across all thresholds, so it's threshold-independent and informative even at 95/5 imbalance where accuracy is useless (predict-all-negative already scores 95%)."
+    },
+    {
+      "title": "Read the learning curves",
+      "difficulty": "stretch",
+      "prompt": "Describe how to diagnose high bias (underfitting) vs high variance (overfitting) from training and validation curves, and the right fix for each. Then name three evaluation mistakes that silently inflate scores.",
+      "hint": "Compare train error, val error, and the gap between them as training-set size grows.",
+      "solution": "**Diagnosis from learning curves** (error vs training-set size):\n- **High bias / underfit:** train error is *high* and val error is close to it — both plateau at a poor level. The model is too simple. *Fix:* more capacity, better features, less regularization, train longer.\n- **High variance / overfit:** train error is *low* but val error is much *higher* — a large persistent gap. The model memorized noise. *Fix:* more data, regularization, simpler model, early stopping, augmentation.\n\n```\nbias:      train ~0.30, val ~0.32   (close + high)\nvariance:  train ~0.02, val ~0.25   (big gap)\n```\n\n**Three silent score-inflaters:**\n1. **Data leakage** — fitting scalers/encoders or selecting features on the full dataset (incl. test), so test info bleeds into training.\n2. **Test-set contamination / reuse** — tuning hyperparameters against the test set turns it into a second training set; you need a separate validation set.\n3. **Wrong metric** — reporting accuracy on imbalanced data (95% by predicting the majority) instead of AUC / F1 / per-class recall.\n\nAll three produce great offline numbers that evaporate in production — the most expensive kind of bug because you don't see it until after you ship."
+    }
+  ]
+}
