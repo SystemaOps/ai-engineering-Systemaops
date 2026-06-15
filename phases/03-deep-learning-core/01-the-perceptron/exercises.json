@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Perceptron that learns AND",
+      "difficulty": "warmup",
+      "prompt": "Implement a perceptron (weights, bias, step activation, and the update rule) and train it on the AND truth table until it classifies all four inputs correctly. Print the learned weights.",
+      "hint": "Predict step(w·x + b). Update on error: w += lr·(target − pred)·x, b += lr·(target − pred).",
+      "solution": "```python\ndef step(z): return 1 if z >= 0 else 0\ndata = [([0,0],0), ([0,1],0), ([1,0],0), ([1,1],1)]\nw=[0.0,0.0]; b=0.0; lr=0.1\nfor _ in range(20):\n    for x, t in data:\n        p = step(w[0]*x[0]+w[1]*x[1]+b)\n        err = t - p\n        w = [wi + lr*err*xi for wi, xi in zip(w, x)]\n        b += lr*err\nprint(w, b, [step(w[0]*x[0]+w[1]*x[1]+b) for x,_ in data])\n```\n\nThe update nudges weights toward inputs it should fire on and away from ones it shouldn't. AND is linearly separable, so the perceptron converges to a line putting [1,1] on one side and the rest on the other."
+    },
+    {
+      "title": "Why XOR breaks it",
+      "difficulty": "core",
+      "prompt": "Train your perceptron on XOR and show it never reaches 100% accuracy no matter how long you train. Explain geometrically why a single perceptron cannot solve it.",
+      "hint": "XOR: [0,1] and [1,0] → 1; [0,0] and [1,1] → 0. Plot the four points — no single straight line separates the classes.",
+      "solution": "```python\ndef step(z): return 1 if z >= 0 else 0\nxor = [([0,0],0), ([0,1],1), ([1,0],1), ([1,1],0)]\nw=[0.0,0.0]; b=0.0; lr=0.1\nfor _ in range(1000):\n    for x,t in xor:\n        p=step(w[0]*x[0]+w[1]*x[1]+b); e=t-p\n        w=[wi+lr*e*xi for wi,xi in zip(w,x)]; b+=lr*e\nprint([step(w[0]*x[0]+w[1]*x[1]+b) for x,_ in xor])  # never matches [0,1,1,0]\n```\n\nA perceptron can only draw **one straight line**. XOR's positive cases ([0,1],[1,0]) sit on opposite corners from its negatives ([0,0],[1,1]) — they're not linearly separable, so no line works. This is the 1969 Minsky-Papert result that stalled neural nets until multi-layer networks + backprop arrived."
+    },
+    {
+      "title": "Build XOR from gates",
+      "difficulty": "stretch",
+      "prompt": "Solve XOR by composing perceptrons: build OR, NAND, and AND gates as perceptrons, then wire them so XOR(a,b) = AND(OR(a,b), NAND(a,b)). Verify the full truth table.",
+      "hint": "XOR is true when at least one input is 1 (OR) AND not both are 1 (NAND). Each gate is a hand-set perceptron.",
+      "solution": "```python\ndef p(w, b): return lambda a, c: 1 if w[0]*a + w[1]*c + b >= 0 else 0\nOR   = p([1,1], -0.5)\nNAND = p([-1,-1], 1.5)\nAND  = p([1,1], -1.5)\ndef XOR(a, c): return AND(OR(a,c), NAND(a,c))\nprint([XOR(a,c) for a,c in [(0,0),(0,1),(1,0),(1,1)]])  # [0,1,1,0]\n```\n\nStacking perceptrons creates a hidden layer (OR and NAND) whose outputs a final AND can separate — XOR becomes linearly separable in the *transformed* space the hidden layer produces. That's the whole idea of depth: each layer reshapes the data until the next layer's straight line suffices. Lesson 03 makes the network learn these weights instead of hand-setting them."
+    }
+  ]
+}

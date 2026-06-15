@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "The zero-init symmetry trap",
+      "difficulty": "warmup",
+      "prompt": "Show that initializing all weights of a hidden layer to zero (or any single constant) makes every neuron in the layer identical forever. Explain why random initialization breaks the symmetry.",
+      "hint": "If all weights are equal, all neurons compute the same output and receive the same gradient, so they update identically.",
+      "solution": "```python\n# two hidden neurons, identical init -> identical forever\nw = [[0.0, 0.0], [0.0, 0.0]]   # both neurons same weights\n# forward: both produce the same activation for any input\n# backward: both get the same gradient -> same update\n# after any number of steps, w[0] == w[1] still holds\nprint('neurons stay identical:', w[0] == w[1])   # True\n```\n\nWith identical weights, neurons are perfect copies: same forward output, same gradient, same update — so a 512-unit layer behaves like 1 unit forever. **Random** init gives each neuron a different starting point, so they receive different gradients and specialize. Random scale alone isn't enough, though — too large explodes activations, too small vanishes them — which is why we need *principled* scales (Xavier/Kaiming)."
+    },
+    {
+      "title": "Xavier vs Kaiming",
+      "difficulty": "core",
+      "prompt": "Initialize a deep stack with (a) too-large random weights and (b) Kaiming/He scaling, and measure how activation magnitude evolves across ~30 ReLU layers. Show Kaiming keeps the variance stable. State the Xavier and Kaiming variance formulas.",
+      "hint": "Kaiming: Var(w)=2/fan_in (for ReLU). Xavier: Var(w)=2/(fan_in+fan_out) (for tanh/sigmoid). Track the std of activations layer by layer.",
+      "solution": "```python\nimport numpy as np\ndef run(scale_fn, layers=30, n=256):\n    x = np.random.randn(n)\n    for _ in range(layers):\n        W = np.random.randn(n, n) * scale_fn(n)\n        x = np.maximum(0, W @ x)        # ReLU\n    return x.std()\nprint('too large:', run(lambda n: 0.1))            # explodes or collapses\nprint('Kaiming :', run(lambda n: (2/n)**0.5))      # stays O(1)\n```\n\n**Kaiming** sets `Var(w)=2/fan_in` so each ReLU layer preserves activation variance (the factor 2 compensates for ReLU zeroing half the inputs). **Xavier** uses `2/(fan_in+fan_out)` to keep variance stable in *both* directions for symmetric activations (tanh/sigmoid). Get the scale wrong and activations geometrically explode or vanish with depth, killing training before it starts — right scaling lets 50 layers train as smoothly as 3."
+    },
+    {
+      "title": "Match init to activation",
+      "difficulty": "stretch",
+      "prompt": "Explain why ReLU/GELU networks use Kaiming init while sigmoid/tanh networks use Xavier, in terms of what each derivation assumes about the activation. What goes wrong if you swap them?",
+      "hint": "The derivations assume a specific activation's effect on variance. ReLU halves variance (zeros negatives); tanh is roughly linear near 0 and symmetric.",
+      "solution": "Both init schemes are derived to keep activation (and gradient) variance ≈1 as signals pass through layers — but they assume *different* activations:\n\n- **Kaiming (2/fan_in)** assumes **ReLU/GELU**, which zero out ~half their inputs and so roughly *halve* the variance. The factor-of-2 numerator exactly compensates for that loss.\n- **Xavier (2/(fan_in+fan_out))** assumes a **symmetric, ~linear-near-zero** activation (tanh, sigmoid) that preserves variance and passes signal in both directions, balancing forward and backward variance.\n\n**Swapping them:** using Xavier with ReLU under-scales the weights — variance decays with depth and you get slow/no learning in early layers (vanishing). Using Kaiming with tanh over-scales — activations drift into the saturated tails where tanh' ≈ 0, so gradients vanish there instead. Either mismatch silently hurts deep nets; the rule of thumb is simply: **ReLU-family → Kaiming, tanh/sigmoid → Xavier.**"
+    }
+  ]
+}

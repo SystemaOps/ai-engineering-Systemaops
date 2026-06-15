@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "The Module abstraction",
+      "difficulty": "warmup",
+      "prompt": "Define a minimal Module base class with forward(), parameters(), and a way to compose modules in sequence. Show a Sequential of two Linear layers exposing all their parameters through one parameters() call.",
+      "hint": "Each module stores its params; Sequential delegates forward through children and concatenates their parameters().",
+      "solution": "```python\nclass Module:\n    def parameters(self): return []\n    def __call__(self, x): return self.forward(x)\n\nclass Linear(Module):\n    def __init__(self, w, b): self.w=w; self.b=b\n    def forward(self, x): return [sum(wi*xi for wi,xi in zip(row,x))+bi\n                                  for row,bi in zip(self.w,self.b)]\n    def parameters(self): return [self.w, self.b]\n\nclass Sequential(Module):\n    def __init__(self, *layers): self.layers=layers\n    def forward(self, x):\n        for l in self.layers: x=l(x)\n        return x\n    def parameters(self): return [p for l in self.layers for p in l.parameters()]\n\nnet=Sequential(Linear([[1,0],[0,1]],[0,0]), Linear([[1,1]],[0]))\nprint(net([2,3]), len(net.parameters()))   # forward works; 4 param groups\n```\n\nThe Module pattern is the organizing idea behind every framework: a uniform `forward` + `parameters` interface lets you nest layers arbitrarily and have the optimizer reach *all* parameters via one call. `nn.Module` and `nn.Sequential` are exactly this with more bells."
+    },
+    {
+      "title": "Train/eval mode toggling",
+      "difficulty": "core",
+      "prompt": "Add a training flag to your Module system and show why Dropout and BatchNorm must behave differently in train vs eval mode. Demonstrate the bug you get if you forget to switch to eval at inference.",
+      "hint": "Dropout zeros units only during training; BatchNorm uses batch stats in train, running stats in eval. Forgetting eval → random/inconsistent predictions.",
+      "solution": "```python\nimport random\nclass Dropout:\n    def __init__(self, p): self.p=p; self.training=True\n    def __call__(self, acts):\n        if not self.training: return acts[:]\n        keep=1-self.p\n        return [(a/keep if random.random()>self.p else 0.0) for a in acts]\n\nd=Dropout(0.5); x=[1.0]*8\nd.training=True;  print('train (random):', d(x))\nd.training=False; print('eval  (stable):', d(x))\n```\n\nIn **train** mode Dropout randomly zeros units and BatchNorm normalizes by the *current batch*; in **eval** mode Dropout passes everything through and BatchNorm uses *accumulated running* statistics. Forget to call `model.eval()` at inference and you get **non-deterministic predictions** (dropout still firing) and wrong normalization (batch stats from a size-1 inference batch) — a notorious silent bug. That's why frameworks make train/eval an explicit, propagating flag."
+    },
+    {
+      "title": "Wire the full training loop",
+      "difficulty": "stretch",
+      "prompt": "Outline the complete training loop your framework runs — forward, loss, zero-grad, backward, optimizer step — and map each piece to its PyTorch equivalent. Explain why zero-grad is required every iteration.",
+      "hint": "PyTorch: model(x); loss=criterion(out,y); optimizer.zero_grad(); loss.backward(); optimizer.step(). Gradients accumulate by default.",
+      "solution": "```python\n# Your mini-framework loop          # PyTorch equivalent\n# for x, y in loader:               for x, y in DataLoader(...):\n#     out = net(x)                       out = model(x)            # nn.Module\n#     loss = mse(out, y)                 loss = criterion(out, y)\n#     for p in net.parameters():         optimizer.zero_grad()    # clear grads\n#         p.grad = 0\n#     loss.backward()                    loss.backward()          # autograd\n#     opt.step()                         optimizer.step()         # optim.Adam\n```\n\nEvery framework reduces to this five-step rhythm. **zero_grad is mandatory each iteration** because autograd *accumulates* gradients into `.grad` by default (a feature that enables gradient accumulation across micro-batches). If you don't clear them, step N's update is polluted by the summed gradients of all previous steps, and training silently degrades or diverges. Your from-scratch loop and PyTorch are line-for-line the same pattern — the framework just supplies fast, batched, GPU implementations of each piece."
+    }
+  ]
+}

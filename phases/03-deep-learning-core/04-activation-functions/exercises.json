@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Activations and their derivatives",
+      "difficulty": "warmup",
+      "prompt": "Implement sigmoid, tanh, and ReLU along with their derivatives. Evaluate each derivative at z = −2, 0, 2 and note which activation has a derivative that doesn't saturate for large positive inputs.",
+      "hint": "sigmoid'(z)=s(1−s); tanh'(z)=1−tanh²; ReLU'(z)=1 if z>0 else 0.",
+      "solution": "```python\nimport math\ndef sig(z): return 1/(1+math.exp(-z))\ndsig=lambda z: sig(z)*(1-sig(z))\ndtanh=lambda z: 1-math.tanh(z)**2\ndrelu=lambda z: 1.0 if z>0 else 0.0\nfor z in (-2,0,2):\n    print(z, round(dsig(z),3), round(dtanh(z),3), drelu(z))\n```\n\nAt z=2, sigmoid' ≈ 0.105 and tanh' ≈ 0.071 — both nearly flat (saturated), so gradients shrink. **ReLU'** stays exactly 1 for any positive input, so it doesn't saturate on the positive side. That single property is most of why ReLU enabled training networks far deeper than sigmoid/tanh ever allowed."
+    },
+    {
+      "title": "Dead ReLU neurons",
+      "difficulty": "core",
+      "prompt": "Demonstrate the dead-ReLU failure: construct a neuron whose weights/bias push its pre-activation negative for all inputs in a dataset, show its gradient is zero (so it never recovers), and explain how Leaky ReLU or GELU avoids it.",
+      "hint": "If z<0 for every input, ReLU outputs 0 and ReLU'(z)=0, so no gradient flows and the weights never change.",
+      "solution": "```python\ndef relu(z): return max(0.0, z)\ndef drelu(z): return 1.0 if z>0 else 0.0\nw, b = -5.0, -1.0\nX = [0.1, 0.5, 1.0, 2.0]   # all give z = w*x+b < 0\nfor x in X:\n    z = w*x + b\n    print(x, 'out=', relu(z), 'grad_factor=', drelu(z))   # all 0\n```\n\nEvery input drives `z<0`, so the neuron outputs 0 **and** its local gradient is 0 — backprop sends no signal to update w or b, and it's stuck dead forever (often triggered by too-high a learning rate spiking weights negative). **Leaky ReLU** (small slope for z<0) and **GELU** (smooth, non-zero gradient for slightly negative z) keep a trickle of gradient flowing, so neurons can recover. GELU is the transformer default for this and its smoothness."
+    },
+    {
+      "title": "Pick the right activation",
+      "difficulty": "stretch",
+      "prompt": "For each, name the standard activation and justify it: (a) hidden layers of a modern transformer, (b) hidden layers of a CNN, (c) the output layer of a multi-class classifier, (d) the output layer of a regression model. Note one anti-pattern.",
+      "hint": "Think about gradient flow in hidden layers vs the required output range/normalization at the head.",
+      "solution": "- **(a) Transformer hidden layers → GELU (or SwiGLU).** Smooth, non-saturating, no dead-neuron problem; empirically better than ReLU for transformers.\n- **(b) CNN hidden layers → ReLU.** Cheap, non-saturating, works great with conv + batchnorm; the long-standing vision default.\n- **(c) Multi-class output → softmax.** Turns logits into a probability distribution over classes that sums to 1, pairing with cross-entropy.\n- **(d) Regression output → none (linear).** The output must range over all reals; squashing it with sigmoid/ReLU would cap or distort the target.\n\n**Anti-pattern:** putting sigmoid/ReLU on a regression head (clips the range), or applying softmax then *also* a separate sigmoid. Also: deep stacks of sigmoid/tanh in hidden layers — they saturate and vanish gradients, which is exactly why ReLU/GELU replaced them."
+    }
+  ]
+}

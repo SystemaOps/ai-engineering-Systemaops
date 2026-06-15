@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "SGD vs SGD+momentum",
+      "difficulty": "warmup",
+      "prompt": "Minimize f(x,y) = x² + 10y² (an elongated bowl) with plain SGD and with momentum from the same start. Show momentum reaches the minimum faster and explain why the elongation hurts plain SGD.",
+      "hint": "Gradient = (2x, 20y). The steep y-direction forces a tiny lr for plain SGD, making x crawl. Momentum averages out the y oscillation.",
+      "solution": "```python\ndef grad(p): return [2*p[0], 20*p[1]]\ndef sgd(lr=0.08, steps=60, p=[5.,5.]):\n    for _ in range(steps): g=grad(p); p=[pi-lr*gi for pi,gi in zip(p,g)]\n    return p\ndef momentum(lr=0.08, beta=0.9, steps=60, p=[5.,5.]):\n    v=[0.,0.]\n    for _ in range(steps):\n        g=grad(p); v=[beta*vi-lr*gi for vi,gi in zip(v,g)]; p=[pi+vi for pi,vi in zip(p,v)]\n    return p\nprint([round(x,3) for x in sgd()], [round(x,3) for x in momentum()])\n```\n\nThe valley is 10× steeper in y than x. Plain SGD must keep lr small enough not to diverge in y, which leaves the gentle x-direction creeping along. Momentum builds velocity in the consistent x-direction while the back-and-forth y-steps cancel — so it traverses the ravine far faster. This ill-conditioned-valley scenario is exactly where adaptive optimizers shine."
+    },
+    {
+      "title": "Implement Adam with bias correction",
+      "difficulty": "core",
+      "prompt": "Implement Adam and show why bias correction matters: print the first few effective step sizes with and without the 1/(1−βᵗ) correction, and explain what goes wrong in early steps without it.",
+      "hint": "m,v start at 0, so early m̂ and v̂ are biased toward 0. Correction divides by (1−β1ᵗ) and (1−β2ᵗ).",
+      "solution": "```python\ndef adam(grad, correct=True, lr=0.1, b1=0.9, b2=0.999, eps=1e-8, steps=5, x=10.0):\n    m=v=0.0\n    for t in range(1, steps+1):\n        g=grad(x); m=b1*m+(1-b1)*g; v=b2*v+(1-b2)*g*g\n        if correct: mh,vh = m/(1-b1**t), v/(1-b2**t)\n        else:       mh,vh = m, v\n        step = lr*mh/(vh**0.5+eps); x -= step\n        print(f't={t} step={step:.4f}')\n    return x\nprint('with correction:');    adam(lambda x:2*x, True)\nprint('without correction:'); adam(lambda x:2*x, False)\n```\n\nBecause m and v initialize at 0, the first few estimates are biased *toward zero* — without correction, v̂ is tiny so `m̂/√v̂` is erratic and the early steps are wrong (often far too small for m, mis-scaled overall). Dividing by `(1−βᵗ)` (which is small early, →1 later) rescales the estimates to be unbiased, giving stable, correctly-sized steps from step 1. Skipping it makes early training jittery."
+    },
+    {
+      "title": "AdamW vs Adam + L2",
+      "difficulty": "stretch",
+      "prompt": "Explain why 'Adam with L2 regularization' and 'AdamW (decoupled weight decay)' are NOT the same thing, and why AdamW generalizes better. Reference where the decay term enters the update.",
+      "hint": "L2 adds λw to the gradient, so it gets scaled by Adam's 1/√v̂ per-parameter — large-gradient weights get decayed less. AdamW applies decay directly to w, outside the adaptive scaling.",
+      "solution": "**Adam + L2:** you add the penalty to the *gradient*: `g ← g + λw`. But Adam then divides every update by `√v̂` per parameter. So the effective decay on each weight is `λw/√v̂` — parameters with large/noisy gradients (big v̂) get decayed *less*, and the regularization strength becomes coupled to the gradient history. That's not the uniform shrinkage L2 is supposed to provide.\n\n**AdamW:** decouples decay from the gradient. The adaptive step uses the *raw* gradient, and weight decay is applied separately, straight to the weights:\n\n```\nw ← w − lr·(m̂/(√v̂+ε))  −  lr·λ·w\n```\n\nNow every weight shrinks by the same proportional amount regardless of its gradient scale — true, consistent regularization. Empirically AdamW generalizes better and is the standard for training transformers. The lesson: in adaptive optimizers, *where* you put weight decay changes what it actually does."
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Inverted dropout",
+      "difficulty": "warmup",
+      "prompt": "Implement inverted dropout for a layer's activations: at training time zero each unit with probability p and scale survivors by 1/(1−p); at test time do nothing. Explain why the 1/(1−p) scaling is there.",
+      "hint": "Scaling keeps the expected activation sum the same with and without dropout, so inference needs no adjustment.",
+      "solution": "```python\nimport random\ndef dropout(acts, p, training):\n    if not training: return acts[:]\n    keep = 1 - p\n    return [(a/keep if random.random() > p else 0.0) for a in acts]\nrandom.seed(0)\nprint(dropout([1,1,1,1,1,1,1,1,1,1], 0.5, True))   # ~half zeroed, rest = 2.0\nprint(dropout([1,1,1,1], 0.5, False))              # unchanged\n```\n\nDropout forces the network not to rely on any single unit (a form of ensembling over sub-networks). Scaling survivors by 1/(1−p) keeps the *expected* total activation constant, so the test-time forward pass — which uses all units — needs no rescaling. 'Inverted' means we do the scaling during training so inference is just a plain forward pass."
+    },
+    {
+      "title": "Diagnose overfitting",
+      "difficulty": "core",
+      "prompt": "Describe the train/test signature of overfitting vs underfitting, and lay out an ordered remediation plan (which regularizer/knob to try first) when you see a large train-test accuracy gap.",
+      "hint": "Overfit = high train acc, low test acc, growing gap. Underfit = both low. Fixes escalate from data → weight decay/dropout → architecture.",
+      "solution": "**Signatures:**\n- **Overfitting:** training accuracy high and still rising, test accuracy plateaus or *drops*, gap widens over epochs. Training loss ≪ validation loss.\n- **Underfitting:** both train and test accuracy low — the model lacks capacity or hasn't trained enough.\n\n**Remediation order for overfitting (cheapest/highest-leverage first):**\n1. **More/augmented data** — the most reliable cure; addresses the root cause.\n2. **Early stopping** — free; stop at the best validation epoch.\n3. **Weight decay (L2)** — penalize large weights; tune λ.\n4. **Dropout** — typically 0.1–0.5 in the layers that overfit.\n5. **Reduce model size / add normalization** — shrink capacity or stabilize.\n6. Only then reach for architectural changes.\n\n```python\ngap = train_acc - val_acc\n# gap large & val falling -> regularize (steps 1-5)\n# both low -> add capacity / train longer (the opposite problem)\n```\n\nAlways diagnose first: applying dropout to an *underfitting* model makes it worse. Match the fix to the signature."
+    },
+    {
+      "title": "LayerNorm vs BatchNorm vs RMSNorm",
+      "difficulty": "stretch",
+      "prompt": "Implement LayerNorm and RMSNorm for one feature vector, and explain why transformers use LayerNorm instead of BatchNorm and why modern LLMs prefer RMSNorm.",
+      "hint": "BatchNorm normalizes across the batch (per feature); LayerNorm across features (per sample). RMSNorm drops the mean-centering, scaling only by RMS.",
+      "solution": "```python\nimport math\ndef layernorm(x, g=1.0, b=0.0, eps=1e-5):\n    mu=sum(x)/len(x); var=sum((v-mu)**2 for v in x)/len(x)\n    return [g*(v-mu)/math.sqrt(var+eps)+b for v in x]\ndef rmsnorm(x, g=1.0, eps=1e-5):\n    ms=sum(v*v for v in x)/len(x)\n    return [g*v/math.sqrt(ms+eps) for v in x]\nprint([round(v,3) for v in layernorm([1,2,3,4])])\nprint([round(v,3) for v in rmsnorm([1,2,3,4])])\n```\n\n**BatchNorm** normalizes each feature across the batch — but it depends on batch statistics, which are unstable for small/variable batches and for sequence models where each position differs, and it behaves differently at train vs inference. Transformers process variable-length sequences and often small effective batches, so they use **LayerNorm**, which normalizes across the features of *each token independently* — batch-size-agnostic and identical at train/test.\n\n**RMSNorm** drops the mean-subtraction and learnable bias, scaling only by the root-mean-square. It's ~cheaper and empirically matches LayerNorm quality, so modern LLMs (LLaMA, etc.) adopt it — the mean-centering turns out to be largely unnecessary, and removing it saves compute at scale."
+    }
+  ]
+}

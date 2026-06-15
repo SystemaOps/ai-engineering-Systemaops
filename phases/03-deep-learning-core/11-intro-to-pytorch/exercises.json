@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Your first nn.Module",
+      "difficulty": "warmup",
+      "prompt": "Define a 2-layer MLP as an nn.Module (Linear → ReLU → Linear) for a binary classification task, and run one forward pass on a random batch. Confirm the output shape.",
+      "hint": "Subclass nn.Module, create layers in __init__, chain them in forward. Input (batch, in_features) → output (batch, out).",
+      "solution": "```python\nimport torch\nimport torch.nn as nn\nclass MLP(nn.Module):\n    def __init__(self, d_in, d_hidden, d_out):\n        super().__init__()\n        self.fc1 = nn.Linear(d_in, d_hidden)\n        self.fc2 = nn.Linear(d_hidden, d_out)\n    def forward(self, x):\n        return self.fc2(torch.relu(self.fc1(x)))\nmodel = MLP(3, 16, 2)\nx = torch.randn(8, 3)\nprint(model(x).shape)   # torch.Size([8, 2])\n```\n\n`nn.Module` auto-registers the `nn.Linear` submodules so `model.parameters()` finds all weights, and autograd tracks every op for `.backward()`. This is your mini-framework's Module pattern, just batteries-included and GPU-ready."
+    },
+    {
+      "title": "The standard training loop",
+      "difficulty": "core",
+      "prompt": "Write the canonical PyTorch training loop (zero_grad → forward → loss → backward → step) to train your MLP for a few epochs on a toy dataset, and show the loss decreasing. Include moving the model/data to GPU if available.",
+      "hint": "criterion = nn.CrossEntropyLoss(); optimizer = torch.optim.Adam(model.parameters()). Device-agnostic: .to(device).",
+      "solution": "```python\nimport torch, torch.nn as nn\ndevice = 'cuda' if torch.cuda.is_available() else 'cpu'\nmodel = MLP(3, 16, 2).to(device)\nopt = torch.optim.Adam(model.parameters(), lr=1e-2)\ncrit = nn.CrossEntropyLoss()\nX = torch.randn(64, 3, device=device)\ny = (X.sum(1) > 0).long().to(device)\nfor epoch in range(50):\n    opt.zero_grad()\n    loss = crit(model(X), y)\n    loss.backward()\n    opt.step()\nprint('final loss:', round(loss.item(), 4))   # well below start\n```\n\nThis five-line loop is the same one you hand-wrote in the mini framework — `zero_grad` clears accumulated grads, `backward` runs autograd, `step` applies Adam. Writing it `.to(device)`-style means the identical code runs on CPU or GPU. Master this loop and you can train essentially any PyTorch model."
+    },
+    {
+      "title": "Why PyTorch is 100×+ faster",
+      "difficulty": "stretch",
+      "prompt": "Explain why your pure-Python mini framework is orders of magnitude slower than PyTorch on the same network, even though the math is identical. Name the three main sources of the speedup.",
+      "hint": "Think: per-element Python loops vs vectorized C/CUDA kernels; CPU vs GPU parallelism; fused operations and memory layout.",
+      "solution": "The algorithms are identical; the *execution* isn't. Three big reasons:\n\n1. **Vectorized kernels vs Python loops.** Your framework does matmul with nested Python `for` loops — each multiply is interpreted bytecode. PyTorch dispatches one call to a hand-optimized C/BLAS (or cuDNN) kernel that processes the whole tensor in tight compiled code. This alone is often 50–100×.\n2. **GPU parallelism.** On CUDA, a matmul runs across thousands of cores simultaneously; pure Python runs on one CPU core, serially.\n3. **Fused ops + memory layout.** PyTorch keeps data in contiguous typed buffers (no Python object overhead per number) and fuses operations to cut memory traffic and kernel launches.\n\n```python\n# pure python: ~O(n^3) interpreted multiplies, one at a time\n# torch:       a @ b  -> single optimized GEMM kernel on GPU\n```\n\nThe lesson: from-scratch builds teach you *what* happens; frameworks make it *fast enough to matter*. You'd never train a real model in pure Python, but understanding the loop means PyTorch is never a black box."
+    }
+  ]
+}

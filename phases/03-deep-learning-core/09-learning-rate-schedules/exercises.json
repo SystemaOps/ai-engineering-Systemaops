@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Cosine annealing schedule",
+      "difficulty": "warmup",
+      "prompt": "Implement a cosine-annealing learning-rate schedule that decays from a base LR to ~0 over T steps, and print the LR at the start, middle, and end. State why decaying the LR helps late in training.",
+      "hint": "lr(t) = lr_max · 0.5 · (1 + cos(π·t/T)).",
+      "solution": "```python\nimport math\ndef cosine(t, T, lr_max=0.1): return lr_max * 0.5 * (1 + math.cos(math.pi * t / T))\nT=1000\nfor t in (0, 500, 1000):\n    print(t, round(cosine(t, T), 5))   # 0.1, 0.05, ~0.0\n```\n\nEarly on, large steps cover ground fast; late on, the loss surface near a minimum is delicate, and big steps just bounce around it. Cosine annealing smoothly shrinks the step so the model settles into a sharp minimum instead of oscillating — often the difference between 90% and 95% accuracy at no extra compute."
+    },
+    {
+      "title": "Three LR failure modes",
+      "difficulty": "core",
+      "prompt": "On a simple quadratic, demonstrate the three classic learning-rate failures: divergence (LR too high), stalling (too low), and oscillation (decent LR but no decay). Show how a schedule fixes the oscillation case.",
+      "hint": "f(x)=x², grad=2x. Too high → |x| grows; too low → barely moves; medium constant → settles to a noisy orbit; decaying → converges.",
+      "solution": "```python\ndef run(lr_fn, steps=40, x=10.0):\n    for t in range(steps): x -= lr_fn(t)*2*x\n    return x\nprint('too high :', round(run(lambda t: 1.1), 3))    # diverges (huge)\nprint('too low  :', round(run(lambda t: 0.001), 3))   # ~9.2, barely moved\nprint('constant :', round(run(lambda t: 0.5), 3))     # orbits, doesn't settle\nprint('decaying :', round(run(lambda t: 0.5*0.9**t), 3))  # ~0, converges\n```\n\n- **Too high:** each step overshoots by more than it corrects → divergence to infinity.\n- **Too low:** steps are negligible → training crawls and never arrives in budget.\n- **Constant-but-large:** good progress then perpetual oscillation around the minimum.\n\nA **decaying schedule** gets the best of both: big early steps for speed, shrinking steps to converge. The fix for oscillation is almost never a smaller constant LR — it's decay."
+    },
+    {
+      "title": "Why warmup for Adam",
+      "difficulty": "stretch",
+      "prompt": "Explain why Adam-based training (especially transformers) usually needs a learning-rate warmup, and implement a linear-warmup-then-cosine schedule. What goes wrong in the first few hundred steps without it?",
+      "hint": "Early on, Adam's second-moment estimate v̂ is based on very few samples and is noisy, so step sizes can be wildly large. Warmup ramps LR from ~0 to give v̂ time to stabilize.",
+      "solution": "```python\nimport math\ndef warmup_cosine(t, warmup, T, lr_max=0.1):\n    if t < warmup: return lr_max * t / warmup       # linear ramp up\n    p = (t - warmup) / (T - warmup)\n    return lr_max * 0.5 * (1 + math.cos(math.pi * p))  # then cosine down\nfor t in (0, 50, 100, 500, 1000):\n    print(t, round(warmup_cosine(t, warmup=100, T=1000), 5))\n```\n\nIn the first steps Adam's variance estimate `v̂` is computed from almost no gradient history, so it's noisy and often *too small* — making `m̂/√v̂` produce enormous, erratic updates exactly when the weights are random and most fragile. Those early giant steps can push the model into a bad region or spike the loss to NaN. **Warmup** starts the LR near zero and ramps it up over a few hundred steps, giving `v̂` time to become reliable before full-size updates kick in. It's standard for training transformers and a frequent fix for 'loss exploded at step 200.'"
+    }
+  ]
+}

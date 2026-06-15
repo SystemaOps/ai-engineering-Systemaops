@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "MSE vs cross-entropy gradients",
+      "difficulty": "warmup",
+      "prompt": "For a binary classifier outputting probability p with true label y=1, compute the loss and its gradient w.r.t. p under MSE and under binary cross-entropy at p=0.1 (a confident wrong prediction). Which gives a stronger learning signal?",
+      "hint": "MSE=(p−y)², dMSE/dp=2(p−y). BCE=−log(p) for y=1, dBCE/dp=−1/p.",
+      "solution": "```python\np, y = 0.1, 1\nmse = (p-y)**2;        dmse = 2*(p-y)        # -1.8\nbce = -__import__('math').log(p); dbce = -1/p  # -10.0\nprint(round(mse,3), round(dmse,3))   # 0.81 -1.8\nprint(round(bce,3), round(dbce,3))   # 2.303 -10.0\n```\n\nBoth penalize the wrong answer, but cross-entropy's gradient (−10) is far larger than MSE's (−1.8) when the model is confidently wrong — it pushes hard to fix egregious mistakes. MSE's gradient stays small near the saturated ends, so a classifier trained on MSE learns sluggishly. That's the core reason classification uses cross-entropy."
+    },
+    {
+      "title": "Why MSE collapses for classification",
+      "difficulty": "core",
+      "prompt": "Show the 'predict 0.5 for everything' failure: on a balanced binary dataset, demonstrate that constant p=0.5 achieves a low MSE, so an MSE-minimizing classifier has little incentive to be decisive. Contrast with cross-entropy.",
+      "hint": "Compute mean MSE of constant 0.5 vs the cross-entropy of constant 0.5. CE punishes hedging far more as you approach certainty needs.",
+      "solution": "```python\nimport math\nlabels = [0,1,0,1,1,0]\nconst = 0.5\nmse = sum((const-y)**2 for y in labels)/len(labels)        # 0.25\nce  = sum(-(y*math.log(const)+(1-y)*math.log(1-const)) for y in labels)/len(labels)  # 0.693\nprint(round(mse,3), round(ce,3))\n```\n\nConstant 0.5 gives MSE = 0.25 — a respectable-looking number that the optimizer is fairly content with, so MSE doesn't strongly push the model off the fence. Cross-entropy at 0.5 is 0.693 and drops sharply only when the model commits to the correct class, so it *rewards* confident correctness and punishes hedging. MSE optimizes for the wrong thing on classification; cross-entropy optimizes for calibrated, decisive probabilities."
+    },
+    {
+      "title": "Label smoothing",
+      "difficulty": "stretch",
+      "prompt": "Implement label smoothing for cross-entropy (replace the one-hot target with (1−ε) on the true class and ε/(K−1) elsewhere) and explain how it prevents overconfidence and why that helps generalization and calibration.",
+      "hint": "With hard targets the optimum drives the true logit to +∞. Smoothing sets a finite target probability, capping confidence.",
+      "solution": "```python\nimport math\ndef softmax(z):\n    m=max(z); e=[math.exp(x-m) for x in z]; s=sum(e); return [v/s for v in e]\ndef ce_smoothed(logits, true, K, eps=0.1):\n    p=softmax(logits)\n    target=[(1-eps) if k==true else eps/(K-1) for k in range(K)]\n    return -sum(t*math.log(pk) for t,pk in zip(target,p))\nprint(round(ce_smoothed([5.0,1.0,0.5], 0, 3), 4))\n```\n\nWith a hard one-hot target, minimizing cross-entropy pushes the correct logit toward +∞ relative to the others — the model becomes pathologically overconfident and brittle. Label smoothing sets the target to e.g. 0.9 instead of 1.0, so the optimal logit gap is *finite*. Result: better-calibrated probabilities (confidence matches accuracy), less overfitting, and improved test performance — which is why classifiers from Inception to modern transformers use ε≈0.1."
+    }
+  ]
+}

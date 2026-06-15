@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Overfit one batch",
+      "difficulty": "warmup",
+      "prompt": "Explain the 'overfit a single batch' sanity check: what you do, what success and failure each tell you, and why it's the first thing to run on any new model + training loop.",
+      "hint": "Train on ONE small batch repeatedly with no regularization; a correct setup should drive loss to ~0 (memorize it).",
+      "solution": "**What you do:** take a single small batch, turn off dropout/weight-decay, and train on *only that batch* for many steps.\n\n```python\nxb, yb = next(iter(loader))\nfor _ in range(200):\n    opt.zero_grad(); loss = crit(model(xb), yb); loss.backward(); opt.step()\nprint(loss.item())   # should approach ~0\n```\n\n**Success (loss → ~0):** your forward pass, loss, backward, and optimizer are wired correctly and the model has enough capacity — the plumbing works, so any remaining problem is generalization (data, regularization, scale).\n\n**Failure (loss stuck):** something is fundamentally broken — labels misaligned with inputs, gradients not flowing (detached tensor, wrong requires_grad), loss applied to the wrong thing, or LR pathological. A model that can't even *memorize* 8 examples will never learn a dataset.\n\nIt's the first check because it isolates 'is my code correct' from 'is my model good' in 30 seconds, before you waste hours on a full run."
+    },
+    {
+      "title": "Diagnose NaN loss",
+      "difficulty": "core",
+      "prompt": "Your loss becomes NaN after some steps. List the usual causes in order of likelihood and the specific check or fix for each. Show how to locate the first NaN.",
+      "hint": "Common: LR too high, log(0) in a loss, exploding gradients, bad input normalization, /0. Use anomaly detection or guard logs.",
+      "solution": "**Likely causes and fixes, in order:**\n1. **Learning rate too high** → exploding weights/activations. Lower LR or add warmup; clip gradients (`clip_grad_norm_`).\n2. **log(0) / division by zero in the loss** → e.g. `log(p)` with p=0. Use logits-based losses (`CrossEntropyLoss` takes logits) or add eps.\n3. **Exploding gradients** → check grad norm; add gradient clipping.\n4. **Unnormalized / extreme inputs** → standardize features; check for inf/NaN in the data itself.\n5. **Mixed-precision underflow/overflow** → use bf16 or loss scaling.\n\n**Locate the first NaN:**\n```python\nimport torch\ntorch.autograd.set_detect_anomaly(True)   # points to the op that produced NaN\n# or guard manually:\nassert torch.isfinite(loss), 'NaN/inf loss'\nfor n, p in model.named_parameters():\n    if p.grad is not None and not torch.isfinite(p.grad).all():\n        print('bad grad in', n)\n```\n\nStart from the most common (LR) and work down; anomaly detection or per-tensor finite-checks pinpoint *where* it first appears so you fix the cause, not a symptom."
+    },
+    {
+      "title": "A debugging checklist",
+      "difficulty": "stretch",
+      "prompt": "Build a systematic checklist for 'my training loss won't go down' that covers data pipeline, model, loss, optimizer, and LR — in the order you'd actually check them. Justify the ordering.",
+      "hint": "Cheapest, most-likely-root-cause checks first. Verify data and the overfit-one-batch test before touching architecture.",
+      "solution": "**Flat / non-decreasing loss — check in this order (cheap & high-yield first):**\n\n1. **Data pipeline.** Print a batch. Are inputs/labels aligned? Labels in the right range/dtype? Inputs normalized (not 0–255)? Shuffling on? A surprising fraction of 'model' bugs are mislabeled or unscaled data.\n2. **Overfit one batch.** (Previous exercise.) If it can't memorize 8 examples, stop — the loop is broken, not the model.\n3. **Loss function.** Right loss for the task? Fed logits vs probabilities correctly? Reduction (mean vs sum) sane? Is the loss even connected to the params (no accidental `.detach()`/`no_grad`)?\n4. **Gradients.** Are they non-zero and finite? All-zero → broken graph or dead activations; huge → exploding (clip/lower LR).\n5. **Optimizer.** `zero_grad()` each step? All params actually passed to the optimizer? Right LR object?\n6. **Learning rate.** Sweep a few orders of magnitude (1e-1…1e-5). LR is the single most impactful knob; try this before redesigning the network.\n7. **Only then: architecture/capacity.**\n\n```python\n# quick triage\nprint(xb.min(), xb.max(), yb.unique())     # 1: data sane?\n# 2: overfit-one-batch -> loss ~0?\nprint(loss.requires_grad)                  # 3: loss connected?\nprint([p.grad.abs().mean() for p in model.parameters() if p.grad is not None])  # 4\n```\n\nThe ordering is deliberate: data and loop bugs are the most common and cheapest to check, while architecture changes are expensive and rarely the real cause. Verifying from the data inward stops you from 'fixing' a perfectly good model when the labels were shifted by one."
+    }
+  ]
+}

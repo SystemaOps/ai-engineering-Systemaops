@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Trace the shapes",
+      "difficulty": "warmup",
+      "prompt": "For a network that maps a batch of 4 samples with 3 features through a hidden layer of 5 units to 2 outputs, write the shape of every weight matrix and every intermediate activation. State the matmul shape rule.",
+      "hint": "For X (batch, in) and W (in, out), X@W is (batch, out). Bias is (out,) broadcast over the batch.",
+      "solution": "```\nX:        (4, 3)\nW1:       (3, 5)   b1: (5,)   ->  H = X@W1 + b1 : (4, 5)\nW2:       (5, 2)   b2: (2,)   ->  Y = H@W2 + b2 : (4, 2)\n```\n```python\nimport numpy as np\nX=np.random.rand(4,3); W1=np.random.rand(3,5); W2=np.random.rand(5,2)\nprint((X@W1).shape, ((X@W1)@W2).shape)   # (4,5) (4,2)\n```\n\nRule: `(a,b) @ (b,c) -> (a,c)` — the inner dimensions must match and cancel. The #1 deep-learning bug is a transposed weight (inner dims don't match); tracing shapes layer by layer catches it before runtime."
+    },
+    {
+      "title": "Linear stack collapses",
+      "difficulty": "core",
+      "prompt": "Empirically show that two stacked linear layers (no activation) are equivalent to a single linear layer, then show that inserting a nonlinearity breaks that equivalence. Explain the consequence for depth.",
+      "hint": "Compose W2(W1 x) = (W2 W1) x — a single matrix. Add a ReLU between them and the composition is no longer a single matmul.",
+      "solution": "```python\nimport numpy as np\nW1=np.random.rand(3,4); W2=np.random.rand(4,2); x=np.random.rand(5,3)\nlinear_stack = (x@W1)@W2\nsingle = x@(W1@W2)\nprint(np.allclose(linear_stack, single))   # True — collapses\n\nrelu=lambda z: np.maximum(0,z)\nnonlinear = relu(x@W1)@W2\nprint(np.allclose(nonlinear, x@(W1@W2)))    # False — genuinely deeper\n```\n\nWithout a nonlinearity, any number of linear layers reduces to one matrix `W2W1` — depth buys nothing. The ReLU (or any nonlinearity) between layers is what lets each layer bend space differently, so a deep net can represent curved decision boundaries a single layer never could."
+    },
+    {
+      "title": "Hand-tune a 2-2-1 XOR net",
+      "difficulty": "stretch",
+      "prompt": "Build a 2-2-1 network with sigmoid activations and hand-set weights so it computes XOR. Verify all four inputs give the right side of 0.5. Explain what the two hidden units learned to detect.",
+      "hint": "Make the hidden units act like OR and NAND (large weights for sharp sigmoids), then the output as AND of those.",
+      "solution": "```python\nimport math\ndef sig(z): return 1/(1+math.exp(-z))\ndef net(a, b):\n    h1 = sig(20*a + 20*b - 10)    # ~OR\n    h2 = sig(-20*a - 20*b + 30)   # ~NAND\n    return sig(20*h1 + 20*h2 - 30) # ~AND(h1,h2)\nfor a,b in [(0,0),(0,1),(1,0),(1,1)]:\n    print(a, b, round(net(a,b)))   # 0 1 1 0\n```\n\nLarge weights make each sigmoid behave like a sharp logic gate. Hidden unit 1 fires for 'at least one input' (OR); unit 2 fires for 'not both' (NAND); the output ANDs them — exactly XOR. The hidden layer re-represented the inputs so the output's single sigmoid boundary suffices. In the next lesson, backprop *discovers* weights like these automatically."
+    }
+  ]
+}

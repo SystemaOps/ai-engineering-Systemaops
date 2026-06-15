@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Gradients via jax.grad",
+      "difficulty": "warmup",
+      "prompt": "Use jax.grad to get the derivative of a simple function (e.g. f(x)=x³+2x²) as a new function, and evaluate it at a point. Contrast this with PyTorch's .backward() approach in one sentence.",
+      "hint": "jax.grad(f) returns a function that computes f'. No tape, no .backward() — grad is a function transformation.",
+      "solution": "```python\nimport jax, jax.numpy as jnp\ndef f(x): return x**3 + 2*x**2\ndf = jax.grad(f)          # df is a FUNCTION, f'(x) = 3x^2 + 4x\nprint(df(2.0))            # 20.0\n```\n\nJAX treats differentiation as a **function transformation**: `jax.grad(f)` returns another pure function. PyTorch instead records operations on a tape during the forward pass and replays it on `.backward()`. JAX's view (grad-of-a-function) is what makes higher-order derivatives (`grad(grad(f))`) and composition so clean."
+    },
+    {
+      "title": "jit and vmap",
+      "difficulty": "core",
+      "prompt": "Take a small numerical function, apply jax.jit to compile it and jax.vmap to vectorize it over a batch without writing a loop, and explain what each transformation does.",
+      "hint": "jit traces the function once and compiles it (XLA); vmap adds a batch axis automatically so you write the per-example function only.",
+      "solution": "```python\nimport jax, jax.numpy as jnp\ndef predict(w, x): return jnp.tanh(jnp.dot(w, x))   # single example\n\nfast = jax.jit(predict)                 # compiled with XLA\nbatched = jax.vmap(predict, in_axes=(None, 0))  # x batched, w shared\n\nw = jnp.ones(3)\nX = jnp.ones((100, 3))\nprint(batched(w, X).shape)              # (100,) — no Python loop\nprint(fast(w, X[0]))                    # compiled single call\n```\n\n**jit** traces your Python function once into an XLA graph and compiles it to a single fused kernel — subsequent calls skip the Python interpreter entirely. **vmap** auto-vectorizes: you write the clean per-example function and vmap adds the batch dimension, so there's no manual batching code and no Python loop. Composing them (`jax.jit(jax.vmap(f))`) gives compiled, batched execution from simple math."
+    },
+    {
+      "title": "Eager mutation vs functional state",
+      "difficulty": "stretch",
+      "prompt": "Explain the core design difference between PyTorch (eager, mutable, object-oriented) and JAX (pure functions, explicit state) and why JAX's model scales to thousands of TPUs. What's the ergonomic cost?",
+      "hint": "PyTorch mutates module.weight in place and re-interprets Python each step. JAX requires pure functions (params passed in/out) so XLA can compile and shard the whole step.",
+      "solution": "**PyTorch:** a model is a stateful object — `optimizer.step()` mutates `module.weight` in place, and each training step re-runs Python eagerly, launching kernels one at a time. Convenient and debuggable, but the per-step Python overhead and eager dispatch become a bottleneck at extreme scale.\n\n**JAX:** everything is a **pure function** — parameters are explicit inputs, the updated parameters are explicit outputs, nothing is mutated. Because the whole step is a pure function, `jit` can compile it end-to-end with XLA, and the compiler can fuse, optimize, and **shard it across thousands of TPUs/GPUs** (via `pmap`/sharding) — there's no Python in the hot loop to serialize on.\n\n```python\n# JAX: state in and out, no mutation\n# params = update(params, batch)   # returns NEW params\n```\n\n**The cost:** you manage state by hand (thread params, optimizer state, and RNG keys through every call), which is more verbose and has a learning curve. The trade is explicitness + compilation (JAX) vs convenience + flexibility (PyTorch) — which is why frontier labs training 500B-parameter models on TPU pods often pick JAX, while most everyday work stays in PyTorch."
+    }
+  ]
+}

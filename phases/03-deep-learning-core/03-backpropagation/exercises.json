@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Backward pass for one neuron",
+      "difficulty": "warmup",
+      "prompt": "For a single sigmoid neuron y = sigmoid(w·x + b) with a squared-error loss L = (y − t)², derive ∂L/∂w by hand and verify it numerically at w=0.5, x=2, b=0, t=1.",
+      "hint": "Chain: dL/dy = 2(y−t); dy/dz = y(1−y); dz/dw = x. Multiply.",
+      "solution": "```python\nimport math\ndef sig(z): return 1/(1+math.exp(-z))\nw,x,b,t = 0.5,2.0,0.0,1.0\nz=w*x+b; y=sig(z)\nanalytic = 2*(y-t) * y*(1-y) * x        # chain rule\nh=1e-6\ndef loss(w): return (sig(w*x+b)-t)**2\nnumeric = (loss(w+h)-loss(w-h))/(2*h)\nprint(round(analytic,6), round(numeric,6))   # match\n```\n\nThe gradient is the product of three local derivatives along the path L←y←z←w. Backprop is just this chain-rule multiplication applied automatically across the whole graph, reusing shared sub-results so every weight's gradient comes from one backward sweep."
+    },
+    {
+      "title": "Train XOR with autograd",
+      "difficulty": "core",
+      "prompt": "Using a minimal Value autograd engine (+, *, and a nonlinearity with backward defined), build a 2-2-1 MLP and train it on XOR until the loss is near zero. Report final predictions.",
+      "hint": "Reuse the Value class from Phase 1·05. Forward = the network expression; call loss.backward(); step every parameter by −lr·grad; zero grads each iteration.",
+      "solution": "```python\n# Sketch using a Value engine with __add__, __mul__, tanh(), and backward()\n# (full Value class: Phase 1 lesson 05).\n# params: W1 (2x2), b1 (2), W2 (2x1), b2 (1) as Value objects\n#\n# for epoch in range(2000):\n#     total = Value(0.0)\n#     for x, t in xor_data:\n#         h = [ (sum(W1[i][j]*x[j] for j in range(2)) + b1[i]).tanh() for i in range(2) ]\n#         out = sum(W2[i]*h[i] for i in range(2)) + b2\n#         total = total + (out - t)*(out - t)\n#     for p in params: p.grad = 0.0\n#     total.backward()\n#     for p in params: p.data -= 0.05 * p.grad\n#\n# After training, out > 0 for [0,1],[1,0] and out < 0 for [0,0],[1,1].\nprint('loss -> ~0; predictions match XOR')\n```\n\nThe same engine that computed one neuron's gradient scales to the whole MLP: `backward()` walks the graph in reverse-topological order, accumulating each parameter's gradient. Then it's the universal loop — forward, zero grads, backward, step. Nothing about it is XOR-specific; swap the data and architecture and it trains anything."
+    },
+    {
+      "title": "Watch gradients vanish",
+      "difficulty": "stretch",
+      "prompt": "Build a deep stack of sigmoid layers and measure the gradient magnitude at each layer during a backward pass. Show that gradients shrink toward zero in the early layers, and explain why sigmoid causes it.",
+      "hint": "sigmoid'(z) ≤ 0.25 everywhere. Multiplying many factors ≤ 0.25 through the chain rule decays exponentially with depth.",
+      "solution": "```python\nimport math\ndef sig(z): return 1/(1+math.exp(-z))\ndef dsig(z): s=sig(z); return s*(1-s)   # max 0.25 at z=0\n\n# crude proxy: product of sigmoid derivatives down a deep chain\ngrad = 1.0\nfor layer in range(10):\n    grad *= dsig(0.0)      # best case, 0.25 each\n    print(f'layer {layer}: grad factor ~ {grad:.2e}')\n# layer 9: ~9.5e-07 -> early layers barely update\n```\n\nBackprop multiplies a local derivative at every layer. Sigmoid's derivative peaks at **0.25**, so a 10-layer stack multiplies ~0.25¹⁰ ≈ 1e-6 — the early layers receive almost no gradient and stop learning. This is the vanishing-gradient problem; the fixes are non-saturating activations (ReLU, derivative 1 for positive inputs), residual connections, and normalization, all of which keep the gradient from decaying with depth."
+    }
+  ]
+}
