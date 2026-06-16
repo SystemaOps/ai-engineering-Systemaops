@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Output size formula",
+      "difficulty": "warmup",
+      "prompt": "Compute the output spatial size for a 224×224 input with a 3×3 kernel, padding 1, stride 2, using the formula (H − K + 2P)/S + 1. Then state what padding=1 with a 3×3 kernel and stride 1 does to the size.",
+      "hint": "(224 − 3 + 2·1)/2 + 1. 'Same' padding keeps size when stride=1.",
+      "solution": "```python\ndef out_size(H, K, P, S): return (H - K + 2*P)//S + 1\nprint(out_size(224, 3, 1, 2))   # 112\nprint(out_size(224, 3, 1, 1))   # 224  ('same' padding)\n```\n\nStride 2 halves the spatial size (224→112), the standard downsampling step in CNNs. A 3×3 kernel with padding 1 and stride 1 preserves size ('same' convolution) — which is why that combination is everywhere: you can stack many such layers without the feature map shrinking until you *choose* to downsample."
+    },
+    {
+      "title": "2D convolution from scratch",
+      "difficulty": "core",
+      "prompt": "Implement 2D cross-correlation (the 'convolution' deep learning actually uses) with NumPy and apply a vertical Sobel kernel to a simple image with a vertical edge. Confirm the response is strongest at the edge.",
+      "hint": "Slide the kernel; output[i,j] = sum(patch * kernel). Sobel-x = [[-1,0,1],[-2,0,2],[-1,0,1]].",
+      "solution": "```python\nimport numpy as np\ndef conv2d(img, k):\n    kh,kw=k.shape; H,W=img.shape\n    out=np.zeros((H-kh+1, W-kw+1))\n    for i in range(out.shape[0]):\n        for j in range(out.shape[1]):\n            out[i,j]=(img[i:i+kh, j:j+kw]*k).sum()\n    return out\nimg=np.zeros((6,6)); img[:,3:]=1.0          # vertical edge at col 3\nsobel_x=np.array([[-1,0,1],[-2,0,2],[-1,0,1]])\nprint(conv2d(img, sobel_x))   # large values along the edge column\n```\n\nThe Sobel-x kernel responds to horizontal intensity *change* — it lights up exactly where the image transitions dark→light vertically. This is what early conv layers learn automatically: edge and texture detectors. Weight sharing (the same kernel slid everywhere) gives translation equivariance — a shifted edge produces a shifted-but-identical response — which a dense layer could never do efficiently."
+    },
+    {
+      "title": "Receptive field grows with depth",
+      "difficulty": "stretch",
+      "prompt": "Explain how stacking 3×3 convolutions enlarges the receptive field, and compute the receptive field of three stacked 3×3 stride-1 convs. Why do modern CNNs prefer stacks of small kernels over one large kernel?",
+      "hint": "Each 3×3 conv adds 2 to the receptive field. Two 3×3s see 5×5; three see 7×7 — with fewer params and more nonlinearity than one 7×7.",
+      "solution": "```python\ndef receptive_field(n_layers, k=3, s=1):\n    rf=1\n    for _ in range(n_layers): rf += (k-1)   # stride 1\n    return rf\nprint(receptive_field(3))   # 7  (three 3x3 convs see a 7x7 region)\n```\n\nEach 3×3 conv lets a unit 'see' 2 more pixels in each direction, so three stacked 3×3 convs have the same 7×7 receptive field as a single 7×7 conv — but with advantages: **fewer parameters** (3·(3²C²)=27C² vs 49C² for one 7×7) and **two extra nonlinearities**, which makes the function more expressive. This is the VGG insight that made deep small-kernel stacks the default. Downsampling (stride/pooling) grows the receptive field even faster, which is how deep CNNs end up 'seeing' the whole image."
+    }
+  ]
+}

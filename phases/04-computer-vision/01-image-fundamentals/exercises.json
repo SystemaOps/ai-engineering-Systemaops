@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "HWC vs CHW",
+      "difficulty": "warmup",
+      "prompt": "Create a small RGB image as a NumPy array in HWC (height, width, channels) layout, convert it to CHW (channels-first) as PyTorch expects, and confirm the shapes. Explain why the layout matters.",
+      "hint": "HWC is (H, W, 3); CHW is (3, H, W). Use transpose/permute with axes (2,0,1).",
+      "solution": "```python\nimport numpy as np\nimg = np.random.randint(0, 256, (4, 5, 3), dtype=np.uint8)  # HWC\nchw = img.transpose(2, 0, 1)                                # CHW\nprint(img.shape, chw.shape)   # (4,5,3) (3,4,5)\n```\n\nLibraries disagree on layout: PIL/OpenCV/matplotlib use HWC, PyTorch convs expect CHW (batch becomes NCHW). Hand a model HWC and its first conv treats *height* as a channel dimension — it runs without error and produces garbage. Getting the layout right at load time prevents a class of silent accuracy-killing bugs."
+    },
+    {
+      "title": "Normalize like torchvision",
+      "difficulty": "core",
+      "prompt": "Take a uint8 image and preprocess it exactly as an ImageNet-pretrained model expects: scale to [0,1], then standardize with the ImageNet per-channel mean and std. Confirm the output is float32 and roughly zero-mean.",
+      "hint": "Divide by 255, then (x − mean)/std per channel with mean=[0.485,0.456,0.406], std=[0.229,0.224,0.225].",
+      "solution": "```python\nimport numpy as np\nimg = np.random.randint(0,256,(8,8,3),dtype=np.uint8).astype(np.float32)/255.0\nmean=np.array([0.485,0.456,0.406]); std=np.array([0.229,0.224,0.225])\nnorm=(img-mean)/std\nprint(norm.dtype, round(float(norm.mean()),3))   # float32, near 0\n```\n\nPretrained weights were trained on inputs standardized with *these exact* statistics. Skip the /255, use the wrong mean/std, or leave it uint8 and the model still runs but its features are shifted off the distribution it learned — accuracy quietly drops several points. Matching the training-time preprocessing is non-negotiable when using pretrained backbones."
+    },
+    {
+      "title": "Why color space matters",
+      "difficulty": "stretch",
+      "prompt": "Convert an RGB image to grayscale using the luminance-weighted formula (not a naive channel average) and to HSV, and explain one task where each alternative color space is the right choice.",
+      "hint": "Luminance: 0.299R + 0.587G + 0.114B (eyes are most sensitive to green). HSV separates color (hue) from brightness (value).",
+      "solution": "```python\nimport numpy as np\nrgb = np.random.rand(8,8,3)\ngray = rgb @ np.array([0.299, 0.587, 0.114])   # luminance, not mean\nprint(gray.shape)   # (8,8)\n```\n\n**Grayscale via luminance** (not `(R+G+B)/3`) weights green most because human vision is — a naive average makes greens too dark and reds too light. **HSV** separates hue from brightness, so it's right for color-based thresholding/segmentation that must survive lighting changes (e.g. 'find the red object' is one hue band regardless of shadow). **YCbCr** separates luma from chroma and is why JPEG/video compress color at lower resolution than brightness. Each space exists to make some downstream operation linear or robust that would be awkward in RGB."
+    }
+  ]
+}

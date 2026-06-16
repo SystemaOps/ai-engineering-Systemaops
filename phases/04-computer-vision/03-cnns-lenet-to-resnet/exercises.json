@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "One idea per architecture",
+      "difficulty": "warmup",
+      "prompt": "State the single key idea each contributed: LeNet-5, AlexNet, VGG, Inception, ResNet. One line each.",
+      "hint": "Think: first conv net, GPU+ReLU+dropout at scale, uniform small kernels, multi-scale parallel branches, residual connections.",
+      "solution": "- **LeNet-5 (1998):** the conv→pool→conv→pool→FC template itself — convolutions for images.\n- **AlexNet (2012):** scale it up on GPUs with ReLU + dropout; proved deep CNNs win ImageNet.\n- **VGG (2014):** uniform stacks of 3×3 convs — depth via small kernels, simple and transferable.\n- **Inception/GoogLeNet (2014):** parallel multi-scale branches (1×1, 3×3, 5×5) in one block; 1×1 convs for cheap channel mixing.\n- **ResNet (2015):** residual (skip) connections that let you train 100+ layers.\n\nEvery production backbone in 2026 recombines these, and the ideas transfer beyond vision — residual connections are in every transformer, 1×1/grouped convs echo in attention projections."
+    },
+    {
+      "title": "Why residual connections work",
+      "difficulty": "core",
+      "prompt": "Explain why adding a skip connection (output = F(x) + x) makes very deep networks trainable. Implement a ResNet BasicBlock's forward in a few lines and note what the network has to learn instead of the full mapping.",
+      "hint": "The block learns the residual F(x)=H(x)−x; identity is the default, so gradients flow directly through the skip and depth can't make things worse.",
+      "solution": "```python\nimport torch, torch.nn as nn\nclass BasicBlock(nn.Module):\n    def __init__(self, c):\n        super().__init__()\n        self.c1=nn.Conv2d(c,c,3,padding=1); self.c2=nn.Conv2d(c,c,3,padding=1)\n        self.bn1=nn.BatchNorm2d(c); self.bn2=nn.BatchNorm2d(c)\n    def forward(self, x):\n        out=torch.relu(self.bn1(self.c1(x)))\n        out=self.bn2(self.c2(out))\n        return torch.relu(out + x)   # the skip connection\n```\n\nWithout skips, a plain 56-layer net trained *worse* than an 18-layer one — gradients vanished and the extra layers couldn't even learn the identity. With `F(x)+x`, the layer only has to learn the **residual** (the *change* from the input); if a layer is useless it can drive F→0 and pass the input through unchanged. The `+x` also gives gradients a direct highway back through the network. That's why depth went from ~20 layers to 1000+, and why every transformer uses the same residual stream."
+    },
+    {
+      "title": "Predict a backbone's shapes",
+      "difficulty": "stretch",
+      "prompt": "For a ResNet-style stem that takes 224×224×3 through a 7×7 stride-2 conv then a 3×3 stride-2 maxpool, compute the spatial size after each step. Explain why classification backbones aggressively downsample early.",
+      "hint": "conv 7×7, pad 3, stride 2 on 224 → 112; maxpool 3×3, pad 1, stride 2 → 56. Each halves spatial size.",
+      "solution": "```python\ndef out(H,K,P,S): return (H-K+2*P)//S+1\nh=out(224,7,3,2); print(h)        # 112 after stem conv\nh=out(h,3,1,2);   print(h)        # 56 after maxpool\n# subsequent stages halve again: 56 -> 28 -> 14 -> 7\n```\n\nThe stem takes 224→112→56 in two steps, and the four residual stages continue 56→28→14→7. Aggressive early downsampling (1) slashes compute and memory — convs on a 56×56 map cost ~16× less than on 224×224 — and (2) grows the receptive field fast so deep layers see global context. The price is spatial detail, which is fine for *classification* (one label) but exactly why *segmentation* (per-pixel) needs the U-Net encoder-decoder with skips to recover resolution."
+    }
+  ]
+}

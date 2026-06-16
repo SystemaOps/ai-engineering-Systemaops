@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Explicit vs implicit 3D",
+      "difficulty": "warmup",
+      "prompt": "Classify each 3D representation as explicit or implicit and give one strength: point cloud, mesh, voxel grid, signed distance field (SDF), NeRF.",
+      "hint": "Explicit = stores geometry directly (points/faces/voxels). Implicit = a function you query (SDF, NeRF).",
+      "solution": "- **Point cloud — explicit.** Raw sensor output (LIDAR); simple, but unordered and no surface connectivity.\n- **Mesh — explicit.** Vertices + faces; compact, render-ready, the graphics standard.\n- **Voxel grid — explicit.** 3D pixels; conv-friendly but memory grows as O(n³).\n- **SDF — implicit.** A function giving signed distance to the surface; smooth, easy to do boolean ops and extract surfaces (marching cubes).\n- **NeRF — implicit.** An MLP mapping (position, view direction) → (color, density); photorealistic novel views from a few images.\n\nExplicit reps store geometry directly (fast to render, fixed resolution); implicit reps are continuous functions you *query* (arbitrary resolution, but you must sample/render them)."
+    },
+    {
+      "title": "PointNet's permutation trick",
+      "difficulty": "core",
+      "prompt": "A point cloud is an unordered set, so the network output must not depend on point ordering. Explain PointNet's symmetric-function solution and why a plain MLP+concatenate would fail.",
+      "hint": "Apply a shared MLP to each point independently, then aggregate with a symmetric function (max-pool) over points.",
+      "solution": "A point cloud of N points has no canonical order — shuffling the rows is the *same* shape, so the network must be **permutation-invariant**. A plain 'flatten + MLP' fails: concatenating points in a fixed order makes the output depend on that order, so two orderings of the same cloud give different answers.\n\n**PointNet's fix:** apply the **same shared MLP to each point independently** (per-point features, order-agnostic), then collapse across points with a **symmetric aggregation — max-pooling**:\n```\nfeat = max over points of MLP(point_i)\n```\nMax (like sum/mean) gives the same result regardless of input order, so the global feature is permutation-invariant by construction. The shared per-point MLP also makes it work for any number of points. This symmetric-function principle is the foundation of nearly all point-cloud networks."
+    },
+    {
+      "title": "Trace a NeRF forward pass",
+      "difficulty": "stretch",
+      "prompt": "Walk through how a NeRF renders a single pixel: ray casting, sampling, the MLP query, positional encoding, and volumetric compositing. Why is positional encoding essential?",
+      "hint": "Cast a ray per pixel; sample points along it; MLP(pos, dir)→(color, density); composite colors weighted by density via the volume-rendering integral. PE lets the MLP represent high-frequency detail.",
+      "solution": "To render one pixel:\n1. **Ray casting:** shoot a ray from the camera through that pixel into the scene.\n2. **Sampling:** pick many 3D points along the ray (near→far).\n3. **MLP query:** for each point feed its **position + view direction** into the MLP, which outputs **(RGB color, volume density σ)**. View direction lets it model view-dependent effects (specular highlights).\n4. **Positional encoding:** before the MLP, map each coordinate through `[sin(2^k·x), cos(2^k·x)]` for several frequencies k.\n5. **Volumetric compositing:** accumulate the sampled colors along the ray, weighting each by its density and the transmittance (how much light survives to reach it) — the discrete volume-rendering integral — to get the final pixel color.\n\nThe whole thing is differentiable, so NeRF trains by comparing rendered pixels to the real posed photos.\n\n**Why positional encoding is essential:** a plain MLP on raw (x,y,z) is biased toward low-frequency, smooth functions, so it produces blurry, detail-less reconstructions. Lifting coordinates into a bank of sinusoids of increasing frequency lets the MLP represent **high-frequency variation** (sharp edges, fine texture). It's the same trick as transformer positional encodings — and without it NeRFs look like fog."
+    }
+  ]
+}

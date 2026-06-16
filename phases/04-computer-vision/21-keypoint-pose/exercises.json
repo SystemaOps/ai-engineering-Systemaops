@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Top-down vs bottom-up",
+      "difficulty": "warmup",
+      "prompt": "Distinguish top-down and bottom-up pose estimation, and state which scales better with the number of people in the image and why.",
+      "hint": "Top-down: detect each person, then estimate pose per crop. Bottom-up: detect all keypoints at once, then group into people.",
+      "solution": "- **Top-down:** first run a person detector, then run a single-person pose model on each cropped box. Accuracy is high (each crop is normalized), but cost scales **linearly with the number of people** — 50 people = 50 pose forward passes.\n- **Bottom-up:** detect *all* keypoints in the image in one shot, then **group** them into individuals. Cost is roughly **constant regardless of crowd size**, so it scales far better for dense scenes — at some accuracy cost and a harder grouping step.\n\nRule of thumb: few people / max accuracy → top-down; crowded scenes / real-time → bottom-up."
+    },
+    {
+      "title": "Heatmap regression",
+      "difficulty": "core",
+      "prompt": "Explain why pose models regress a Gaussian heatmap per keypoint instead of directly regressing (x,y) coordinates, and how you extract the coordinate at inference. Build the Gaussian target for one keypoint.",
+      "hint": "Heatmaps give a dense, spatially-smooth target that's easier to learn; argmax (or soft-argmax) recovers the coordinate.",
+      "solution": "```python\nimport numpy as np\ndef gaussian_target(H, W, cx, cy, sigma=2):\n    ys, xs = np.mgrid[0:H, 0:W]\n    return np.exp(-((xs-cx)**2 + (ys-cy)**2) / (2*sigma**2))\nhm = gaussian_target(64, 64, 30, 40)\nyx = np.unravel_index(hm.argmax(), hm.shape)\nprint(yx)   # (40, 30) -> (y, x)\n```\n\nDirectly regressing raw (x,y) is a hard, unstable target: a single number per coordinate gives sparse gradients and no spatial structure. A **heatmap** turns each keypoint into a dense, smooth probability blob over the image — the network gets gradient at *every* pixel ('warmer toward the joint'), which is far easier to optimize and naturally handles uncertainty (a flat blob = unsure). At inference you take the **argmax** pixel (or **soft-argmax** for sub-pixel precision and differentiability). Confidence = the peak height, useful for filtering occluded joints."
+    },
+    {
+      "title": "Part Affinity Fields",
+      "difficulty": "stretch",
+      "prompt": "In bottom-up pose estimation, once you've detected all keypoints you must associate them into individual people. Explain how Part Affinity Fields (PAFs) solve this, and why naive nearest-keypoint grouping fails in crowds.",
+      "hint": "PAFs are 2D vector fields along each limb encoding direction from one joint to the next; line-integral scoring tells which elbow connects to which wrist.",
+      "solution": "After bottom-up detection you have, say, 12 elbows and 12 wrists in a crowd but don't know **which wrist belongs to which elbow**. Naive 'connect each joint to its nearest neighbor' fails because in a crowd the nearest wrist often belongs to a *different* person standing close by — proximity isn't membership.\n\n**Part Affinity Fields** fix this: the network also predicts, for each limb type (e.g. elbow→wrist), a **2D vector field** over the image that points along the direction of that limb wherever it exists. To score a candidate (elbow_i, wrist_j) connection, you take the **line integral** of the PAF along the segment between them — if the field consistently points from the elbow toward the wrist along that line, it's a real limb; if not, it's a spurious cross-person pairing. Bipartite matching on these scores then assembles consistent skeletons. PAFs encode *limb orientation and ownership*, which is exactly the information nearest-neighbor grouping lacks — this is the core of OpenPose's real-time multi-person pipeline."
+    }
+  ]
+}

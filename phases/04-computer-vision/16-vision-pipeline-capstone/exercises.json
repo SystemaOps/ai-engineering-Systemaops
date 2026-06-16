@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Design the pipeline contract",
+      "difficulty": "warmup",
+      "prompt": "Sketch the structured JSON output of a detect→classify pipeline that returns, per detected object: its box, top class with confidence, and a stable id. Why does a typed data contract (e.g. Pydantic) matter at a service boundary?",
+      "hint": "A schema makes outputs validated, versioned, and safe for downstream consumers; free-form dicts drift and break callers silently.",
+      "solution": "```json\n{\n  \"image_id\": \"abc123\",\n  \"detections\": [\n    {\"id\": 0, \"box\": [112,40,280,210], \"label\": \"dog\", \"confidence\": 0.94},\n    {\"id\": 1, \"box\": [400,180,560,310], \"label\": \"cat\", \"confidence\": 0.88}\n  ]\n}\n```\n\nA **typed contract** (Pydantic model) validates every field's type/range at the boundary, gives you one source of truth that's versioned, and fails *loudly* on malformed output instead of letting a downstream consumer silently mis-read a missing or renamed field. In a chain of models, the contract between stages is what keeps a change in the detector from quietly corrupting the classifier's input — it's the API of your pipeline."
+    },
+    {
+      "title": "Find the first bottleneck",
+      "difficulty": "core",
+      "prompt": "Describe how to profile an end-to-end detect→classify→serialize pipeline to find the first bottleneck, and why preprocessing is so often the surprise culprit before the models themselves.",
+      "hint": "Time each stage separately (decode/resize/normalize, detector, per-crop classifier, serialize). Image decode + resize on CPU can dominate.",
+      "solution": "Instrument each stage and time them in isolation across many images:\n```python\nstages = {}\nt=time.time(); img = decode_resize_normalize(raw); stages['preproc']=time.time()-t\nt=time.time(); dets = detector(img);                stages['detect']=time.time()-t\nt=time.time(); cls = [classifier(crop) for crop in crops(dets)]; stages['classify']=time.time()-t\nt=time.time(); out = serialize(dets, cls);          stages['serialize']=time.time()-t\nprint(sorted(stages.items(), key=lambda kv:-kv[1]))\n```\n\n**Preprocessing is the frequent surprise** because image decode (JPEG), resize, color conversion, and normalization run on the **CPU**, single-threaded, while everyone's attention is on the GPU models. On a fast detector, CPU decode+resize can easily exceed inference time. Fixes: batch and parallelize preprocessing, decode on GPU (nvJPEG), or move resize into the model. The classifier is the *next* common bottleneck when it runs once **per detected object** (N crops per image) — batch those crops into one forward pass. Always measure before optimizing; the bottleneck is rarely the model you were worried about."
+    },
+    {
+      "title": "Handle every failure path",
+      "difficulty": "stretch",
+      "prompt": "Enumerate the failure paths a production image-upload vision service must handle gracefully, and how each should be handled so the service never crashes or returns garbage.",
+      "hint": "Bad upload, decode failure, zero detections, low-confidence everything, oversized image, model/GPU error, timeout.",
+      "solution": "A robust detect→classify FastAPI service must handle, not assume away:\n1. **Invalid/empty upload or wrong content-type** → 400 with a clear message, before touching the model.\n2. **Corrupt or undecodable image** → catch the decode exception → 422, don't let it bubble into a 500.\n3. **Oversized image / dimension bomb** → enforce a max size/pixels up front (reject or downscale) to bound memory.\n4. **Zero detections** → return `{\"detections\": []}` (valid, not an error) so callers get a consistent schema.\n5. **All detections below confidence threshold** → filter and return empty or low-confidence flags, never raw junk.\n6. **Model / GPU OOM or runtime error** → catch, log with the image id, return 503, and keep the worker alive (don't crash the process).\n7. **Slow request** → enforce a timeout and return 504 rather than hanging the worker.\n8. Always return the **typed contract** even in edge cases, so downstream code has one shape to parse.\n\nThe principle: validate inputs at the edge, wrap each stage in error handling that degrades to a well-formed response, and make 'no result' a normal, schema-valid outcome — products fail in the field on the paths the demo never exercised."
+    }
+  ]
+}

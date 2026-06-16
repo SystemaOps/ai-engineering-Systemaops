@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "IoU from scratch",
+      "difficulty": "warmup",
+      "prompt": "Implement Intersection-over-Union between two axis-aligned boxes (x1,y1,x2,y2) and test it on a partially overlapping pair. State what IoU=0 and IoU=1 mean.",
+      "hint": "Intersection = overlap rectangle area (clamp negatives to 0); union = areaA + areaB − intersection.",
+      "solution": "```python\ndef iou(a, b):\n    ix1,iy1 = max(a[0],b[0]), max(a[1],b[1])\n    ix2,iy2 = min(a[2],b[2]), min(a[3],b[3])\n    inter = max(0, ix2-ix1) * max(0, iy2-iy1)\n    area = lambda x:(x[2]-x[0])*(x[3]-x[1])\n    union = area(a)+area(b)-inter\n    return inter/union if union else 0.0\nprint(round(iou([0,0,2,2],[1,1,3,3]),3))   # 0.143\n```\n\nIoU measures box agreement: 0 = no overlap, 1 = identical boxes. It's the currency of detection — it decides which predictions count as correct (e.g. mAP@0.5 needs IoU≥0.5 with a ground-truth box) and it drives non-maximum suppression."
+    },
+    {
+      "title": "Non-maximum suppression",
+      "difficulty": "core",
+      "prompt": "Implement NMS: given boxes with confidence scores, keep the highest-scoring box and remove others that overlap it above an IoU threshold, repeating until none remain. Explain why detectors need it.",
+      "hint": "Sort by score desc; pop the top, drop the rest with IoU > threshold against it, repeat.",
+      "solution": "```python\ndef nms(boxes, scores, thr=0.5):\n    idx = sorted(range(len(boxes)), key=lambda i:-scores[i])\n    keep = []\n    while idx:\n        i = idx.pop(0); keep.append(i)\n        idx = [j for j in idx if iou(boxes[i], boxes[j]) <= thr]\n    return keep\n# iou() from the previous exercise\n```\n\nA dense detector predicts a box at *every* grid cell/anchor, so one real object fires many overlapping boxes. NMS collapses each cluster to the single most confident box. Threshold too high → duplicate boxes survive; too low → nearby distinct objects get merged/suppressed. It's the essential post-processing step between raw detector output and clean results."
+    },
+    {
+      "title": "Read a detection metric row",
+      "difficulty": "stretch",
+      "prompt": "A model reports precision@0.5=0.92, recall=0.55, mAP@0.5=0.70, mAP@0.5:0.95=0.41. Diagnose what's wrong and what to try next. Explain what the gap between mAP@0.5 and mAP@0.5:0.95 indicates.",
+      "hint": "High precision + low recall = missing objects (not false alarms). The mAP@0.5 vs @0.5:0.95 gap = loose localization.",
+      "solution": "**Diagnosis:**\n- **Precision 0.92, recall 0.55:** when the model fires it's usually right, but it **misses ~45% of objects**. The problem is missed detections, not false alarms — so lower the confidence threshold, and look at *which* objects are missed (often small ones, crowded scenes, or under-represented classes). Add small-object scales/anchors, higher input resolution, or more examples of the missed class. Raising the threshold (which people reflexively do) would make this worse.\n- **mAP@0.5=0.70 but mAP@0.5:0.95=0.41:** the model *finds* objects but its boxes are **loosely localized**. mAP@0.5 only needs IoU≥0.5 (rough box); the 0.5:0.95 average rewards tight boxes. A big drop means sloppy box regression — improve with better box-regression loss (e.g. CIoU/GIoU), more precise anchors, or higher-res features.\n\n**Next knob:** recall is the headline failure, so chase the missed objects first (threshold, resolution, small-object handling), then tighten localization to close the mAP@0.5:0.95 gap."
+    }
+  ]
+}

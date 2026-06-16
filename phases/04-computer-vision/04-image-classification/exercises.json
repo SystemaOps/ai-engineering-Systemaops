@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Read the loss curve",
+      "difficulty": "warmup",
+      "prompt": "For each symptom, name the likely broken component: (a) training loss flat from step 0, (b) training loss drops but val loss rises, (c) loss spikes to NaN early, (d) loss decreases then plateaus far above 0. One line each.",
+      "hint": "Map symptoms to: LR/data wiring, overfitting/augmentation, LR-too-high/numerics, capacity/LR-schedule.",
+      "solution": "- **(a) Flat from step 0** → learning rate ~0, frozen params, or data/label wiring broken (run the overfit-one-batch test).\n- **(b) Train ↓, val ↑** → overfitting; add augmentation/regularization or more data.\n- **(c) NaN early** → LR too high or numerics (use logits-based loss, clip grads, check input normalization).\n- **(d) Plateau well above 0** → underfitting: too little capacity, LR too low late in training, or schedule needs decay.\n\nReading the *shape* of the curve tells you which knob to turn before you waste a full run — the single highest-yield CV debugging skill."
+    },
+    {
+      "title": "Implement mixup",
+      "difficulty": "core",
+      "prompt": "Implement mixup data augmentation: blend two images and their one-hot labels with a random λ from a Beta distribution. Explain what regularization effect it has and when it helps.",
+      "hint": "λ ~ Beta(α,α); x = λ·x1 + (1−λ)·x2; y = λ·y1 + (1−λ)·y2. Train on the blended pair.",
+      "solution": "```python\nimport numpy as np\ndef mixup(x1, y1, x2, y2, alpha=0.2):\n    lam = np.random.beta(alpha, alpha)\n    x = lam*x1 + (1-lam)*x2\n    y = lam*y1 + (1-lam)*y2     # soft (blended) label\n    return x, y, lam\n```\n\nMixup trains the model on linear blends of examples with correspondingly blended *soft* labels. This pushes the model toward linear behavior between classes, smooths decision boundaries, and discourages overconfidence — a strong regularizer that reduces overfitting and improves calibration and robustness to label noise. It helps most on smaller datasets or when you're already seeing a train/val gap; it can slightly slow convergence, so it's a 'turn on when overfitting' tool rather than always-on."
+    },
+    {
+      "title": "Beyond aggregate accuracy",
+      "difficulty": "stretch",
+      "prompt": "Explain why 92% overall accuracy can hide a broken model, and how a confusion matrix plus per-class precision/recall reveals the real failure. Give a concrete imbalanced-class example.",
+      "hint": "With 90% of data in one class, predicting only that class gives 90% accuracy. Per-class recall exposes the ignored minority.",
+      "solution": "Aggregate accuracy is dominated by frequent classes. On a dataset that's 90% 'normal' / 10% 'defect', a model that *always predicts normal* scores **90% accuracy** while catching **zero defects** — useless for the actual task.\n\n**The confusion matrix** breaks predictions down by (true class × predicted class), and per-class metrics expose it:\n- **Recall(defect) = 0** → every defect missed, despite 90% accuracy.\n- A column with mass everywhere → a class the model over-predicts.\n- Off-diagonal clusters → specific confusable pairs (e.g. husky↔wolf) to target with data or augmentation.\n\n```python\n# accuracy hides this; the matrix and per-class recall don't\n# rows=true, cols=pred -> diagonal good, off-diagonal = the real errors\n```\n\nAlways report per-class precision/recall (and on imbalanced data, macro-F1 or PR-AUC) — the aggregate number is the one most likely to lie about whether the model actually works."
+    }
+  ]
+}

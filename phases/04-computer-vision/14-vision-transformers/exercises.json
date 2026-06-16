@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Patchify an image",
+      "difficulty": "warmup",
+      "prompt": "Compute how many patches (tokens) a ViT produces for a 224×224 image with 16×16 patches, and the dimensionality of each flattened patch before projection. Explain the role of the class token.",
+      "hint": "Tokens = (224/16)² ; each patch flattened = 16·16·3. CLS token is a prepended learnable token whose final state is the image representation.",
+      "solution": "```python\nP=16; img=224\nntok=(img//P)**2          # 196 patches\npatch_dim=P*P*3           # 768 values per patch\nprint(ntok, patch_dim)    # 196 768\n```\n\nA ViT cuts the image into a 14×14 grid = **196 patches**, flattens each to 768 numbers, and linearly projects them to the model dimension — now it's a sequence of 196 'tokens', just like words. A learnable **class token** is prepended (197 tokens total); after the transformer blocks, *its* final hidden state is used as the whole-image representation fed to the classifier head — a learned global aggregation instead of pooling."
+    },
+    {
+      "title": "Why ViT needed lots of data (until it didn't)",
+      "difficulty": "core",
+      "prompt": "Explain why early ViTs underperformed CNNs on mid-sized datasets but won at scale, and how DeiT and MAE later made ViTs data-efficient. Frame it in terms of inductive bias.",
+      "hint": "CNNs bake in locality + translation equivariance; ViT has almost none, so it must learn them from data. More data or better training recipes substitute for the missing bias.",
+      "solution": "CNNs have strong built-in **inductive biases** — locality (nearby pixels relate) and translation equivariance (a shifted cat is still a cat) — so they generalize from modest data. A plain **ViT has almost no spatial prior**: attention can connect any patch to any other, so it must *learn* locality and translation behavior from scratch. With only ImageNet-1k that's not enough signal and ViT underperformed CNNs; pretrained on huge datasets (JFT-300M) it overtook them, because at scale learned biases beat hand-coded ones.\n\n**DeiT** closed the gap *without* extra data using a better training recipe — strong augmentation, regularization, and **distillation from a CNN teacher** (a distillation token) — so a ViT trains well on ImageNet-1k alone. **MAE** (masked autoencoding) pretrains by masking ~75% of patches and reconstructing them, a self-supervised task that teaches the spatial structure ViT lacks, then fine-tunes. Both substitute *recipe/self-supervision* for the *raw data scale* the original ViT needed."
+    },
+    {
+      "title": "ViT vs Swin vs ConvNeXt",
+      "difficulty": "stretch",
+      "prompt": "Compare ViT, Swin Transformer, and ConvNeXt by their architectural prior, and say which you'd reach for given (a) huge pretraining data + need for flexibility, (b) high-resolution dense prediction on a tight compute budget.",
+      "hint": "ViT: global attention, no spatial prior. Swin: local window attention (reintroduces locality, linear in image size). ConvNeXt: a modernized pure-CNN.",
+      "solution": "- **ViT:** global self-attention, essentially **no spatial prior**. Maximally flexible, scales beautifully with data/compute, but attention is **quadratic** in the number of patches — costly at high resolution.\n- **Swin:** computes attention within **local shifted windows**, reintroducing a locality prior and making cost **linear** in image size; its hierarchical (pyramid) feature maps suit detection/segmentation.\n- **ConvNeXt:** a **pure CNN** redesigned with transformer-era choices (large kernels, LayerNorm, GELU, fewer activations). Keeps full conv inductive bias, simple and fast, matches transformers on many benchmarks.\n\n**(a) Huge data + flexibility → ViT.** With enough pretraining data its lack of prior becomes an asset (learns task-optimal attention), and it scales best.\n\n**(b) High-res dense prediction on a budget → Swin (or ConvNeXt).** Window attention's linear cost and multi-scale features handle large images for segmentation/detection efficiently; ConvNeXt is the equally-good conv alternative if you want maximum simplicity/throughput. Plain ViT's quadratic attention makes it the expensive choice here."
+    }
+  ]
+}

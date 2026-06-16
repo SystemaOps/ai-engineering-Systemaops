@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "SAM → Grounded SAM → SAM 3",
+      "difficulty": "warmup",
+      "prompt": "Trace the evolution: what prompt does original SAM accept, what did Grounded SAM add and at what cost, and what does SAM 3 do natively?",
+      "hint": "SAM: visual prompts (point/box) only. Grounded SAM: detector (Grounding DINO) → boxes → SAM, a two-model cascade. SAM 3: native text prompts in one model.",
+      "solution": "- **Original SAM (2023):** **visual prompts only** — you click a point or draw a box, it returns a mask. It can't take 'all the oranges' because it has no text understanding.\n- **Grounded SAM:** bolt a text-grounded detector (Grounding DINO) in front — text → boxes → SAM segments each box. It works, but it's a **cascade of two frozen models**, so detector errors propagate into segmentation (error accumulation) and you pay two models' latency.\n- **SAM 3:** accepts **native text prompts** via Promptable Concept Segmentation — 'segment every X' is a **single forward pass** through one model, removing the cascade and its error accumulation.\n\nThe arc: visual-only → text via pipeline → text natively integrated."
+    },
+    {
+      "title": "SAM 3 architecture",
+      "difficulty": "core",
+      "prompt": "Describe the main components of SAM 3 and what each does: shared backbone, image detector, memory-based video tracker, presence head, and the decoupled detector-tracker design. Why decouple them?",
+      "hint": "Backbone encodes the image; detector finds concept instances; presence head says whether the concept exists; tracker carries identities across video frames via memory.",
+      "solution": "- **Shared backbone:** one image/video encoder feeding all heads (efficient, consistent features).\n- **Image detector:** localizes instances of the **text-prompted concept** ('orange') in a frame.\n- **Presence head:** predicts whether the concept is **present at all** — so the model can correctly return *nothing* for 'find the zebra' in a zebra-free image instead of hallucinating a mask.\n- **Memory-based video tracker:** maintains a **memory bank** of past frames so the same object keeps its identity across time and survives occlusion.\n- **Decoupled detector–tracker:** detection and tracking are separate modules over the shared backbone.\n\n**Why decouple:** detection ('what/where is the concept now') and tracking ('which past object is this') are different jobs — coupling them forces compromises and lets a tracking error corrupt detection (and vice versa). Decoupling lets each be optimized independently and combined flexibly (detect-only on images, detect+track on video), improving both robustness and reuse."
+    },
+    {
+      "title": "Pick the segmentation tool",
+      "difficulty": "stretch",
+      "prompt": "Choose among SAM 3, Grounded SAM 2, YOLO-World, and SAM-MI for: (a) real-time open-vocab detection on an edge device, (b) high-quality text-prompted masks + video tracking in a research pipeline. Justify by latency vs concept complexity.",
+      "hint": "YOLO-World = fast open-vocab boxes (no masks). SAM 3 = native text masks + tracking, heavier. Grounded SAM 2 = cascade, flexible but slower. Match to constraints.",
+      "solution": "- **(a) Real-time open-vocab on edge → YOLO-World.** It's a single, fast open-vocabulary **detector** (boxes, not masks) designed for real-time/edge latency. If you only need 'where are the Xs' quickly on constrained hardware, full segmentation models are overkill and too slow. (Add a tiny mask head only if you truly need masks.)\n- **(b) High-quality text-prompted masks + video tracking in research → SAM 3.** Native text→mask in one pass plus the memory-based video tracker gives the best quality and temporal consistency, and latency isn't the binding constraint in a research pipeline. **Grounded SAM 2** is the fallback when you need a specific detector's vocabulary or want to swap components, accepting cascade error/latency; **SAM-MI** targets multi-instance scenarios.\n\nThe decision axes: **latency budget** (edge/real-time → YOLO-World) vs **output richness/concept complexity** (precise masks, tracking, presence reasoning → SAM 3). Don't pay for masks + tracking you won't use, and don't try to force a fast box detector to do precise video segmentation."
+    }
+  ]
+}

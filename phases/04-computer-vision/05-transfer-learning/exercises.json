@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Feature extraction vs fine-tuning",
+      "difficulty": "warmup",
+      "prompt": "Decide feature-extraction (freeze backbone, train new head) vs full fine-tuning for each: (a) 300 images, domain very close to ImageNet; (b) 100k medical scans, domain far from ImageNet. Justify each.",
+      "hint": "Small + similar → freeze (not enough data to fine-tune safely). Large + distant → fine-tune (enough data, features need to adapt).",
+      "solution": "- **(a) 300 images, close domain → feature extraction.** Too little data to safely update millions of backbone weights (you'd overfit), and ImageNet features already transfer well to a similar domain. Freeze the backbone, train just the new head.\n- **(b) 100k scans, far domain → full fine-tuning.** ImageNet's natural-image features (fur, sky, wheels) don't match medical texture, so the backbone *needs* to adapt — and 100k images is enough to do so without overfitting.\n\nThe deciding factors are **dataset size** and **domain distance**: small/similar → freeze; large/distant → fine-tune; in-between → fine-tune the last few blocks with a small LR."
+    },
+    {
+      "title": "Swap the head, train a baseline",
+      "difficulty": "core",
+      "prompt": "Load a pretrained ResNet, replace its final classifier for a new number of classes, freeze the backbone, and set up training of only the head. Show that only the head's parameters require gradients.",
+      "hint": "Set requires_grad=False on all params, replace model.fc, then only the new fc has requires_grad=True.",
+      "solution": "```python\nimport torch, torchvision\nmodel = torchvision.models.resnet18(weights='DEFAULT')\nfor p in model.parameters(): p.requires_grad = False   # freeze backbone\nmodel.fc = torch.nn.Linear(model.fc.in_features, 10)    # new head (grad=True by default)\ntrainable = [n for n,p in model.named_parameters() if p.requires_grad]\nprint(trainable)   # only 'fc.weight', 'fc.bias'\nopt = torch.optim.Adam(model.fc.parameters(), lr=1e-3)\n```\n\nFreezing sets `requires_grad=False` so backprop skips the backbone; the freshly created `fc` defaults to trainable. Passing only `model.fc.parameters()` to the optimizer makes this explicit. This trains in minutes on a few hundred images and gives a strong baseline before you consider unfreezing anything — borrowing a million GPU-hours of learned features for free."
+    },
+    {
+      "title": "Discriminative LRs + the BN trap",
+      "difficulty": "stretch",
+      "prompt": "Explain progressive unfreezing with discriminative (layer-wise) learning rates, and describe the BatchNorm-statistics failure that breaks fine-tuning on tiny datasets — plus its fix.",
+      "hint": "Early layers = generic → tiny LR; late layers = task-specific → larger LR. BN running stats get corrupted by tiny/odd batches; freeze BN or keep it in eval mode.",
+      "solution": "**Discriminative LRs:** early layers learned generic features (edges, textures) that transfer almost everywhere, so update them gently; later layers are task-specific and need bigger updates. Use parameter groups with increasing LR by depth, and unfreeze gradually (head first, then later blocks, then earlier ones):\n\n```python\nopt = torch.optim.Adam([\n  {'params': model.layer1.parameters(), 'lr': 1e-5},   # generic: tiny\n  {'params': model.layer4.parameters(), 'lr': 1e-4},   # specific: bigger\n  {'params': model.fc.parameters(),     'lr': 1e-3},   # head: biggest\n])\n```\n\n**The BatchNorm trap:** BN layers carry running mean/var from ImageNet. On a tiny fine-tuning set, leaving BN in train mode lets a handful of small, non-representative batches *overwrite* those good statistics, collapsing accuracy. Fixes: keep BN in **eval mode** (freeze its running stats) during fine-tuning, or use a larger batch / GroupNorm. The other two classic failures are **feature drift** (LR too high on unfrozen blocks wrecks pretrained weights) and **catastrophic forgetting** (the backbone forgets transferable features) — both controlled by small, discriminative LRs and gradual unfreezing."
+    }
+  ]
+}

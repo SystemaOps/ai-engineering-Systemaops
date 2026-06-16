@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Three kinds of segmentation",
+      "difficulty": "warmup",
+      "prompt": "Distinguish semantic, instance, and panoptic segmentation with a concrete example (a photo of three people and a road). State the output each produces.",
+      "hint": "Semantic = per-pixel class (all people one mask); instance = separate mask per object; panoptic = both (stuff + things).",
+      "solution": "For a photo of three people on a road:\n- **Semantic:** every pixel gets a class label. All three people share one 'person' mask; the road is 'road'. Output: H×W of class ids. It can't tell the people apart.\n- **Instance:** a separate mask per countable object — person #1, #2, #3 individually — usually ignoring 'stuff' like road/sky. Output: a set of (mask, class) per object.\n- **Panoptic:** the union — per-pixel labels where 'things' (people, cars) get distinct instance ids and 'stuff' (road, sky) gets a single semantic label. Output: every pixel has (class, instance-id).\n\nPick by need: 'how much road?' → semantic; 'how many people and where is each?' → instance; full scene understanding → panoptic."
+    },
+    {
+      "title": "Why U-Net has skip connections",
+      "difficulty": "core",
+      "prompt": "Explain why a plain encoder-decoder produces blurry, boundary-inaccurate segmentation and how U-Net's skip connections fix it. Sketch the forward data flow.",
+      "hint": "Downsampling destroys spatial detail; skips copy high-res encoder features to the decoder so fine boundaries are recoverable.",
+      "solution": "```\nencoder (downsample)        decoder (upsample)\n  64x H/1  ───────skip───────►  concat ► out (H)\n  128x H/2 ──────skip────────► concat ► H/2\n  256x H/4 ─────skip─────────► concat ► H/4\n        bottleneck H/8 ────────────►\n```\n\nThe encoder downsamples to capture *what* is in the image (semantics) but throws away *where* exactly (precise pixel locations). A plain decoder upsampling only from the tiny bottleneck has to hallucinate boundaries → blurry masks. U-Net's **skip connections concatenate each encoder stage's high-resolution feature map into the matching decoder stage**, so the decoder combines 'what' (deep, low-res) with 'where' (shallow, high-res) and can place sharp boundaries. This is why U-Net dominates medical and industrial segmentation, and the same encoder-decoder-with-skips shape reappears in diffusion U-Nets."
+    },
+    {
+      "title": "Cross-entropy vs Dice loss",
+      "difficulty": "stretch",
+      "prompt": "Implement Dice loss and explain why segmentation often combines it with pixel-wise cross-entropy, especially under heavy class imbalance (e.g. a tiny tumor in a large scan).",
+      "hint": "Dice = 2·|P∩G| / (|P|+|G|), measuring overlap; loss = 1 − Dice. CE optimizes per-pixel correctness; Dice optimizes region overlap.",
+      "solution": "```python\nimport numpy as np\ndef dice_loss(pred, target, eps=1e-6):   # pred in [0,1], target 0/1\n    inter = (pred*target).sum()\n    return 1 - (2*inter + eps) / (pred.sum() + target.sum() + eps)\np=np.array([0.9,0.8,0.1,0.05]); g=np.array([1,1,0,0])\nprint(round(dice_loss(p,g),4))\n```\n\n**Pixel-wise cross-entropy** treats every pixel independently — so when 99.5% of pixels are background, the loss is dominated by 'predict background everywhere' and the tiny tumor is ignored (high accuracy, zero recall on the thing you care about). **Dice loss** measures *overlap* of the predicted and true region as a whole, so a small structure counts as much as a large one — directly attacking class imbalance. CE gives smooth, well-behaved per-pixel gradients and stable early training; Dice optimizes the metric you actually report (IoU/Dice). The default for medical/industrial segmentation is their **sum** — CE for gradient stability, Dice for imbalance robustness. Diagnose bad scores per class: low small-object recall → lean on Dice; ragged boundaries → boundary-aware terms; one class collapsing → class weighting."
+    }
+  ]
+}

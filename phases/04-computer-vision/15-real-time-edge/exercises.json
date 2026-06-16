@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Measure the real cost",
+      "difficulty": "warmup",
+      "prompt": "Outline how to correctly measure a vision model's inference latency on GPU (warmup, synchronization, averaging) and why a naive time.time() around one call is misleading. What three numbers do you report?",
+      "hint": "GPU calls are async; warm up first, torch.cuda.synchronize() before/after, average many runs. Report latency, peak memory, throughput.",
+      "solution": "```python\nimport torch, time\nmodel.eval().cuda(); x = torch.randn(1,3,224,224, device='cuda')\nfor _ in range(10): model(x)            # warmup (cuDNN autotune, caches)\ntorch.cuda.synchronize()\nt0=time.time()\nfor _ in range(100):\n    with torch.no_grad(): model(x)\ntorch.cuda.synchronize()                  # wait for GPU to finish\nprint('latency ms:', (time.time()-t0)/100*1000)\nprint('peak MB:', torch.cuda.max_memory_allocated()/1e6)\n```\n\nA naive `time.time()` around one call lies because (1) GPU kernels are **asynchronous** — the Python call returns before the GPU finishes, so you'd time the launch, not the work; and (2) the first call pays one-time costs (cuDNN autotuning, allocation). Always warm up, **synchronize**, and average. Report the three numbers that define an edge budget: **latency** (ms/inference), **peak memory** (MB), and **throughput** (inferences/sec, often higher with batching)."
+    },
+    {
+      "title": "INT8 quantization",
+      "difficulty": "core",
+      "prompt": "Explain post-training INT8 quantization: what gets converted, why a calibration step is needed, and the typical speed/size/accuracy trade. Why does INT8 usually keep accuracy loss under ~1%?",
+      "hint": "Weights+activations fp32→int8 (4× smaller, faster int math). Calibration finds per-tensor scale/zero-point from sample data. NNs are robust to low precision.",
+      "solution": "Post-training quantization converts **weights and activations from fp32 to int8** — 4× smaller and much faster, since integer matmul is cheaper and more cache-friendly on CPUs/edge accelerators. The catch is mapping a float range to [−128,127]: you need a **scale and zero-point per tensor**, found by a **calibration** pass that runs a few hundred representative samples through the model to observe the actual activation ranges (weights are static, but activation ranges depend on real inputs).\n\n```python\n# torch PTQ sketch: fuse -> set qconfig -> calibrate -> convert\n# run calibration batches through the prepared model, then torch.quantization.convert(m)\n```\n\nAccuracy loss is usually **<1%** because neural nets are inherently noise-tolerant (they trained with dropout, augmentation, fp16) — 8 bits of precision per value is plenty for the features that matter. When a layer *is* sensitive (often the first/last), you keep it in higher precision (mixed quantization). The win: ~4× smaller model and 2–4× faster inference, which is what fits a model on a phone or camera."
+    },
+    {
+      "title": "Pick the edge backbone",
+      "difficulty": "stretch",
+      "prompt": "Choose between MobileNetV3, EfficientNet-Lite, ConvNeXt-Tiny, and MobileViT for: (a) a $5 microcontroller-class camera needing absolute minimum latency, (b) a flagship phone wanting best accuracy within ~10ms. Also name the three most common ONNX export failures.",
+      "hint": "MobileNetV3 = ultra-light (depthwise separable + SE). EfficientNet-Lite = balanced. ConvNeXt-Tiny/MobileViT = higher accuracy, more compute.",
+      "solution": "- **(a) $5 camera, min latency → MobileNetV3 (small).** Depthwise-separable convs + squeeze-excite give the lowest FLOPs/params; it's built for exactly this floor. EfficientNet-Lite is the step up if you have a hair more budget.\n- **(b) Flagship phone, best accuracy ≤10ms → ConvNeXt-Tiny or MobileViT.** Modern phone NPUs can afford their extra compute, and they deliver notably higher accuracy than MobileNet at that latency. MobileViT adds transformer-style global context at mobile cost; ConvNeXt-Tiny is the strong pure-conv option.\n\n**Three common ONNX export failures:** (1) **unsupported / dynamic ops** — control flow or exotic layers that don't map to ONNX (fix: refactor or use a supported op / opset bump); (2) **dynamic shapes not declared** — fixed-shape export then a different input size at runtime (fix: mark `dynamic_axes`); (3) **train-mode artifacts** — exporting without `model.eval()` bakes in dropout/BN-batch-stat behavior (fix: eval mode, and fold BN). After export, validate ONNX outputs match PyTorch within tolerance before trusting it."
+    }
+  ]
+}

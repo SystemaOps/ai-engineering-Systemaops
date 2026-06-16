@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Video generator vs world model",
+      "difficulty": "warmup",
+      "prompt": "Distinguish a pure video-generation model (Sora 2) from an action-conditioned world model (Genie 3, DreamerV3). What extra input does a world model take, and what does that enable?",
+      "hint": "Video gen: prompt → video. World model: current state + action → next state/frame, so it's interactive/controllable.",
+      "solution": "- **Pure video generation (Sora 2):** input a text/image prompt, output a coherent video clip. It's a powerful *renderer* of plausible motion, but you can't steer it frame-by-frame — it's not interactive.\n- **Action-conditioned world model (Genie 3, DreamerV3):** takes the **current state plus an action** ('move left', 'open door') and predicts the **next frame/state**, step by step. Conditioning on actions makes it an **interactive, controllable simulator** — a learned game engine / environment.\n\nThe extra input is the **action**, and it's what turns 'generate a video' into 'simulate what happens if I do X' — enabling agents to plan and act inside the model."
+    },
+    {
+      "title": "Anatomy of a video DiT",
+      "difficulty": "core",
+      "prompt": "Describe how a video diffusion transformer represents and attends over a video: spatio-temporal patches, 3D position encoding, and joint attention across (T,H,W). Why is full joint attention expensive, and what's the common mitigation?",
+      "hint": "Patchify across time+space into tokens; encode (t,y,x) position; attend over all tokens. Token count = T·H·W → quadratic cost. Mitigate with factorized/windowed attention.",
+      "solution": "A video DiT **patchifies across both space and time**: the video latent is cut into spatio-temporal patches, each becoming a token, with a **3D positional encoding** marking its (t, y, x) location. Transformer blocks then apply **joint attention across all (T,H,W) tokens**, so a token can attend to other positions *and* other timesteps — capturing motion, object permanence, and long-range temporal consistency.\n\n**Why it's expensive:** attention is **quadratic in the number of tokens**, and tokens = T·H·W, so adding frames or resolution blows up cost fast (a few seconds of video is tens of thousands of tokens). \n\n**Common mitigation:** **factorized attention** — alternate spatial-only attention (within a frame) and temporal-only attention (across frames at the same location), or use windowed/sparse attention — which reduces the quadratic blowup while still propagating information across both axes over stacked layers. This is the same cost/structure tradeoff as image ViT vs Swin, applied to the time dimension."
+    },
+    {
+      "title": "World model in the robotics loop",
+      "difficulty": "stretch",
+      "prompt": "Trace how a world model plugs into a robotics control loop (VLM plans → video model simulates → inverse dynamics emits actions), and explain the advantage over training the robot directly in the real world.",
+      "hint": "The world model is a learned simulator: imagine candidate futures, score them, pick actions — without breaking real hardware. Inverse dynamics maps predicted frames back to the action that caused them.",
+      "solution": "**The loop:**\n1. A **VLM (planner)** reads the goal + current observation and proposes a high-level plan / candidate actions.\n2. The **world model** acts as a learned **simulator**: conditioned on the current state and a candidate action, it **predicts the resulting future frames** ('imagines' what happens). You can roll out and **score multiple candidate action sequences** internally.\n3. An **inverse-dynamics model** maps a predicted state transition (frame_t → frame_{t+1}) back to the **low-level action** that would produce it, which the robot executes.\n4. Observe the real result, repeat.\n\n**Advantage over training directly in the real world:** real-world trial-and-error is **slow, expensive, and dangerous** — robots break, runs take wall-clock time, and exploration can damage hardware or surroundings. A world model lets the agent **imagine and evaluate many futures cheaply and safely in latent space**, learning from 'dreamed' rollouts (DreamerV3's core idea) and only acting in reality once a plan looks good. It's sample-efficiency and safety: practice in a learned simulator, act sparingly in the world. The catch is the **sim-to-real gap** — the world model's errors compound over long rollouts, so it's paired with short horizons and frequent real-world correction."
+    }
+  ]
+}

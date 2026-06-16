@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Relative vs metric depth",
+      "difficulty": "warmup",
+      "prompt": "Distinguish relative depth from metric depth and say which one each solves: MiDaS / Depth Anything vs ZoeDepth / metric models. Why is metric depth from a single image fundamentally harder?",
+      "hint": "Relative = ordering/up-to-scale ('A is nearer than B'). Metric = actual meters. A single image has inherent scale ambiguity.",
+      "solution": "- **Relative depth:** depth up to an unknown scale/shift — it gets the *ordering* and proportions right ('A is closer than B', the relief of the scene) but not absolute distances. **MiDaS** and **Depth Anything** predict this.\n- **Metric depth:** actual **distance in meters** per pixel. **ZoeDepth** and metric variants target this.\n\nMetric depth from one image is fundamentally harder because of **scale ambiguity**: a small object up close and a large object far away can project to the *identical* image. Without a second viewpoint (stereo), known object sizes, or camera/calibration cues, absolute scale is genuinely unrecoverable from pixels alone — models infer it from learned priors (typical sizes of cars, doors, people) and camera intrinsics, which is why metric models are less general than relative ones."
+    },
+    {
+      "title": "Why monocular depth works at all",
+      "difficulty": "core",
+      "prompt": "Explain the cues that let a network predict depth from a single RGB image, and state two things monocular depth fundamentally cannot recover. Why does a frozen DINOv2 backbone help so much?",
+      "hint": "Cues: perspective convergence, relative size, texture gradient, occlusion, shading, learned priors. Can't recover: absolute scale, geometry of occluded regions.",
+      "solution": "**Cues a network exploits** (the same ones human vision uses monocularly): perspective (parallel lines converge with distance), **relative size** of known objects, **texture gradients** (detail compresses with distance), **occlusion ordering** (what overlaps what), shading/shadows, and strong **learned priors** about how scenes are typically laid out.\n\n**Fundamentally cannot recover:** (1) **absolute scale** without external cues (scale ambiguity, above); (2) **occluded geometry** — what's behind an object simply isn't in the image, so any 'depth' there is a guess.\n\n**A frozen DINOv2 backbone helps enormously** because self-supervised pretraining on huge unlabeled image collections already learned rich, general visual features (surfaces, object parts, layout). Depth estimation then only needs a **lightweight head** on top of those frozen features, so it generalizes across arbitrary images with no calibration and little task-specific data — Depth Anything V3 gets within a few percent of ground truth this way. It's transfer learning applied to geometry."
+    },
+    {
+      "title": "Lift 2D detections to 3D",
+      "difficulty": "stretch",
+      "prompt": "Given a depth map and pinhole camera intrinsics (fx, fy, cx, cy), write the back-projection that turns a pixel (u,v) with depth Z into a 3D camera-space point. Apply it to lift a detection's center to 3D and explain a caveat.",
+      "hint": "X = (u−cx)·Z/fx, Y = (v−cy)·Z/fy, Z = depth. This is the inverse pinhole projection.",
+      "solution": "```python\ndef backproject(u, v, Z, fx, fy, cx, cy):\n    X = (u - cx) * Z / fx\n    Y = (v - cy) * Z / fy\n    return (X, Y, Z)          # 3D point in camera coordinates (meters if Z is metric)\n\n# lift a detection box center to 3D:\nu, v = (x1+x2)/2, (y1+y2)/2\nZ = depth_map[int(v), int(u)]\nprint(backproject(u, v, Z, fx=525, fy=525, cx=320, cy=240))\n```\n\nThis inverts the pinhole projection: the intrinsics map a pixel ray to a direction, and the depth `Z` fixes how far along that ray the point lies. Lifting a detection's center gives its rough 3D position — enough for 'how far is that car' or placing AR content.\n\n**Caveats:** (1) the 3D point is only **metric if the depth is metric** — with relative depth you get geometry up to an unknown scale; (2) a box *center* often sits on background, not the object surface, so sample the median depth *within the mask* rather than one center pixel; (3) intrinsics must match the camera that took the image, or the back-projection is systematically wrong. This pixel+depth→3D step is the bridge from 2D vision to 3D scene understanding for robotics and AR."
+    }
+  ]
+}

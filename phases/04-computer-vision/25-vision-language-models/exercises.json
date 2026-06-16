@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "The ViT-MLP-LLM pattern",
+      "difficulty": "warmup",
+      "prompt": "Describe the three components of a modern VLM and what each does, and explain why a CLIP model alone cannot answer 'how many red cars are in this image?'",
+      "hint": "ViT encodes image→tokens; MLP projector maps them into the LLM embedding space; the LLM reasons and generates text. CLIP only scores similarity, it doesn't generate.",
+      "solution": "- **ViT (vision encoder):** turns the image into a sequence of visual tokens (features).\n- **MLP projector:** maps those visual tokens into the **LLM's embedding space** so the language model can consume them like word embeddings.\n- **LLM:** receives the projected image tokens + the text prompt and **generates** an answer, doing the reasoning.\n\n**CLIP can't answer 'how many red cars?'** because it's a dual-encoder that only produces embeddings and **scores image-text similarity** — it has no decoder, so it can't count, reason, or emit free-form text. It can tell you 'this image is more like \"cars\" than \"cats\"', but not produce a number or an explanation. The VLM adds a generative LLM on top of vision features, which is what enables open-ended question answering. That ViT-MLP-LLM stack is every production VLM in 2026."
+    },
+    {
+      "title": "Why DeepStack / multi-level features",
+      "difficulty": "core",
+      "prompt": "Explain why feeding the LLM multi-level ViT features (DeepStack) improves vision-language alignment over using only the last-layer feature. What information lives in early vs late ViT layers?",
+      "hint": "Early layers = fine detail/texture/edges; late layers = global semantics. Using only the last layer drops fine-grained info the LLM needs for detailed questions.",
+      "solution": "A ViT's layers encode a hierarchy: **early layers** capture fine-grained, local detail (edges, textures, small text, exact positions); **late layers** capture **global semantics** (object identity, scene gist). Using **only the last-layer feature** — the common default — hands the LLM rich semantics but discards the fine detail, so it struggles with questions needing precision: small text, exact counts, subtle attributes, spatial relations.\n\n**DeepStack** feeds features from **multiple ViT levels** into the LLM (stacked across layers), so the language model has access to both 'what it is' (deep) and 'fine detail' (shallow) simultaneously. This tightens vision-language alignment and improves detailed/grounded questions without retraining a bigger encoder. The lesson: the *last* layer isn't the only useful representation — multi-scale features matter for VLMs just as skip connections matter for segmentation."
+    },
+    {
+      "title": "Measure hallucination with CMER",
+      "difficulty": "stretch",
+      "prompt": "Explain what VLM hallucination looks like, how Cross-Modal Error Rate (CMER) quantifies it in production, and what actions a high CMER should trigger. Why is aggregate VQA accuracy insufficient to catch it?",
+      "hint": "Hallucination = confident claims about things not in the image. CMER measures the rate of cross-modally unsupported statements. Aggregate accuracy hides per-claim grounding failures.",
+      "solution": "**VLM hallucination** is the model confidently asserting things **not supported by the image** — describing objects that aren't there, miscounting, inventing text on a sign, or stating attributes it can't actually see. It's dangerous because the output is fluent and authoritative.\n\n**Cross-Modal Error Rate (CMER)** quantifies it by measuring the **fraction of generated statements that aren't grounded in the visual input** — i.e. claims the image doesn't support. Unlike a single right/wrong answer, it scores each factual assertion against the image, so it captures *grounding* rather than just final-answer correctness.\n\n**A high CMER should trigger:** tightening prompts to discourage speculation, adding visual grounding/verification (e.g. require the model to point to evidence), using higher-resolution or multi-level features (DeepStack) for detail questions, lowering generation temperature, or routing low-confidence cases to a human.\n\n**Why aggregate VQA accuracy misses it:** a model can score well on benchmark accuracy while still hallucinating on the *specific* open-ended descriptions your product generates — accuracy averages over a fixed answer set and rewards getting the final token right, whereas CMER inspects whether each *claim* is visually supported. In production, a model that's 'usually right' but occasionally fabricates with confidence is exactly the failure aggregate accuracy hides."
+    }
+  ]
+}

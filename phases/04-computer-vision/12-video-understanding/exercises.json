@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "When does a 2D+pool baseline fail?",
+      "difficulty": "warmup",
+      "prompt": "Explain when classifying a video by averaging per-frame features (2D+pool) works well and when it fails badly. Give an example of each.",
+      "hint": "Works when the action is visible in most single frames; fails when the action is defined by motion/order.",
+      "solution": "**2D+pool** runs an image classifier on sampled frames and averages (pools) the features. \n- **Works:** actions recognizable from a *single* frame — 'playing guitar', 'swimming', 'pizza making'. Any frame basically gives the answer, so pooling is enough and it's cheap.\n- **Fails:** actions defined by *motion or temporal order* — 'pushing something left to right' vs 'right to left', 'opening' vs 'closing a door'. Every individual frame looks like two static objects; the signal is in how they *change*, which per-frame pooling discards entirely (Something-Something is the classic benchmark that punishes 2D+pool).\n\nSo the baseline's adequacy depends on whether the task needs temporal reasoning at all."
+    },
+    {
+      "title": "Three ways to model time",
+      "difficulty": "core",
+      "prompt": "Compare the three main video-modeling approaches — 2D+pool, 3D convolution, and spatio-temporal transformer — on cost and what temporal structure each captures.",
+      "hint": "2D+pool: cheap, no real temporal modeling. 3D conv: local spatiotemporal patterns, expensive. Transformer: global temporal attention, most expensive.",
+      "solution": "- **2D+pool:** image CNN per frame + average. Cheapest; captures *appearance* but essentially no temporal dynamics (order-invariant).\n- **3D conv (e.g. I3D, C3D):** convolves over (T,H,W), so kernels see *local* motion patterns across a few adjacent frames. Captures short-range dynamics well; cost grows with the temporal kernel and clip length. (2+1)D convs factorize a 3D kernel into a 2D spatial + 1D temporal conv — cheaper and often better.\n- **Spatio-temporal transformer (e.g. ViViT, TimeSformer):** attention across space and time captures *long-range* temporal dependencies and global context. Most expensive (attention is quadratic in tokens = frames×patches), but strongest for complex temporal reasoning.\n\nRule of thumb: cost and temporal-reasoning power both increase 2D+pool → 3D conv → transformer; pick the cheapest that captures the temporal structure your task actually needs."
+    },
+    {
+      "title": "Why inflate ImageNet kernels (I3D)",
+      "difficulty": "stretch",
+      "prompt": "Explain I3D's 'inflation' trick: how it bootstraps a 3D conv net from pretrained 2D ImageNet weights, and why that transfer helps. What does a factorized (2+1)D conv change?",
+      "hint": "Inflate a 2D K×K kernel to T×K×K by copying it across time (divided by T). (2+1)D splits 3D into spatial-then-temporal convs.",
+      "solution": "**Inflation:** take a 2D CNN pretrained on ImageNet and turn each `K×K` kernel into a `T×K×K` 3D kernel by **replicating the 2D weights across the temporal dimension and dividing by T**. A static video (same frame repeated) then produces the same activations the 2D net would — so the inflated 3D net *starts* with all of ImageNet's learned appearance features instead of random init. It then fine-tunes on video to learn genuine temporal structure. This transfer is huge because video datasets are far smaller and pricier to label than ImageNet, and training 3D convs from scratch is data-hungry.\n\n**(2+1)D conv** factorizes a full 3D conv into a **2D spatial conv followed by a 1D temporal conv**. Same receptive field, but fewer parameters, an extra nonlinearity between the spatial and temporal steps (more expressive), and easier optimization — so it often matches or beats full 3D convs at lower cost, which is why it became a common building block."
+    }
+  ]
+}

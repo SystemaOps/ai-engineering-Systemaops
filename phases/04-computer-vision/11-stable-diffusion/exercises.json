@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "The five pieces",
+      "difficulty": "warmup",
+      "prompt": "Name the five components of a Stable Diffusion pipeline and what each does in one line: VAE, text encoder, U-Net, scheduler, safety checker.",
+      "hint": "VAE compresses/decodes latents; text encoder (CLIP/T5) turns prompt into embeddings; U-Net denoises latents conditioned on text; scheduler defines the sampling steps; safety checker filters output.",
+      "solution": "- **VAE:** encodes images to a small latent (and decodes latents back to pixels) so diffusion runs cheaply in latent space.\n- **Text encoder (CLIP/T5):** turns the prompt into token embeddings the U-Net can attend to.\n- **U-Net:** the denoiser — predicts noise in the latent at each step, conditioned on the text embeddings via cross-attention.\n- **Scheduler (sampler):** defines the noise schedule and how many/large the reverse steps are (DDIM, DPM++, etc.).\n- **Safety checker:** post-hoc filter on generated images.\n\nText-to-image = encode prompt → denoise a random latent over N scheduler steps with the U-Net → VAE-decode to pixels."
+    },
+    {
+      "title": "Why latent diffusion is ~48× cheaper",
+      "difficulty": "core",
+      "prompt": "Explain why running diffusion in a 4×64×64 latent instead of a 3×512×512 image cuts compute roughly 48× without much quality loss. What makes this possible?",
+      "hint": "Compare element counts: 3·512·512 vs 4·64·64. The VAE handles perceptual detail; diffusion only models semantic structure in the latent.",
+      "solution": "```python\npix = 3*512*512      # 786432\nlat = 4*64*64        # 16384\nprint(pix/lat)       # ~48x fewer values per step\n```\n\nEvery U-Net forward pass (and there are dozens per image) processes ~48× fewer values in the latent, and that factor dominates both training and sampling cost. It works because a **pretrained VAE** already captures high-frequency perceptual detail (textures, sharp edges) in its decoder, so the diffusion model only has to learn the **semantic/structural** content in the compact latent — the part that actually needs a powerful generative model. Splitting 'perceptual compression' (VAE, trained once) from 'semantic generation' (diffusion, in latent space) is the key idea that made high-res text-to-image feasible on consumer GPUs."
+    },
+    {
+      "title": "LoRA fine-tuning + CFG",
+      "difficulty": "stretch",
+      "prompt": "Explain how LoRA lets you fine-tune Stable Diffusion on a small custom dataset cheaply, and what classifier-free guidance (CFG) does at inference. Why are both so widely used?",
+      "hint": "LoRA: train small low-rank deltas on attention weights, freeze the base. CFG: mix conditional and unconditional predictions to amplify prompt adherence.",
+      "solution": "**LoRA** freezes the full U-Net and inserts small **low-rank weight deltas** (`W + BA`, with B,A tiny) into the attention layers, training only those. For a few dozen images of a new style/subject you train ~megabytes of adapter weights in minutes on one GPU, then load the adapter at inference (and stack/swap multiple). It avoids storing/retraining the whole multi-GB model per concept — the reason there are thousands of community LoRAs.\n\n**Classifier-free guidance** runs the U-Net twice per step — once **with** the text condition, once **unconditional** — and extrapolates: `pred = uncond + scale·(cond − uncond)`. Raising the guidance scale pushes samples to follow the prompt more strongly (sharper adherence, less diversity; too high → over-saturated artifacts). It needs no separate classifier (the model is trained with occasional null prompts to learn the unconditional path).\n\nBoth are ubiquitous because they're cheap levers on a frozen base model: LoRA customizes *what* it generates, CFG controls *how strongly* it obeys the prompt — together they turn one pretrained checkpoint into an endlessly steerable tool."
+    }
+  ]
+}

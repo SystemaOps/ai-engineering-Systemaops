@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Three families of SSL",
+      "difficulty": "warmup",
+      "prompt": "State what each self-supervised family optimizes and its one-line idea: contrastive (SimCLR), teacher-student (DINO), masked reconstruction (MAE).",
+      "hint": "SimCLR: pull augmented views together, push others apart. DINO: student matches a momentum teacher's output. MAE: mask patches, reconstruct them.",
+      "solution": "- **Contrastive (SimCLR):** make two augmentations of the *same* image agree in embedding space while pushing apart embeddings of *different* images (InfoNCE). Learns augmentation-invariant features.\n- **Teacher-student (DINO):** a student network is trained to match the output of a **momentum-averaged teacher** (an EMA of the student) on different views, with centering/sharpening to avoid collapse. No negatives needed; produces remarkably good attention maps.\n- **Masked reconstruction (MAE):** **mask most patches** of the image and train the model to **reconstruct** the missing pixels from the few visible ones. Learns structure by having to in-paint.\n\nAll three produce a backbone you then **linear-probe or fine-tune** on a small labeled set — turning cheap unlabeled images into transferable features."
+    },
+    {
+      "title": "InfoNCE and the batch-size dependence",
+      "difficulty": "core",
+      "prompt": "Implement the InfoNCE contrastive loss for a batch of paired embeddings, and explain why a batch of 512 trains well but a batch of 32 underperforms.",
+      "hint": "InfoNCE = cross-entropy where the positive is the matching view and negatives are the other in-batch items. More items = more negatives.",
+      "solution": "```python\nimport numpy as np\ndef info_nce(z1, z2, tau=0.1):   # z1[i], z2[i] are the two views of image i\n    z1=z1/np.linalg.norm(z1,axis=1,keepdims=True)\n    z2=z2/np.linalg.norm(z2,axis=1,keepdims=True)\n    logits=(z1 @ z2.T)/tau          # [B,B]; diagonal = positives\n    labels=np.arange(len(z1))\n    # cross-entropy of each row against its diagonal index\n    logp = logits - np.log(np.exp(logits).sum(1, keepdims=True))\n    return -logp[labels, labels].mean()\n```\n\nThe loss treats row i's positive as the matching view `z2[i]` and **all other in-batch items as negatives**. With **batch 512** each example is contrasted against 511 negatives — a rich, hard signal that forces fine distinctions. With **batch 32** there are only 31 negatives, mostly easy, so the task is trivial and features are weak. Contrastive SSL is therefore notoriously batch-hungry (SimCLR used 4096); the teacher-student (DINO) and masked (MAE) families were partly motivated to **remove the need for many negatives**, which is why they scale better on modest hardware."
+    },
+    {
+      "title": "Why MAE masks 75% (vs BERT's 15%)",
+      "difficulty": "stretch",
+      "prompt": "Explain why MAE masks ~75% of image patches while BERT masks only ~15% of text tokens. What property of images vs language drives the difference, and what does the high ratio buy?",
+      "hint": "Images are highly redundant (neighboring patches are predictable); text is information-dense. High masking makes the task non-trivial and the encoder cheap.",
+      "solution": "The masking ratio is set by **information redundancy**. \n- **Images are spatially redundant:** a patch is highly predictable from its neighbors (a patch of sky next to sky). Mask only 15% and the model can solve reconstruction by trivial local interpolation — it learns nothing semantic. Masking **75%** removes enough context that the model must infer global structure and object semantics to fill the gaps, making it a genuinely hard, useful pretext task.\n- **Text is information-dense:** each token carries a lot (word order, syntax, meaning), so masking 15% already yields a challenging fill-in-the-blank; mask 75% of words and there's too little left to recover the sentence.\n\nThe high ratio also gives MAE a **huge efficiency win**: the heavy ViT encoder processes only the ~25% *visible* patches (a lightweight decoder handles reconstruction), so pretraining is several times cheaper than processing all patches. So 75% isn't arbitrary — it's the point where the task is hard enough to teach semantics and the encoder is cheap enough to scale."
+    }
+  ]
+}

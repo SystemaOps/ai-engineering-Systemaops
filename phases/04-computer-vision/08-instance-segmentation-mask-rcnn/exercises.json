@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Semantic vs instance, when",
+      "difficulty": "warmup",
+      "prompt": "For each task pick semantic or instance segmentation and say why: (a) measuring what % of a field is crop vs soil, (b) counting and measuring each cell in a microscope image.",
+      "hint": "Need per-object separation (counting/measuring individuals) → instance. Need per-class area → semantic.",
+      "solution": "- **(a) % crop vs soil → semantic.** You only need each pixel's class to compute area fractions; individual plants don't need separating.\n- **(b) count & measure each cell → instance.** Cells share a class, so you need a *separate mask per cell* to count them and measure each one's size — exactly what semantic segmentation can't give you (it would merge touching cells into one blob).\n\nThe deciding question: do you need to tell apart two objects of the same class? Yes → instance; no → semantic."
+    },
+    {
+      "title": "Why RoIAlign replaced RoIPool",
+      "difficulty": "core",
+      "prompt": "Explain the misalignment problem with RoIPool and how RoIAlign fixes it. Why does this matter much more for masks than for boxes?",
+      "hint": "RoIPool rounds (quantizes) the RoI to integer grid cells twice; RoIAlign uses bilinear interpolation at exact float coordinates.",
+      "solution": "**RoIPool** maps a float-coordinate region onto a fixed grid by **rounding twice** — once to snap the RoI to feature-map pixels, once to divide it into pooling bins. Each rounding shifts the sampled region by up to a pixel or more in feature space (many more in image space after the backbone's stride). \n\n**RoIAlign** removes all rounding: it computes the exact float positions of sample points within each bin and reads feature values with **bilinear interpolation**, so the pooled features line up precisely with the region.\n\nWhy it matters far more for masks: a box only needs 4 numbers, and a one-pixel misalignment barely moves IoU. A **mask is per-pixel**, so a systematic half-pixel shift smears every boundary in the predicted mask — Mask R-CNN's accuracy jumped substantially just from swapping RoIPool→RoIAlign. That's why RoIPool is no longer used."
+    },
+    {
+      "title": "Read Mask R-CNN output",
+      "difficulty": "stretch",
+      "prompt": "Describe the output format of torchvision's maskrcnn_resnet50_fpn and how you'd turn it into clean instances: which fields exist, how to threshold, and how to binarize masks. Outline the fine-tuning recipe for a small custom dataset.",
+      "hint": "Output dict per image: boxes, labels, scores, masks (soft, [N,1,H,W]). Filter by score, binarize masks at 0.5.",
+      "solution": "**Output** (per image, in eval mode): a dict with\n- `boxes` [N,4], `labels` [N], `scores` [N] (descending), and `masks` [N,1,H,W] of **soft** probabilities.\n\n**To clean it up:**\n```python\nkeep = scores > 0.5                 # confidence threshold\nboxes, labels = boxes[keep], labels[keep]\nbin_masks = (masks[keep] > 0.5).squeeze(1)   # binarize soft masks\n```\nThe model already runs NMS internally, so you mainly threshold scores and binarize masks at 0.5 (tune both per use case).\n\n**Fine-tuning on a small custom dataset:** load `maskrcnn_resnet50_fpn_v2(weights='DEFAULT')`, **replace the box predictor** (`FastRCNNPredictor` with your num_classes) and the **mask predictor** (`MaskRCNNPredictor`), keep the backbone+FPN frozen (or low-LR), and train the new heads on a few hundred labeled images. Same transfer-learning logic as classification: borrow the expensive backbone, retrain only the task-specific heads."
+    }
+  ]
+}

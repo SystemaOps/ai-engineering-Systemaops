@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "The classical OCR pipeline",
+      "difficulty": "warmup",
+      "prompt": "Describe the three stages of a classical OCR pipeline and what each produces. Then name the modern end-to-end alternative and what it skips.",
+      "hint": "Detect text regions → recognize characters in each → lay out into reading order. Donut/Qwen-VL go image→structured-text directly.",
+      "solution": "**Classical pipeline:**\n1. **Detection** — find bounding boxes around text regions (a detector). Output: a set of text boxes.\n2. **Recognition** — read the characters inside each box (a sequence model, often CTC-trained). Output: a string per box.\n3. **Layout** — order boxes into reading order and group into lines/paragraphs/tables. Output: structured text.\n\n**Modern end-to-end (Donut, Qwen-VL-OCR):** a single vision-language model maps the **image directly to structured output** (e.g. JSON of fields), skipping explicit box detection and separate recognition. It trades pipeline interpretability for simplicity and robustness on messy layouts — and it can output *semantics* ('total = $42.10'), not just characters."
+    },
+    {
+      "title": "Why CTC for recognition",
+      "difficulty": "core",
+      "prompt": "Explain the alignment problem CTC solves in text recognition and how the blank token + collapse rule work. Why can't you just use per-position cross-entropy?",
+      "hint": "Input feature columns don't align 1:1 with output characters (variable widths). CTC sums over all alignments; collapse merges repeats and removes blanks.",
+      "solution": "The recognizer slides over a text image and produces, say, 50 feature columns, but the word has only 7 characters — and you don't know *which* columns map to *which* character (letters have different widths, there's spacing). You can't apply per-position cross-entropy because you have **no per-column labels**, only the final string.\n\n**CTC** solves this by adding a **blank** token and defining a collapse rule: a raw per-column prediction like `h-e-e-l-l-l-o` (with `-` = blank) collapses by (1) merging consecutive duplicates, then (2) removing blanks → `helo`... and a blank *between* duplicates (`l-l`) preserves a real double letter → `hello`. CTC's loss sums the probability over **all column-alignments that collapse to the target string**, so the model learns alignment implicitly without per-column labels. At inference you take the most likely path and collapse it. This is the same CTC used in speech recognition — any 'unaligned sequence → sequence' task."
+    },
+    {
+      "title": "OCR vs layout vs document understanding",
+      "difficulty": "stretch",
+      "prompt": "Distinguish OCR, layout parsing, and document understanding, and pick the right tool for: (a) digitizing scanned book pages to plain text, (b) extracting {vendor, date, total} from arbitrary invoices.",
+      "hint": "OCR = characters. Layout = structure/regions/reading order/tables. Document understanding = semantics (which text means what).",
+      "solution": "- **OCR** = turn pixels into **characters/strings**. 'What text is here?'\n- **Layout parsing** = recover **structure**: reading order, columns, tables, headers/footers, key-value regions. 'How is the text arranged?'\n- **Document understanding** = extract **semantics/meaning**: which string is the *total*, which is the *vendor*, link a label to its value. 'What does the text mean?'\n\n**(a) Scanned book → plain text → OCR.** You just need accurate character transcription in reading order; a production OCR engine (PaddleOCR/EasyOCR) is the right, cheapest tool — no semantic understanding required.\n\n**(b) {vendor, date, total} from arbitrary invoices → document understanding.** Invoices vary wildly in layout, so you need a model that maps fields to meaning, not just reads text. Use an end-to-end VLM (Donut, Qwen-VL) or a layout-aware model (LayoutLM) that outputs structured key-values directly. Plain OCR would give you the characters but not *which number is the total*, which is the actual product requirement."
+    }
+  ]
+}

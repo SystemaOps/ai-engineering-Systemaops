@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Why splatting beat NeRF",
+      "difficulty": "warmup",
+      "prompt": "Explain in a few sentences why 3D Gaussian Splatting replaced NeRF as the production default for photorealistic reconstruction, focusing on rendering speed and editability.",
+      "hint": "NeRF = MLP queried hundreds of times per ray (slow, implicit, hard to edit). Splatting = explicit primitives rasterized directly (fast, editable).",
+      "solution": "A NeRF stores the scene **implicitly** in MLP weights, so every pixel requires hundreds of MLP queries along a ray — rendering is seconds-per-frame and the scene can't be edited without retraining. **Gaussian Splatting stores the scene explicitly** as millions of 3D Gaussian primitives that are **rasterized** (projected + alpha-composited) directly on the GPU — yielding **real-time (100+ fps) rendering** and comparable or better quality. Because the representation is explicit, you can also **edit** it: move, delete, or recolor regions of Gaussians without retraining. Faster rendering + editability is why it became the 2026 default for scene reconstruction."
+    },
+    {
+      "title": "Per-Gaussian parameters",
+      "difficulty": "core",
+      "prompt": "List the per-Gaussian parameters and count the floats: position, rotation (quaternion), scale, opacity, and spherical-harmonics color. Why is color a function of view direction rather than a single RGB?",
+      "hint": "pos 3 + quat 4 + scale 3 + opacity 1 + SH color (degree 3 = 16 coeffs × 3 channels = 48). View-dependent color models specular/reflectance.",
+      "solution": "```\nposition:            3 floats (x, y, z)\nrotation quaternion: 4 floats\nscale:               3 floats (ellipsoid axes)\nopacity:             1 float\nSH color (deg 3):    48 floats (16 coeffs x 3 RGB channels)\n--------------------------------\ntotal:              ~59 floats per Gaussian\n```\n\nColor is stored as **spherical-harmonics coefficients** rather than a single RGB so it can vary with **viewing direction** — the same surface point looks different from different angles (specular highlights, reflections, sheen). Degree-0 SH is just flat RGB; higher degrees add view-dependent variation. Evaluating the SH for the current camera direction gives that Gaussian's color in the rendered view, which is what makes splat reconstructions look photorealistic instead of flat."
+    },
+    {
+      "title": "Differentiable alpha compositing",
+      "difficulty": "stretch",
+      "prompt": "Explain how splatting renders a pixel via depth-sorted alpha compositing, and why the whole rasterizer being differentiable is what lets you fit the Gaussians to photos by gradient descent.",
+      "hint": "Project Gaussians to 2D, sort front-to-back, accumulate color weighted by alpha and remaining transmittance. Differentiable → backprop the photo-loss to every Gaussian param.",
+      "solution": "To render a pixel: project each 3D Gaussian to a 2D ellipse, **sort them front-to-back by depth**, then **alpha-composite** — walk from nearest to farthest accumulating `color += T · alpha_i · color_i`, where `alpha_i` comes from the Gaussian's opacity × its 2D footprint at that pixel and `T` is the remaining transmittance (product of `(1 − alpha)` of all closer Gaussians). Stop when `T` is negligible. It's the same over-compositing as NeRF's volume rendering, but over a sorted list of explicit primitives instead of MLP samples.\n\n```python\n# per pixel, front-to-back:\n# C = 0; T = 1\n# for g in sorted_by_depth:\n#     C += T * g.alpha * g.color\n#     T *= (1 - g.alpha)\n```\n\nEvery step — projection, the Gaussian footprint, alpha, the composite — is **differentiable**, so you can define a photometric loss (rendered pixel vs the real photo) and **backprop gradients all the way to each Gaussian's position, rotation, scale, opacity, and SH color**. Training is then just gradient descent fitting the cloud to 20–50 posed photos (plus periodic densify/prune of Gaussians). The differentiable rasterizer is the whole trick: it turns 'reconstruct a 3D scene' into 'minimize a rendering loss.'"
+    }
+  ]
+}

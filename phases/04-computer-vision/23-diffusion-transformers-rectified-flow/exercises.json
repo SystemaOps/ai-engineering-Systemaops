@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "U-Net → DiT",
+      "difficulty": "warmup",
+      "prompt": "Explain what changes when you replace a diffusion U-Net with a Diffusion Transformer (DiT): how the latent is fed in, how the timestep and text condition enter, and why DiT scales better.",
+      "hint": "Latent is patchified into tokens (like ViT); timestep/condition via adaLN or cross-attention; transformers scale with data/params more predictably than convs.",
+      "solution": "A **DiT** treats the noisy latent like a ViT input: **patchify it into tokens**, add positional embeddings, and run transformer blocks instead of conv up/down sampling. The **timestep** (and class/text condition) is injected via **adaptive LayerNorm (adaLN)** — the condition predicts per-block scale/shift — or via cross-attention to text tokens. \n\nDiT scales better than the U-Net because transformers have **predictable scaling laws**: add parameters/data/compute and quality improves smoothly, with no architecture-specific bottlenecks. The U-Net's convolutional inductive bias helped at small scale but capped how far it scaled. Swapping to DiT (plus rectified flow) is what produced SD3, FLUX, and the 2026 text-to-image frontier."
+    },
+    {
+      "title": "Rectified flow's straight line",
+      "difficulty": "core",
+      "prompt": "Explain why rectified flow lets a model sample in ~20 steps where DDPM needed ~1000. Implement the rectified-flow training target for interpolating between noise and data.",
+      "hint": "Define x_t = (1−t)·x0 + t·noise (straight line). The model predicts the constant velocity (noise − x0). Straight paths integrate accurately with few steps.",
+      "solution": "```python\nimport numpy as np\ndef rf_target(x0, noise, t):\n    x_t = (1-t)*x0 + t*noise      # straight-line interpolation\n    velocity = noise - x0          # constant along the line\n    return x_t, velocity           # model learns to predict 'velocity' at (x_t, t)\n```\n\nDDPM's reverse process follows a **curved** stochastic trajectory through noise space, so accurately integrating it needs many tiny steps (~1000) — big steps overshoot the curve. **Rectified flow** trains the model to follow a **straight line** between data and noise, predicting a (nearly) **constant velocity** `noise − x0`. A straight path with constant velocity can be integrated with a coarse ODE solver in **~20 steps** (in the limit, even 1) because there's no curvature to miss. Same denoising network idea, but reframing the trajectory as a flow you can traverse quickly is what gave FLUX/SD3 their few-step sampling."
+    },
+    {
+      "title": "Tell the 2026 models apart",
+      "difficulty": "stretch",
+      "prompt": "Distinguish the modern text-to-image families by architecture and use case: SD3 (MMDiT), FLUX.1-dev vs FLUX.1-schnell, and where licensing matters. When would you pick schnell over dev?",
+      "hint": "MMDiT = dual-stream (separate image/text token streams). dev = full quality, more steps; schnell = distilled, few-step, faster, permissive license.",
+      "solution": "- **SD3 — MMDiT (multimodal DiT):** processes **image and text tokens in separate streams** that interact through joint attention, improving prompt adherence and text rendering over single-stream DiT.\n- **FLUX.1-dev:** the full-quality model — best fidelity, needs more sampling steps and guidance, **non-commercial** license (check terms before shipping).\n- **FLUX.1-schnell:** a **distilled, few-step** variant (a handful of steps via rectified-flow distillation) that's much faster and released under a **permissive (Apache-2.0)** license.\n\n**Pick schnell over dev when** you need **speed and/or commercial licensing**: real-time/interactive generation, high-volume batch jobs, on-device or cost-sensitive serving, or any product that can't use dev's non-commercial terms. **Pick dev** when maximum single-image quality matters and latency/licensing aren't constraints. The general 2026 lesson: architecture (MMDiT/DiT) sets the quality ceiling, rectified-flow distillation sets the speed, and **licensing often decides what you can actually deploy.**"
+    }
+  ]
+}

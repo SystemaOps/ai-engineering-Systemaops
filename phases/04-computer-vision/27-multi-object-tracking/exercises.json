@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Tracking = detect + associate",
+      "difficulty": "warmup",
+      "prompt": "Explain the tracking-by-detection paradigm in one paragraph: what runs per frame and what the 'association' step does. Why does a detector alone (no tracker) fail to count objects crossing a line?",
+      "hint": "Detect each frame independently; associate matches frame-t detections to existing tracks/IDs. Without IDs you can't tell if a box is a new object or the same one moved.",
+      "solution": "**Tracking-by-detection** runs a detector **independently on every frame** to get boxes, then an **association** step matches this frame's detections to the existing tracks from previous frames, assigning each a persistent **ID** (and spawning/retiring tracks as objects enter/leave). The detector answers 'what's here now'; association answers 'which of these is the same object as before.'\n\nA detector alone can't count line-crossings because it has **no notion of identity across frames** — every frame is a fresh set of anonymous boxes. You can't tell whether the car in frame t is the same car as in frame t−1 (so it should count once) or a new one, and you can't follow it through the moment it crosses. Counting, dwell-time ('in lane 8 seconds'), and trajectory all require the persistent IDs that only the tracker provides."
+    },
+    {
+      "title": "IoU + Hungarian association",
+      "difficulty": "core",
+      "prompt": "Implement the core of classic tracking-by-detection: build an IoU cost matrix between existing tracks and new detections, then assign with the Hungarian algorithm. Explain what unmatched rows/columns mean.",
+      "hint": "Cost = 1 − IoU. Use scipy.optimize.linear_sum_assignment. Unmatched track = disappeared/occluded; unmatched detection = new object.",
+      "solution": "```python\nimport numpy as np\nfrom scipy.optimize import linear_sum_assignment\ndef associate(tracks, dets, iou_thr=0.3):\n    cost = np.zeros((len(tracks), len(dets)))\n    for i,t in enumerate(tracks):\n        for j,d in enumerate(dets):\n            cost[i,j] = 1 - iou(t, d)        # iou() from the YOLO lesson\n    ti, di = linear_sum_assignment(cost)      # optimal matching\n    matches = [(i,j) for i,j in zip(ti,di) if cost[i,j] <= 1-iou_thr]\n    return matches\n```\n\nThe Hungarian algorithm finds the **globally optimal one-to-one matching** that minimizes total cost (= maximizes total IoU), which is better than greedy nearest-box matching when objects are close. After matching:\n- an **unmatched track** (no detection claimed it) → the object **disappeared or is occluded** this frame; keep it alive for a few frames before deleting (handles brief occlusion).\n- an **unmatched detection** → a **new object**; spawn a fresh track/ID.\n\nThis IoU+Hungarian core is SORT; DeepSORT/ByteTrack add appearance embeddings and better handling of low-confidence boxes on top."
+    },
+    {
+      "title": "Memory tracking + the right metric",
+      "difficulty": "stretch",
+      "prompt": "Explain why SAM 2's memory bank handles occlusion better than IoU-based association, and define MOTA, IDF1, and HOTA — saying which to optimize for (a) counting throughput, (b) maintaining consistent identities through occlusion.",
+      "hint": "IoU association breaks when a box vanishes; memory stores appearance over time to re-acquire. MOTA = detection+ID errors; IDF1 = identity consistency; HOTA = balanced.",
+      "solution": "**Why memory beats IoU under occlusion:** IoU association needs boxes to *overlap between consecutive frames* — when an object is occluded for several frames, there's no box to match, the track dies, and it gets a **new ID when it reappears** (an identity switch). SAM 2's **memory bank** stores the object's appearance/features over time, so when it re-emerges the model **re-acquires the same identity by matching against memory**, not just last-frame overlap — robust to disappearances, fast motion, and look-alikes.\n\n**The metrics:**\n- **MOTA** — counts detection errors (false positives, misses) + identity switches. Dominated by detection quality; good proxy for 'are objects found.'\n- **IDF1** — measures **identity consistency**: how well each ground-truth trajectory keeps a single consistent predicted ID over its lifetime.\n- **HOTA** — explicitly **balances detection accuracy and association accuracy** into one number; the modern default for a holistic view.\n\n**(a) Counting throughput → MOTA** (you mainly care that objects are detected and not double-counted per frame). **(b) Consistent identities through occlusion → IDF1** (it directly rewards keeping one ID across the whole trajectory, which is exactly what occlusion handling protects). Use **HOTA** when you want a single balanced score across both."
+    }
+  ]
+}

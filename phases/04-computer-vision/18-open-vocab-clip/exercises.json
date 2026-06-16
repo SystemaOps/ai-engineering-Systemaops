@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Two towers, one space",
+      "difficulty": "warmup",
+      "prompt": "Explain CLIP's two-tower design and contrastive objective in one paragraph: what the image encoder and text encoder produce, and what training pulls together vs pushes apart.",
+      "hint": "Image encoder → image embedding; text encoder → text embedding; both L2-normalized into a shared space. Matching (image, caption) pairs attract; mismatched pairs repel.",
+      "solution": "CLIP has **two separate encoders** — an image tower (ViT/CNN) and a text tower (transformer) — each mapping its input to a vector in a **shared embedding space** (L2-normalized). Training takes a batch of N (image, caption) pairs and computes the N×N matrix of cosine similarities. The contrastive loss pulls each image toward its *matching* caption (the diagonal) and pushes it away from all *other* captions in the batch (off-diagonal), and symmetrically for text→image. After training on hundreds of millions of web pairs, a photo of a dog and the text 'a photo of a dog' land near each other — alignment learned with no class labels, just paired data."
+    },
+    {
+      "title": "Zero-shot classification from scratch",
+      "difficulty": "core",
+      "prompt": "Implement zero-shot classification with a pretrained CLIP: encode a set of class prompts, encode the image, take the argmax cosine similarity. Why does this need no task-specific training, and why do prompt templates ('a photo of a {}') help?",
+      "hint": "Build text embeddings for each candidate label, normalize, dot with the image embedding, softmax/argmax.",
+      "solution": "```python\n# pseudo-code with a CLIP model\nclasses = ['cat', 'dog', 'car']\ntext = clip.encode_text([f'a photo of a {c}' for c in classes])  # [K, D]\ntext = normalize(text)\nimg  = normalize(clip.encode_image(image))                       # [D]\nsims = img @ text.T                                              # [K]\npred = classes[sims.argmax()]\n```\n\nIt needs **no training** because CLIP already learned a shared image-text space — classification becomes 'which class *description* is nearest the image?' You can swap in any label set at runtime (open vocabulary), unlike a fixed 1000-class head. **Prompt templates** help because CLIP was trained on natural captions, not bare nouns: 'a photo of a {}' matches the training distribution better than '{}' alone, and ensembling several templates ('a photo of a {}', 'a blurry photo of a {}', …) and averaging their text embeddings reliably boosts zero-shot accuracy a few points."
+    },
+    {
+      "title": "CLIP vs SigLIP vs LLaVA — what for",
+      "difficulty": "stretch",
+      "prompt": "Distinguish CLIP, SigLIP, OpenCLIP, and LLaVA/LLaMA-vision: what each is and when you'd reach for it in 2026. What did SigLIP change about the loss?",
+      "hint": "CLIP/OpenCLIP: contrastive dual-encoder (zero-shot, retrieval). SigLIP: sigmoid loss, better at scale/small batches. LLaVA: LLM + vision encoder for open-ended VQA/captioning.",
+      "solution": "- **CLIP (OpenAI):** the original contrastive dual-encoder; great for zero-shot classification and image↔text retrieval. Weights are limited/closed for the largest versions.\n- **OpenCLIP:** open reproduction trained on public data (LAION) at many scales — the practical open CLIP you'd actually deploy for embeddings/retrieval.\n- **SigLIP:** same two-tower idea but replaces the softmax/InfoNCE objective with a **pairwise sigmoid loss** — each (image,text) pair is an independent binary 'match?' problem. This removes the need for a global normalization over the whole batch, so it **trains better at small batch sizes and scales more efficiently**, and generally gives stronger zero-shot accuracy. It's the 2026 default embedding backbone for retrieval.\n- **LLaVA / LLaMA-vision:** not a dual encoder — a **vision encoder feeding an LLM**, producing free-form text. Use it for open-ended tasks: visual question answering, captioning, document/chart reasoning, 'describe and reason about this image.'\n\nRule of thumb: need an **embedding** (classify/retrieve/cluster) → SigLIP/OpenCLIP; need **generated language about an image** (answer questions, describe) → a vision-language model like LLaVA."
+    }
+  ]
+}

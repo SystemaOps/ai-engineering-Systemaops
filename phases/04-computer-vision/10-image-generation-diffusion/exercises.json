@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Forward noising in one shot",
+      "difficulty": "warmup",
+      "prompt": "Using the closed-form q(x_t | x_0) = sqrt(ᾱ_t)·x_0 + sqrt(1−ᾱ_t)·ε, add noise to a clean value at an early and a late timestep. Explain why this closed form lets training sample any timestep cheaply.",
+      "hint": "ᾱ_t is the cumulative product of (1−β). Large t → ᾱ_t→0 → mostly noise.",
+      "solution": "```python\nimport math, random\ndef q_sample(x0, abar_t):\n    eps = random.gauss(0,1)\n    return math.sqrt(abar_t)*x0 + math.sqrt(1-abar_t)*eps\nx0=3.0\nprint(round(q_sample(x0, 0.99),3))   # t small: close to x0\nprint(round(q_sample(x0, 0.02),3))   # t large: mostly noise\n```\n\nBecause the composition of Gaussian noising steps is itself Gaussian, you can jump from clean `x_0` to *any* noise level `t` in one formula — no need to simulate t sequential steps. That's what makes training cheap: each step picks a **random t**, noises the image once, and asks the network to predict the noise. Without the closed form you'd have to run the whole chain for every sample."
+    },
+    {
+      "title": "The DDPM training objective",
+      "difficulty": "core",
+      "prompt": "State what a DDPM network is trained to predict and write the (simplified) loss. Then describe the sampling loop at a high level. Why is the training objective just an MSE?",
+      "hint": "Predict the noise ε added at step t; loss = ||ε − ε_θ(x_t, t)||². Sampling: start from noise, iteratively subtract predicted noise.",
+      "solution": "The network `ε_θ(x_t, t)` is trained to **predict the noise** that was added:\n\n```\nL = E_{x0, t, ε} [ || ε − ε_θ( sqrt(ᾱ_t)·x0 + sqrt(1−ᾱ_t)·ε,  t ) ||² ]\n```\n\nIt's a plain MSE because (after the DDPM reparameterization) the variational objective reduces to regressing the injected Gaussian noise — a stable, supervised target, which is exactly why diffusion is so much easier to train than a GAN.\n\n**Sampling:** start from pure noise `x_T ~ N(0,I)`; for t = T…1, predict the noise, remove a small estimated amount (plus a bit of fresh noise per the schedule), stepping `x_t → x_{t-1}`. After T steps a clean image emerges. The denoiser is a **time-conditioned U-Net** (the timestep is embedded and fed in) so one network handles every noise level."
+    },
+    {
+      "title": "DDPM vs DDIM sampling",
+      "difficulty": "stretch",
+      "prompt": "Explain the difference between DDPM and DDIM sampling and when you'd choose each. Why can DDIM use far fewer steps, and what do you give up?",
+      "hint": "DDPM is stochastic (adds noise each step, ~1000 steps). DDIM is a deterministic ODE-style sampler that skips steps (e.g. 20-50) and is reproducible.",
+      "solution": "**DDPM sampling** is **stochastic**: each reverse step adds fresh noise, and it traditionally needs hundreds–thousands of steps for quality. Different runs from the same seed-noise give different images, and it's slow.\n\n**DDIM sampling** reinterprets the reverse process as a **deterministic ODE** you can integrate with a coarse step schedule — so you can generate good images in **20–50 steps** instead of 1000, and the mapping from initial noise to image is **deterministic and reproducible** (great for editing, interpolation, and consistent outputs).\n\n**Choose DDIM** when you want speed and reproducibility (almost all production inference); **choose DDPM** when you want maximum sample diversity/stochasticity or are studying the original formulation. The trade: DDIM's few-step determinism can slightly reduce diversity and, at very low step counts, fine detail — though modern solvers and rectified flow (Lesson 23) largely close that gap. Both use the *same trained network*; they differ only in the sampler."
+    }
+  ]
+}

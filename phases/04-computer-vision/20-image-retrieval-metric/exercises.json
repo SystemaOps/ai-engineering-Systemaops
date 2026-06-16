@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Normalize then cosine",
+      "difficulty": "warmup",
+      "prompt": "Show that cosine similarity equals a dot product after L2-normalization, and compute the nearest neighbor of a query among a few candidate embeddings. Why normalize before indexing?",
+      "hint": "After x/‖x‖, dot product = cosine. Normalization makes inner-product search equivalent to cosine search.",
+      "solution": "```python\nimport numpy as np\ndef norm(M): return M/np.linalg.norm(M,axis=-1,keepdims=True)\nq = norm(np.array([[1.,2.,1.]]))\nC = norm(np.array([[1.,2.,1.],[0.,0.,1.],[2.,4.,2.]]))\nsims = (q @ C.T)[0]\nprint(sims.argmax())   # 0 (or 2 — same direction as the query)\n```\n\nAfter L2-normalization, `a·b = cos(a,b)`, so an inner-product index *is* a cosine index. Normalizing before building the index matters because (1) it makes 'similarity' depend on **direction, not magnitude** (the right notion for embeddings), and (2) most ANN libraries optimize inner product — feeding normalized vectors lets you use fast IP search to get cosine ranking. Candidates 0 and 2 are the same direction as the query (2 is just scaled), so both are maximally similar."
+    },
+    {
+      "title": "Triplet loss and 'same item' vs 'same class'",
+      "difficulty": "core",
+      "prompt": "Implement triplet loss and explain the difference between 'same class' retrieval (any dog) and 'same instance' retrieval (this exact product). How does that change what counts as a positive?",
+      "hint": "Triplet: max(0, d(a,p) − d(a,n) + margin). Positive = same class vs same physical item; the supervision label differs.",
+      "solution": "```python\nimport numpy as np\ndef triplet(a, p, n, margin=0.2):\n    dap = np.sum((a-p)**2); dan = np.sum((a-n)**2)\n    return max(0.0, dap - dan + margin)\n```\n\nTriplet loss pulls an anchor toward a **positive** and pushes it from a **negative**, with a margin so it stops once they're separated enough. The crucial design choice is **what 'positive' means**:\n- **Same-class retrieval** ('find any dog'): positive = another image of *any* dog. The space clusters by category — good for 'similar products' browsing.\n- **Same-instance retrieval** ('find this exact handbag / re-identify this person'): positive = another view of the *same physical item*; two *different* dogs are **negatives** even though same class. The space must separate individuals within a class — much finer.\n\nSame architecture, totally different labels and difficulty. Mixing them up is the classic retrieval bug: train on 'same class' positives, then wonder why it can't tell two different products of the same type apart. Hard-negative mining (choosing near-miss negatives) is what makes instance-level training actually work."
+    },
+    {
+      "title": "Build a FAISS index, report recall@K",
+      "difficulty": "stretch",
+      "prompt": "Outline building a FAISS index over image embeddings and computing recall@K for a held-out query set. Define recall@K, and say when you'd pick DINOv2 vs CLIP/SigLIP as the embedding backbone.",
+      "hint": "Embed catalogue → index → search top-K per query → recall@K = fraction of queries whose true match is in top-K. DINOv2 = pure-visual similarity; CLIP/SigLIP = text-aligned.",
+      "solution": "```python\nimport faiss, numpy as np\nemb = norm(catalogue_embeddings).astype('float32')   # [N, D]\nindex = faiss.IndexFlatIP(emb.shape[1])              # inner-product = cosine (normalized)\nindex.add(emb)\nD, I = index.search(norm(query_embeddings).astype('float32'), k=10)\nrecall_at_10 = np.mean([truth[q] in I[q] for q in range(len(I))])\n```\n\n**recall@K** = the fraction of queries for which the correct item appears anywhere in the top-K results. It's the standard retrieval metric because users scan a short list; recall@1 is strict, recall@10 reflects 'is it on the first page.' (`IndexFlatIP` is exact; swap in `IVF`/`HNSW` for billions of vectors, trading a little recall for speed.)\n\n**Backbone choice:**\n- **DINOv2** → pure **visual** similarity (texture, shape, instance). Best for duplicate detection, visual product search, re-ID — where you match *how things look*, not their description.\n- **CLIP/SigLIP** → **text-aligned** space. Use when queries are text ('red running shoes') or you want cross-modal search, since image and text live in one space. For image-to-image fine instance matching, DINOv2 usually wins; for text-to-image or semantic search, SigLIP wins."
+    }
+  ]
+}

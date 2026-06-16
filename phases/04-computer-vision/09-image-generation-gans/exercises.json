@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "The minimax game",
+      "difficulty": "warmup",
+      "prompt": "State the GAN objective in words: what does the generator minimize, what does the discriminator maximize, and what does the equilibrium correspond to? Why is there no single loss number that 'going down' means progress?",
+      "hint": "D maximizes correct real/fake classification; G minimizes D's ability to tell its fakes from real. Equilibrium: p_model = p_data, D outputs 0.5 everywhere.",
+      "solution": "It's a two-player game on `min_G max_D  E[log D(x)] + E[log(1 − D(G(z)))]`:\n- **Discriminator D** maximizes — it tries to output 1 on real images and 0 on generated ones.\n- **Generator G** minimizes — it tries to make D output 1 on its fakes.\n\nAt **equilibrium**, G's distribution matches the data (`p_model = p_data`), so D can't do better than chance and outputs 0.5 everywhere. \n\nThere's no monotonic 'loss' to watch because the two losses are **adversarial**: if D's loss drops, that's usually *bad* for G, and vice-versa. The losses oscillate by design — you judge progress by sample quality (or FID), not by either loss decreasing. This is what makes GANs notoriously hard to train."
+    },
+    {
+      "title": "Spot the failure mode",
+      "difficulty": "core",
+      "prompt": "Match each symptom to a GAN failure and a fix: (a) generator outputs the same few images regardless of z; (b) discriminator loss → 0 and generator loss explodes; (c) both losses oscillate wildly and samples never improve.",
+      "hint": "Mode collapse; discriminator-wins (vanishing G gradient); unstable training.",
+      "solution": "- **(a) Same few outputs for any z → mode collapse.** G found a handful of images that reliably fool D and stopped exploring. Fixes: minibatch discrimination, unrolled GAN, or switch to WGAN-GP; lower G learning rate.\n- **(b) D loss → 0, G loss explodes → discriminator wins completely.** D got too strong, so `log(1−D(G(z)))` saturates and G receives ~no gradient. Fixes: the **non-saturating loss** (train G to maximize `log D(G(z))`), weaken/regularize D (spectral norm), train G more often, or use TTUR (different LRs for G and D).\n- **(c) Wild oscillation, no improvement → unstable training.** Fixes: TTUR, spectral normalization for Lipschitz control, lower LRs, and the standard DCGAN architecture choices (strided convs, BatchNorm, no pooling).\n\nThe three standard stabilizers — non-saturating loss, spectral norm, TTUR — exist precisely to keep the G/D game balanced so neither side runs away."
+    },
+    {
+      "title": "GAN vs diffusion trade-off",
+      "difficulty": "stretch",
+      "prompt": "Explain the core trade-off between GANs and diffusion models for image generation (training difficulty, sampling speed, sample diversity), and why diffusion came to dominate despite being slower.",
+      "hint": "GAN: one forward pass (fast) but adversarial training is brittle and mode-collapses. Diffusion: stable likelihood-style training, great coverage, but many sampling steps.",
+      "solution": "**GANs:** generate in a **single forward pass** (fast inference) and can produce very sharp images, but training is an unstable adversarial game prone to mode collapse, and they have **no likelihood** to monitor — getting a good GAN is a craft.\n\n**Diffusion:** training is a **stable regression** (predict the noise at a random timestep) that any small team can get working, and the iterative denoising covers the data distribution well (**high diversity**, fewer dropped modes). The cost is **slow sampling** — dozens to hundreds of denoising steps per image.\n\nDiffusion came to dominate because **trainability and coverage beat raw speed** for most teams: you can reliably train a diffusion model and get diverse, high-quality samples, whereas reproducing GAN quality takes years of tuning. And the speed gap is closing — latent diffusion, DDIM, distillation, and rectified flow cut sampling to a handful of steps. GANs persist where one-step, real-time generation matters (and as fast distillation targets)."
+    }
+  ]
+}
