@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Three decisions per chunk",
+      "difficulty": "warmup",
+      "prompt": "A voice agent makes three distinct decisions on each 20ms chunk: is this speech (VAD), has the user started (onset), has the user finished (end-pointing). Explain why end-pointing is the hardest, and what goes wrong if it's too eager or too patient.",
+      "hint": "Speech/not is easy; deciding the user is DONE requires distinguishing a pause from the end.",
+      "solution": "- **Is this speech? (VAD):** a fairly easy per-frame binary — energy + a small neural classifier.\n- **Has the user started? (onset):** detect the transition silence→speech to begin capturing.\n- **Has the user finished? (end-pointing):** the hard one — decide the turn is *over* so you can respond.\n\n**Why end-pointing is hardest:** a silence could be the **end of the turn** or just a **mid-sentence pause** ('I want to book... [thinking] ...a flight'). The model must distinguish 'done' from 'pausing', which depends on duration, prosody, and often *semantics* (is the sentence grammatically/semantically complete?).\n\n**Failure modes:** too **eager** (short silence threshold) → the assistant **cuts the user off** mid-thought and responds to a fragment. Too **patient** (long threshold) → an awkward **lag** before every response, making the assistant feel slow/unresponsive. Getting end-pointing right is the difference between a natural conversation and one where you're either interrupted or left hanging."
+    },
+    {
+      "title": "VAD + silence hangover + semantic endpointing",
+      "difficulty": "core",
+      "prompt": "Explain how turn-detection combines a VAD, a silence-hangover timer, and (modern) a semantic endpoint model. Why is a fixed silence threshold alone insufficient, and what does the semantic model add?",
+      "hint": "Fixed threshold can't tell a thinking-pause from a real end. Semantic model judges if the utterance is 'complete'.",
+      "solution": "**Turn-detection** layers three signals:\n1. **VAD** says speech vs silence per frame.\n2. **Silence hangover** — after VAD goes silent, wait a configurable window (e.g. 500-800ms) before declaring the turn over, so brief gaps don't trigger a response.\n3. **Semantic endpoint model** — judges whether the *content so far is a complete utterance* ('book a flight to' = incomplete, wait; 'book a flight to Boston' = complete, respond).\n\n**Why a fixed silence threshold alone fails:** any single threshold is wrong somewhere. Short → cuts off slow/thinking speakers ('umm...'). Long → laggy for fast speakers. And silence duration *can't distinguish* 'I'm thinking mid-sentence' from 'I'm done' — a long pause after 'book a flight to' should **wait**, but a short pause after 'book a flight to Boston' should **respond**.\n\n**What the semantic model adds:** it makes the wait **adaptive to completeness**, not just duration — extending the hangover when the utterance is grammatically/semantically unfinished and shortening it when it's complete. This is how modern agents respond snappily to finished sentences while still letting users pause to think — the natural turn-taking a fixed timer can't achieve."
+    },
+    {
+      "title": "The flush trick for low-latency response",
+      "difficulty": "stretch",
+      "prompt": "Describe the 'flush trick' for cutting response latency once end-of-turn is detected, and how streaming STT partials + early LLM start combine with it. What's the latency win and the risk?",
+      "hint": "On end-of-turn, immediately flush the final STT transcript and fire the already-warm LLM; you've been transcribing/pre-processing during the user's speech.",
+      "solution": "**The flush trick:** don't wait until end-of-turn to *start* working. While the user is still speaking, run **streaming STT** to maintain a live partial transcript and even **pre-warm/early-start the LLM** on the stable partial. The moment turn-detection fires 'done', you **flush** — finalize the transcript and immediately commit the LLM generation (and start TTS on its first tokens) — instead of beginning STT→LLM→TTS from scratch.\n\n**How it combines:** streaming STT partials mean the transcript is essentially ready at end-of-turn (no STT wait); early/speculative LLM start means the model may already have produced the opening of the response; streaming TTS means audio starts on the first clause. End-of-turn detection becomes the trigger to *flush and commit* work that's already in flight, not to *begin* it.\n\n**The win:** time-to-first-audio drops dramatically — you remove the serial STT and most of the LLM-first-token wait from the critical path, getting into the ~300ms 'feels alive' range.\n\n**The risk:** you may **start on a not-quite-final transcript** — if the user adds words after you committed (a late 'to Boston'), the early LLM start was on the wrong input, forcing a revision or a wrong response. Mitigate by only early-starting on *stable* partials and being ready to cancel/redo if the final transcript differs. It's a latency-vs-correctness gamble, tuned by how confident the partial is before you flush."
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "The standard pipeline",
+      "difficulty": "warmup",
+      "prompt": "State the mature 2026 baseline architecture for audio classification (input → model → output) and give three distinct tasks it covers. What's the common input feature?",
+      "hint": "log-mel spectrogram → CNN or Transformer → softmax. Tasks: urban sound, keyword spotting, language ID, emotion.",
+      "solution": "**Baseline:** `audio → log-mel spectrogram → CNN or Transformer → softmax over classes`. The log-mel is the common input feature for essentially every audio task.\n\n**Three distinct tasks it covers:** urban/environmental sound classification (siren vs drill vs dog), keyword/command spotting (yes/no/stop), and spoken language identification (en/es/ar) — also speaker emotion, music tagging, etc. They differ only in the label set and data, not the architecture. Treating audio as a 2-D log-mel 'image' lets you reuse vision backbones (CNNs, and now spectrogram transformers like AST/BEATs). The architecture is the easy part; data is where the difficulty lives."
+    },
+    {
+      "title": "Fix class imbalance the right way",
+      "difficulty": "core",
+      "prompt": "Audio datasets are badly imbalanced (e.g. 95% 'background', 5% 'gunshot'). Explain why accuracy is misleading here, which metrics to use instead, and two augmentation/sampling techniques to handle it.",
+      "hint": "Accuracy rewards predicting the majority. Use per-class recall, macro-F1, AUC. Techniques: class-balanced sampling, SpecAugment, mixup.",
+      "solution": "**Why accuracy lies:** with 95% background, a model that *always* predicts 'background' scores 95% accuracy while catching **zero gunshots** — useless for the actual task. \n\n**Metrics to use instead:** per-class **recall** (did you catch the rare class?), **macro-F1** (averages classes equally so the minority counts), and **AUC/PR-AUC** (threshold-independent, good for rare positives).\n\n**Techniques:**\n1. **Class-balanced sampling** during training — oversample the rare class (or weight its loss) so gradients aren't dominated by background. \n2. **SpecAugment** — mask random time and frequency bands of the log-mel; cheap, strong regularization that effectively multiplies rare-class examples. **Mixup** (blend two clips + labels) also helps.\n\nThe lesson's point: 80% of audio classification is curation, augmentation, and *honest evaluation* — not the network. Report per-class recall, balance the training signal, and augment the spectrogram; swapping CNN→Transformer rarely fixes an imbalance problem."
+    },
+    {
+      "title": "k-NN/MFCC baseline vs AST/BEATs",
+      "difficulty": "stretch",
+      "prompt": "Trace the audio-classification architecture lineage from k-NN on MFCCs to CNNs to spectrogram transformers (AST/BEATs). What did each step buy, and when would you still reach for the simple baseline?",
+      "hint": "MFCC+kNN: cheap, interpretable, tiny data. CNN on log-mel: learns features, more data. AST/BEATs: pretrained transformers, SOTA but heavy.",
+      "solution": "**Lineage:**\n- **k-NN / SVM on MFCCs:** hand-engineered cepstral features + classic classifier. Cheap, interpretable, needs little data, no GPU. The pre-deep-learning workhorse.\n- **CNN on log-mel:** treat the spectrogram as an image and *learn* the features end-to-end. Bought big accuracy gains given enough labeled data and a GPU; removed the need to hand-design features.\n- **Spectrogram transformers (AST/BEATs):** patchify the spectrogram (ViT-style) and leverage large-scale (often self-supervised) **pretraining** (BEATs). State-of-the-art, especially with limited downstream labels via fine-tuning — but heavy to train/serve.\n\n**When to still use the simple baseline:** very small datasets (transformers overfit / can't pretrain helpfully), tight latency/compute budgets (edge devices, microcontrollers), strong interpretability/auditability requirements, or as a quick sanity baseline before investing in a big model. The lesson's framing: features stayed mel-based throughout; the *architecture* moved each decade, but the right choice depends on your data size and deployment constraints, not just what's newest."
+    }
+  ]
+}

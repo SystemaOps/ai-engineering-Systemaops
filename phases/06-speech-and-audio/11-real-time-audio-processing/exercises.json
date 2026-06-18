@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "The conversational latency budget",
+      "difficulty": "warmup",
+      "prompt": "Human turn-taking latency is ~230ms; above 500ms feels robotic, above 1500ms broken. Given a hear→understand→respond→speak loop, list the stages that consume the budget and why every stage must stream rather than wait for completion.",
+      "hint": "mic buffer, VAD, STT, LLM, TTS, playback. If each stage waits for the previous to finish, latencies add up past the budget.",
+      "solution": "The loop and its rough budget: **mic→buffer (~20ms) → VAD (detect speech end) → STT (transcribe) → LLM (generate response) → TTS (synthesize) → playback**. To hit <500ms total, you can't run them as a **blocking sequence** where each stage fully finishes before the next starts — those latencies *add*, and STT-then-full-LLM-then-full-TTS alone blows the budget.\n\nThe fix is to **stream/pipeline**: STT emits partial transcripts as the user speaks; the LLM starts generating before the user fully stops (speculative) and streams tokens; TTS begins synthesizing the first words while the LLM is still generating the rest; playback starts on the first audio chunk. Stages **overlap** instead of queue. The latency you perceive is the time to *first audio out*, not the sum of all stages. This streaming-everything discipline is what makes a voice assistant 'feel alive' rather than walkie-talkie."
+    },
+    {
+      "title": "Streaming vs batch processing",
+      "difficulty": "core",
+      "prompt": "Explain the core difference between batch and real-time audio processing (you must process 20ms before the next 20ms arrives), and what 'real-time factor' (RTF) means. Why is RTF < 1 mandatory, and what's the danger of RTF close to 1?",
+      "hint": "Batch sees the whole file; real-time gets a stream and must keep up. RTF = processing_time / audio_duration. RTF<1 = faster than real-time.",
+      "solution": "**Batch** processing has the entire audio file available and can take as long as it wants. **Real-time** processing receives audio as a live stream in small chunks (e.g. 20ms) and **must finish processing each chunk before the next arrives** — there's no 'rewind' and no waiting for the whole utterance.\n\n**Real-time factor (RTF) = processing_time / audio_duration.** RTF=0.5 means you process 1 second of audio in 0.5 seconds (twice as fast as real-time); RTF=2 means you fall behind by 1s for every 1s of audio.\n\n**RTF < 1 is mandatory** for streaming: if RTF ≥ 1, you can't keep up with the incoming stream, the input buffer grows unboundedly, and latency increases without limit until the system drops audio or falls hopelessly behind. **RTF close to 1 is dangerous** because there's no headroom — any transient spike (GC pause, a CPU-busy moment, a slightly harder chunk) pushes you momentarily over 1, audio backs up, and you get glitches/dropouts. Production targets RTF well below 1 (e.g. 0.3) so the system absorbs spikes and stays real-time under load."
+    },
+    {
+      "title": "Barge-in and echo cancellation",
+      "difficulty": "stretch",
+      "prompt": "A real voice assistant must handle the user interrupting it while it's talking (barge-in). Explain the two hard problems this creates — detecting interruption over the assistant's own playback, and acoustic echo — and how each is solved.",
+      "hint": "The mic hears both the user AND the assistant's own TTS through the speaker. Need echo cancellation (AEC) + VAD that ignores self-audio; barge-in = stop TTS, switch to listening.",
+      "solution": "**Barge-in** (user interrupts mid-response) creates two hard problems because the **microphone simultaneously picks up the assistant's own TTS playing through the speaker** plus the user's speech:\n\n1. **Detecting the interruption over self-audio:** naive VAD would constantly trigger on the assistant's *own* voice, so it can't tell 'user is talking' from 'I'm talking.' Solution: **Acoustic Echo Cancellation (AEC)** — the system knows exactly what audio it sent to the speaker (the reference signal), so it adaptively subtracts that signal (and its room reflections) from the mic input, leaving only the user's voice. VAD then runs on the cleaned signal.\n2. **Acting on barge-in:** once real user speech is detected during playback, the assistant must **immediately stop TTS playback, flush its current response, and switch to listening/STT** — and ideally cancel the in-flight LLM generation. Latency here matters: a laggy barge-in (talking over the user for a second after they start) feels broken.\n\nTogether: **AEC** makes interruption *detectable* despite self-audio, and **fast stop-and-listen** makes it *responsive*. Both are essential for natural full-duplex feel — and they're exactly the problems that motivate the unified full-duplex models (Moshi) in lesson 15, which handle listening-while-speaking natively instead of bolting AEC onto a pipeline."
+    }
+  ]
+}

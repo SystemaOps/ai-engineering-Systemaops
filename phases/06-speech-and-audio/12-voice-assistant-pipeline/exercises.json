@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "The seven-stage pipeline",
+      "difficulty": "warmup",
+      "prompt": "List the stages of a voice assistant from mic to speaker (capture → VAD → STT → LLM+tools → TTS → playback), and which earlier lessons each stage draws on. What makes it 'a solved engineering problem, not a research problem'?",
+      "hint": "Each stage is a component you already studied; the work is integration, latency, and error handling.",
+      "solution": "**Pipeline:** mic capture (16 kHz mono) → **VAD** (detect start/end of speech, L14) → **streaming STT** (Whisper/ASR, L04-05) → **LLM with tool calling** (reason + act, Phase 11/14) → **TTS** (synthesize reply, L07) → **playback** — with **barge-in/AEC** (L11) wrapping it.\n\nEach stage is a component covered earlier in the curriculum. It's **'solved engineering, not research'** because every piece works off-the-shelf in 2026 — robust ASR, capable LLMs, fast TTS, good VAD all exist. The remaining difficulty is **integration**: hitting the latency budget by streaming across stages, handling errors (mishears, tool failures, interruptions), managing turn-taking, and keeping state. No new model needs inventing; the product quality is decided by how well you wire and harden the known parts."
+    },
+    {
+      "title": "Where the latency actually goes",
+      "difficulty": "core",
+      "prompt": "Profile a voice-assistant turn: which stage usually dominates time-to-first-response, and how do streaming STT, speculative/early LLM start, and streaming TTS collapse the perceived latency? Give the key trick for each.",
+      "hint": "LLM time-to-first-token + TTS startup dominate; overlap them with STT and stream partials.",
+      "solution": "**Where time goes:** for a short user utterance, the big costs are **LLM time-to-first-token** and **TTS startup/synthesis** — STT is fast and streamable, VAD is cheap. Naively chained, you wait: full STT, *then* full LLM, *then* full TTS — easily >1.5s.\n\n**Collapsing perceived latency (overlap everything):**\n- **Streaming STT:** emit **partial transcripts** as the user speaks, so transcription is ~done the moment they stop — no separate STT wait. Key trick: feed partials and finalize on the VAD end-point (+ the 'flush' trick, L14).\n- **Early/speculative LLM start:** begin the LLM on the partial/near-final transcript *before* the user fully finishes, and **stream tokens** out. Key trick: start generation on a stable partial and revise if needed.\n- **Streaming TTS:** start synthesizing audio from the **first sentence/clause** the LLM emits, while it's still generating the rest. Key trick: sentence-chunk the LLM stream into the TTS so first-audio-out comes fast.\n\nThe metric that matters is **time-to-first-audio-out**, not total turn time. Overlapping STT→LLM→TTS (instead of sequencing them) is what gets a real assistant from ~1.5s to the ~300-500ms 'feels alive' range."
+    },
+    {
+      "title": "Designing for failure",
+      "difficulty": "stretch",
+      "prompt": "Voice assistants fail in ways text chatbots don't (mishears, partial transcripts, tool failures, interruptions, silence/noise). Enumerate the failure paths a production voice pipeline must handle and how each should degrade gracefully.",
+      "hint": "STT mishears/low-confidence; no speech / pure noise; LLM tool call fails; user barges in; long silence; ambiguous request.",
+      "solution": "A production voice pipeline must handle, not assume away:\n1. **Mishears / low-confidence STT:** the transcript is wrong or uncertain. Degrade by **confirming** ('did you say *Tuesday*?') rather than acting on a shaky transcript — especially before irreversible actions.\n2. **No speech / pure noise:** VAD fires on a cough or background noise. Degrade by requiring a minimum speech duration/confidence and **re-prompting** ('sorry, I didn't catch that') instead of sending garbage to the LLM (and avoid Whisper's silence-hallucination by gating on no-speech probability).\n3. **Tool/API failure:** the LLM's function call errors or times out. Degrade by catching it and **telling the user** ('I couldn't reach the calendar, want to try again?'), never crashing or silently dropping the turn.\n4. **Barge-in:** user interrupts. Stop TTS, cancel the in-flight response, switch to listening (L11).\n5. **Ambiguous / out-of-scope request:** **ask a clarifying question** rather than guessing.\n6. **Long silence after a prompt:** time out gracefully, offer help, or end the turn.\n7. **High-stakes / irreversible action:** require explicit **confirmation** before executing (book, pay, delete).\n\nThe principle (same as the vision-pipeline capstone): validate at each stage, make 'I didn't understand' and 'that failed' **first-class, well-handled outcomes**, and confirm before consequential actions. Voice has no UI to fall back on, so graceful spoken degradation *is* the product."
+    }
+  ]
+}

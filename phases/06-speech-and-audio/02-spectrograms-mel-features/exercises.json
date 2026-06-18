@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "STFT window and hop",
+      "difficulty": "warmup",
+      "prompt": "For a 16 kHz signal with a 25 ms window and 10 ms hop, compute the window length and hop length in samples, and roughly how many frames a 1-second clip yields. Why overlap the windows?",
+      "hint": "window = 0.025·sr; hop = 0.010·sr; frames ≈ (N − win)/hop + 1.",
+      "solution": "```python\nsr=16000\nwin=int(0.025*sr); hop=int(0.010*sr)\nN=sr  # 1 second\nframes=(N-win)//hop + 1\nprint(win, hop, frames)   # 400 160 ~98\n```\n\nThe STFT chops the signal into overlapping ~25 ms frames (400 samples) advanced by 10 ms (160 samples) and FFTs each. **Overlap matters** because a hard, non-overlapping window would lose information at frame boundaries and create artifacts; overlapping (here 60%) gives smooth temporal coverage so a transient (a plosive, an onset) isn't split awkwardly between frames. The result is a time-frequency matrix (~98 frames × freq bins for 1s) — the spectrogram."
+    },
+    {
+      "title": "Build a mel filterbank intuition",
+      "difficulty": "core",
+      "prompt": "Explain the mel scale and why we warp the linear FFT frequency axis onto it before feeding a model. Convert 1000 Hz and 4000 Hz to mel and show the perceptual compression at high frequencies.",
+      "hint": "mel(f) = 2595·log10(1 + f/700). Equal mel steps ≈ equal perceived pitch steps.",
+      "solution": "```python\nimport math\ndef mel(f): return 2595*math.log10(1 + f/700)\nprint(round(mel(1000)), round(mel(4000)))   # 1000 -> 999, 4000 -> 2146\nprint(round(mel(200)-mel(100)), round(mel(2000)-mel(1000)))  # similar mel gaps\n```\n\nHumans perceive pitch **logarithmically**: 100→200 Hz sounds like the same interval as 1000→2000 Hz, even though the second spans 10× the Hz. The mel scale warps frequency so equal mel steps ≈ equal *perceived* steps — high frequencies get compressed (a 4 kHz jump from 1 kHz adds far fewer mels than the linear distance suggests). A **mel filterbank** sums FFT energy into ~80 triangular mel-spaced bins, giving the model a perceptually-aligned, compact representation (80 bins vs hundreds of linear FFT bins) that emphasizes where speech information actually is. Log-mel spectrograms are *the* standard feature across ASR/TTS/classification 2010–2026."
+    },
+    {
+      "title": "Log-mel and why the log",
+      "difficulty": "stretch",
+      "prompt": "Explain why pipelines apply a log to the mel spectrogram (log-mel) before the model, and what numerical issue the log introduces near zero plus its standard fix. How does this connect to human loudness perception?",
+      "hint": "Amplitudes span huge dynamic range; log compresses it and matches perceived loudness (dB). log(0) = -inf, so add a small epsilon / floor.",
+      "solution": "Mel energies span an enormous **dynamic range** — a loud vowel can be thousands of times more energetic than quiet fricatives. Feeding raw magnitudes to a network lets loud frames dominate and washes out quiet-but-informative detail. The **log** compresses this range (turning multiplicative ratios into additive offsets), which also matches human **loudness perception**: we hear loudness roughly logarithmically (the decibel scale *is* a log), so log-mel aligns the feature with how ears work.\n\n```python\nimport numpy as np\nlog_mel = np.log(mel_spec + 1e-6)   # epsilon floor avoids log(0) = -inf\n```\n\n**Numerical issue:** silent bins have ~0 energy and `log(0) = -inf`, which produces NaNs/Infs that destroy training. The standard fix is a small additive epsilon (or a fixed dB floor like clamping to −80 dB before/after the log). Log-mel — STFT → mel filterbank → log(+ε) — is the exact input Whisper, wav2vec, and essentially every modern speech model consume."
+    }
+  ]
+}

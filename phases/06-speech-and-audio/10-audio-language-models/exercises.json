@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Beyond transcription",
+      "difficulty": "warmup",
+      "prompt": "Give one audio clip (dog barks, someone yells 'stop!', then silence) and list four distinct question types an audio-language model can answer that plain ASR cannot. Why does each need more than transcription?",
+      "hint": "ASR gives words only. ALMs reason over non-speech sound, semantics, music, and acoustic scene.",
+      "solution": "Plain ASR would output just the word 'stop'. An audio-language model can answer:\n1. **Semantic reasoning:** 'Is the person in danger?' — needs joint understanding of bark + alarmed yell + sudden silence, not just the word.\n2. **Non-speech sound understanding:** 'What animal made the first sound?' — ASR ignores the bark entirely.\n3. **Acoustic-scene / event:** 'What happened in this clip, in order?' — requires temporal reasoning over events.\n4. **Music reasoning** (on a music clip): 'What instruments play the melody?' — no transcription involved.\n\nEach needs more than transcription because the *information isn't in the words* — it's in the non-speech audio, the prosody (alarm in the voice), the scene, and the relationships between sounds. ALMs reason over the full acoustic signal, not just its linguistic content."
+    },
+    {
+      "title": "The audio-LLM architecture",
+      "difficulty": "core",
+      "prompt": "Describe the standard audio-language model architecture (audio encoder → projector → LLM), drawing the parallel to vision-language models. What does the projector do and why is it the key trainable piece?",
+      "hint": "Audio encoder (e.g. Whisper) → embeddings → projector maps them into the LLM token space → LLM reasons/generates. Same ViT-MLP-LLM pattern.",
+      "solution": "It's the audio twin of the ViT-MLP-LLM vision pattern:\n`audio → audio encoder (e.g. Whisper/BEATs) → projector → LLM → text`.\n- **Audio encoder** turns the waveform/spectrogram into a sequence of audio embeddings (capturing speech + sound features).\n- **Projector** (usually an MLP, sometimes a resampler) maps those audio embeddings **into the LLM's token-embedding space** so the LLM can consume them like word tokens.\n- **LLM** receives the projected audio tokens + the text prompt and **reasons and generates** an answer.\n\n**The projector is the key trainable piece** because the audio encoder and LLM are typically pretrained and (often) frozen — the projector is what *aligns* the two representation spaces, learning to translate 'audio features' into 'something the LLM understands.' Train mostly the projector (plus light LLM adaptation) on audio-text pairs and you get an ALM cheaply, exactly as VLMs train mainly the vision projector. The bottleneck and the magic both live in that alignment layer."
+    },
+    {
+      "title": "Where ALMs still fail (and how to know)",
+      "difficulty": "stretch",
+      "prompt": "By 2026 open ALMs (Qwen2.5-Omni) match closed ones (GPT-4o Audio) on benchmarks like MMAU-Pro — except on multi-audio tasks, where everyone is near random. Explain what 'multi-audio' reasoning requires, why it's hard, and what this implies about trusting benchmark headlines.",
+      "hint": "Multi-audio = reason across several clips (compare/contrast, attribute which clip). Hard because models lack cross-clip grounding. Headline parity hides task-specific gaps.",
+      "solution": "**Multi-audio reasoning** means answering questions that span **several separate audio clips** — 'which of these three recordings has the same speaker as clip 1?', 'compare the genre of clip A and clip B', 'in which clip does the alarm sound?'. It requires holding multiple audio inputs distinct and **grounding claims to the right clip**.\n\n**Why it's hard:** current ALMs are mostly trained on *single*-audio inputs, so they lack robust mechanisms to keep multiple clips separate and cross-reference them — they tend to blur the clips together or guess (hence near-random performance). It's analogous to VLMs' weakness on multi-image reasoning: the architecture and training data optimize for one input.\n\n**What it implies about benchmarks:** 'open matches closed on MMAU-Pro' is a *headline average* that can hide a capability the model essentially **lacks**. A model that aces single-audio QA and is random on multi-audio looks 'state of the art' on a blended score while being unusable for a product that needs cross-clip comparison. The lesson (recurring across the curriculum): **disaggregate benchmark scores by capability and test on YOUR task's structure** — headline parity tells you the model is good *on average*, not that it can do the specific thing you need."
+    }
+  ]
+}

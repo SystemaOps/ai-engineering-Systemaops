@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "The alignment problem",
+      "difficulty": "warmup",
+      "prompt": "Explain why speech recognition can't just classify each audio frame into a character, using the variable-duration problem. What fundamental mismatch must any ASR loss handle?",
+      "hint": "Frames (e.g. 100/sec) vastly outnumber characters, durations vary, and you have no per-frame labels — only the final transcript.",
+      "solution": "A 1-second clip might be ~100 frames but the word 'okay' is 4 characters — and 'o' might span 30 frames while 'k' spans 5. There's **no one-to-one alignment** between frames and characters, durations vary by speaker/word, silence intrudes, and the output length isn't known in advance. Crucially, training data gives you only the **final transcript**, not a label per frame.\n\nSo any ASR loss must handle the **monotonic-but-unknown alignment** between a long frame sequence and a short token sequence — figuring out *which frames produced which characters* without being told. The three solutions — CTC, RNN-T, and attention encoder-decoder — are three different answers to exactly this alignment mismatch."
+    },
+    {
+      "title": "CTC blank-and-collapse",
+      "difficulty": "core",
+      "prompt": "Explain how CTC handles alignment with its blank token and collapse rule. Decode the raw frame predictions 'h h - e l l - l o o' (─ = blank) into the output string, and show why the blank between the two l-groups matters.",
+      "hint": "Collapse: merge consecutive duplicates, then remove blanks. A blank between identical letters preserves a real double letter.",
+      "solution": "```\nraw:      h h - e l l - l o o\nstep 1 (merge consecutive dups): h - e l - l o\nstep 2 (remove blanks):          h e l l o\n```\n\nCTC adds a special **blank** token and trains the model to emit a per-frame distribution over {characters, blank}. At decode time it **(1) merges consecutive duplicate symbols, then (2) removes blanks**. The blank does two jobs: it lets the model 'say nothing' during silence or held phonemes, and — critically — it **separates intentional double letters**. Here the blank between `l l` and `l` (`l l - l`) prevents the collapse from merging all three l's into one, so 'hello' keeps its double-l. Without the blank, `helllo` would collapse to 'helo'. CTC sums probability over *all* frame alignments that collapse to the target, so it learns alignment implicitly with no per-frame labels — non-autoregressive and fast (wav2vec 2.0, MMS)."
+    },
+    {
+      "title": "CTC vs RNN-T vs attention — pick one",
+      "difficulty": "stretch",
+      "prompt": "Compare the three ASR formulations (CTC, RNN-T, attention encoder-decoder) on streaming capability, language modeling, and typical use. Which would you choose for a live captioning system and why?",
+      "hint": "CTC: fast, streamable, conditionally independent outputs (weak LM). RNN-T: streamable + internal LM. Attention enc-dec: best accuracy, not naturally streaming (Whisper).",
+      "solution": "- **CTC:** non-autoregressive, **streamable**, fast — but assumes outputs are **conditionally independent** given the audio (each frame's character doesn't depend on previous *characters*), so it has a weak internal language model and benefits from an external LM at decode.\n- **RNN-T (Transducer):** adds a prediction network over previous outputs, giving an **internal language model** *and* **streaming** — the standard for on-device/live ASR (Google, modern phones).\n- **Attention encoder-decoder:** the decoder cross-attends over the whole encoded utterance autoregressively — **highest accuracy** and strong implicit LM, but it wants the **full utterance** (not naturally streaming). Whisper is this type.\n\n**For live captioning → RNN-T.** Captioning needs **low-latency streaming** (emit words as the person speaks) *and* good language modeling for fluent text — RNN-T gives both. Pure CTC streams but produces weaker text without an external LM; attention enc-dec gives great accuracy but needs the whole clip, adding latency unless you bolt on chunking. The choice is driven by the streaming requirement, which is why on-device assistants standardized on RNN-T while batch transcription (podcasts, subtitles) uses Whisper-style attention models."
+    }
+  ]
+}

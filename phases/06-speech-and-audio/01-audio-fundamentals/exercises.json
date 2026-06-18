@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Sample rate and Nyquist",
+      "difficulty": "warmup",
+      "prompt": "Compute how many samples a 10-second mono clip at 16 kHz contains, and state the highest frequency it can represent (Nyquist). Why do ASR models standardize on 16 kHz?",
+      "hint": "samples = seconds × sample_rate; Nyquist = sample_rate / 2.",
+      "solution": "```python\nsr = 16000; secs = 10\nprint(sr*secs)        # 160000 samples\nprint(sr/2)           # 8000 Hz Nyquist\n```\n\nA 10s 16 kHz clip is **160,000 floats**, and by the Nyquist theorem it can represent frequencies up to **8 kHz**. ASR uses 16 kHz because human speech energy lives almost entirely below 8 kHz — capturing it fully — while keeping the sequence short (vs 44.1 kHz music). Feed a model 8 kHz audio when it expects 16 kHz (or vice-versa) and you get a silent failure: it trains/runs but accuracy collapses, because the time axis and frequency content no longer match what it learned."
+    },
+    {
+      "title": "Synthesize and inspect a tone",
+      "difficulty": "core",
+      "prompt": "Generate 1 second of a 440 Hz sine wave at 16 kHz as a NumPy array in [-1,1], and verify its length and peak amplitude. Explain why audio is conventionally float in [-1,1] rather than raw int16.",
+      "hint": "x(t) = sin(2π·f·t); t = arange(sr)/sr. Models and DSP expect normalized floats.",
+      "solution": "```python\nimport numpy as np\nsr=16000; f=440\nt=np.arange(sr)/sr\nx=np.sin(2*np.pi*f*t).astype(np.float32)\nprint(len(x), round(float(np.abs(x).max()),3))   # 16000 1.0\n```\n\nAudio files store **int16** (±32767) for compactness, but models and DSP work in **float32 normalized to [-1,1]** because: (1) it's sample-rate/bit-depth agnostic — the same code handles 16-bit and 24-bit sources; (2) neural nets expect inputs near unit scale (matching weight-init assumptions); and (3) it avoids overflow when you add/mix signals. Libraries like `soundfile` read int16 but hand you float32 in [-1,1] for exactly this reason."
+    },
+    {
+      "title": "Read frequency content with the FFT",
+      "difficulty": "stretch",
+      "prompt": "Take an FFT of a signal that mixes a 440 Hz and an 880 Hz tone, and show the magnitude spectrum peaks at exactly those two frequencies. Explain how a bin index maps to a real frequency.",
+      "hint": "Use np.fft.rfft; bin k corresponds to frequency k·sr/N. Find the peak bins.",
+      "solution": "```python\nimport numpy as np\nsr=16000; t=np.arange(sr)/sr\nx=np.sin(2*np.pi*440*t)+0.5*np.sin(2*np.pi*880*t)\nmag=np.abs(np.fft.rfft(x))\nfreqs=np.fft.rfftfreq(len(x), 1/sr)\npeaks=freqs[np.argsort(mag)[-2:]]\nprint(sorted(peaks))   # [440.0, 880.0]\n```\n\nThe FFT decomposes the time-domain signal into frequency components; bin **k maps to frequency `k·sr/N`** (so resolution is `sr/N` Hz — finer with longer windows). The two tones show up as sharp peaks at 440 and 880 Hz, invisible in the raw waveform. This time→frequency transform is the first rung of the audio ladder: spectrograms (next lesson) are just FFTs computed over short sliding windows, turning a 1-D waveform into the 2-D time-frequency image every speech model actually consumes."
+    }
+  ]
+}

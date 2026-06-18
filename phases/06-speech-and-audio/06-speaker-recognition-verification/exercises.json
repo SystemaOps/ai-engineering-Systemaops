@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Verification vs identification",
+      "difficulty": "warmup",
+      "prompt": "Distinguish speaker verification (1:1), identification (1:N), and open-set recognition. For a voice-login feature ('is this the account owner?'), which is it, and what does the system actually compare?",
+      "hint": "Verification: match claim to one enrolled voiceprint. Identification: find which of N. Open-set: might be nobody enrolled.",
+      "solution": "- **Verification (1:1):** 'is this the person they *claim* to be?' Compare the incoming voice embedding to the *one* enrolled voiceprint for the claimed identity; accept if similarity exceeds a threshold.\n- **Identification (1:N):** 'which of my N enrolled speakers is this?' Compare against all N voiceprints, take the best match.\n- **Open-set:** identification/verification where the speaker **might be nobody enrolled** — the system must be able to reject ('unknown') rather than force a match.\n\n**Voice login → verification (1:1).** The user asserts an account, so you compare their voice embedding against that account's stored voiceprint via cosine similarity and accept/reject against a threshold. It's open-set in spirit (an imposter is 'not the owner'), but mechanically a 1:1 comparison — the embedding-plus-cosine core of all speaker recognition."
+    },
+    {
+      "title": "The EER metric",
+      "difficulty": "core",
+      "prompt": "Define Equal Error Rate (EER) and explain why it's the standard speaker-verification metric. Describe the FAR/FRR tradeoff as the threshold moves, and why a bank might NOT operate at the EER point.",
+      "hint": "EER = the threshold where False Accept Rate = False Reject Rate. Lower threshold → more false accepts; higher → more false rejects.",
+      "solution": "**EER** is the operating point where the **False Accept Rate equals the False Reject Rate** — a single threshold-independent number summarizing the system's discrimination (lower is better). It's standard because it lets you compare systems with one number regardless of where you'll eventually set the threshold.\n\n**The FAR/FRR tradeoff:** verification thresholds a similarity score. **Lower the threshold** → accept more → more **false accepts** (imposters let in), fewer false rejects. **Raise it** → reject more → more **false rejects** (legit users locked out), fewer false accepts. As you sweep the threshold, FAR falls while FRR rises; they cross at the EER.\n\n**Why a bank won't sit at EER:** EER treats the two errors as equally costly, but for a bank a **false accept (imposter gains access) is far worse** than a false reject (annoyed customer retries). So they'd set the threshold *higher* than the EER point — accepting more false rejects to drive false accepts very low — and report **minDCF** (a cost-weighted metric) instead. EER is the benchmark headline; the deployed threshold reflects the real asymmetric cost of the two errors."
+    },
+    {
+      "title": "Why cosine on embeddings, and channel robustness",
+      "difficulty": "stretch",
+      "prompt": "Modern speaker recognition (ECAPA-TDNN, WavLM) maps a clip to a fixed embedding and compares with cosine similarity. Explain why a fixed-length embedding + cosine is the right design, and the channel-shift problem (phone vs laptop mic) plus how training addresses it.",
+      "hint": "Variable-length audio → fixed speaker vector; cosine compares direction (identity), magnitude-invariant. Channel shift moves embeddings; margin losses + augmentation make them robust.",
+      "solution": "**Why embedding + cosine:** speech clips vary in length and content, but speaker *identity* is a fixed property — so the model pools a variable-length utterance into a **single fixed-dimension speaker embedding** (a voiceprint). Comparing two voiceprints with **cosine similarity** measures *direction*, which captures identity while being **invariant to magnitude** (loudness, gain) — two recordings of the same person at different volumes still point the same way. This also makes enrollment trivial: store one vector per user, compare new clips by a dot product.\n\n**Channel shift:** the *recording channel* (phone codec vs laptop mic vs room reverb) systematically shifts embeddings, so the same speaker on two devices can look like two people — a top cause of real-world false rejects, and why older i-vector systems were brittle. \n\n**How training fixes it:** (1) **angular-margin losses** (AAM-softmax, used by ECAPA-TDNN) push embeddings to cluster tightly by speaker and separate sharply between speakers, so within-speaker channel variation is squeezed below between-speaker distance; (2) **data augmentation** — add noise, reverberation, codec/telephony simulation, and varied recording conditions during training — teaches the model to be channel-invariant; (3) self-supervised backbones (WavLM) pretrained on huge diverse audio bring robust features. Together these make the embedding encode *who* is speaking, not *what device* recorded it — the difference between a demo and a deployable verifier."
+    }
+  ]
+}

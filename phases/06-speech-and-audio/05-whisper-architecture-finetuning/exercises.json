@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Whisper's fixed 30-second window",
+      "difficulty": "warmup",
+      "prompt": "Whisper processes audio in fixed 30-second windows. Explain what happens to a 5-second clip and to a 2-minute clip, and the practical implication for transcribing long audio.",
+      "hint": "Short clips are padded to 30s; long audio must be chunked into 30s segments and stitched.",
+      "solution": "Whisper's encoder always consumes a **30-second** log-mel window:\n- A **5-second clip** is **padded** with silence to 30s (slightly wasteful but fine).\n- A **2-minute clip** must be **split into 30s chunks**, transcribed separately, and the texts stitched together.\n\n**Practical implication:** chunking at fixed boundaries can **cut a word or sentence in half**, causing errors or repetition at the seams. Production long-audio transcription uses overlapping chunks + timestamp-aware merging (or VAD-based segmentation at silence boundaries) so splits land between words. The 30s window is also why latency for short utterances is dominated by fixed-size processing, not clip length."
+    },
+    {
+      "title": "Why Whisper is multilingual + multitask",
+      "difficulty": "core",
+      "prompt": "Whisper is one encoder-decoder trained on 680k hours across 99 languages doing transcription, translation, and language ID. Explain how special tokens let one model do multiple tasks, and why weak supervision at scale beat curated datasets.",
+      "hint": "Decoder is prompted with task/language tokens (<|transcribe|>, <|translate|>, <|en|>). 680k weakly-labeled hours > small clean corpora.",
+      "solution": "**One model, many tasks via special tokens:** Whisper's decoder is a conditional language model prompted with **control tokens** — `<|startoftranscript|>`, a language token (`<|en|>`), and a task token (`<|transcribe|>` or `<|translate|>`), plus optional timestamp tokens. The same weights transcribe Japanese, translate French→English, or identify the language depending on which tokens prefix the decode. Multitask behavior is *prompted*, not separate models — the same trick LLMs use.\n\n**Why weak supervision at scale won:** prior ASR relied on small, carefully-curated transcribed corpora (hundreds of hours). Whisper trained on **680k hours of weakly-labeled, noisy web audio-text** across 99 languages. The scale and diversity made it robust to accents, noise, domains, and languages in a way clean-but-small datasets never achieved — it generalizes zero-shot to conditions it was never explicitly trained for. It's the speech version of the scaling lesson: massive, messy, diverse data beats small, clean data for robustness."
+    },
+    {
+      "title": "When and how to fine-tune Whisper",
+      "difficulty": "stretch",
+      "prompt": "Whisper is robust but domain shift (jargon, accents, proper nouns) still breaks it. Explain when to fine-tune vs use it as-is, what data you need, and the failure modes (silence hallucination, repetition) to watch for after fine-tuning.",
+      "hint": "Fine-tune for narrow domains/accents with labeled in-domain audio; small LR, freeze encoder optionally. Watch hallucinated text on silence and repetition loops.",
+      "solution": "**Use as-is** for general transcription — it's a strong commodity baseline. **Fine-tune** when you have a **narrow domain Whisper mishandles**: medical/legal jargon, a specific accent, domain proper nouns, or a low-resource language/dialect — and you have **labeled in-domain audio-transcript pairs** (even a few dozen hours helps). Recipe: small learning rate, often freeze the encoder and adapt the decoder (or LoRA), and validate on held-out in-domain clips.\n\n**Failure modes to watch after fine-tuning:**\n- **Silence hallucination:** Whisper tends to *invent* text during long silences or non-speech (a known quirk — it generates plausible transcript from nothing). Fine-tuning on clean speech can worsen this; mitigate with VAD to skip non-speech and with no-speech-probability thresholds.\n- **Repetition loops:** the decoder gets stuck repeating a phrase, especially on out-of-distribution or degraded audio. Mitigate with repetition penalties, suppression of repeated n-grams, and `condition_on_previous_text=False` for robustness.\n- **Overfitting / catastrophic forgetting:** too-aggressive fine-tuning narrows the model to your domain and degrades general/multilingual ability — use small LR, early stopping, and keep some general data in the mix.\n\nThe meta-point: Whisper is robust but not a black box; fine-tune only with real in-domain labeled data, and evaluate specifically for hallucination and repetition, which standard WER on clean test sets can hide."
+    }
+  ]
+}

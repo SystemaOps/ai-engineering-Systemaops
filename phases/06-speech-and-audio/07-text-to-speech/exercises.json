@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "The three-stage TTS pipeline",
+      "difficulty": "warmup",
+      "prompt": "Name the three stages of a classic TTS pipeline (text→tokens, tokens→mel, mel→waveform) and what each produces. Which stage is the vocoder, and why was it historically the quality bottleneck?",
+      "hint": "Frontend (normalize+phonemize) → acoustic model (mel spectrogram) → vocoder (waveform). Vocoder turns mel back into audible samples.",
+      "solution": "1. **Text frontend:** normalize text (dates/numbers/abbreviations), convert to phonemes or subword tokens, predict prosody. Output: a token/phoneme sequence.\n2. **Acoustic model** (e.g. Tacotron, FastSpeech): tokens → **mel spectrogram**. Output: the time-frequency representation of the intended speech.\n3. **Vocoder** (e.g. HiFi-GAN, WaveNet): **mel → waveform** (actual audio samples).\n\nThe **vocoder is stage 3**, and it was historically the **quality bottleneck** because reconstructing natural-sounding waveform samples from a mel spectrogram is hard — early vocoders (Griffin-Lim) produced robotic, buzzy audio, and high-quality neural vocoders (WaveNet) were extremely slow (autoregressive, sample-by-sample). The leap to fast, high-fidelity GAN vocoders (HiFi-GAN) is what made real-time natural TTS possible. Modern systems (F5, VITS) increasingly merge or end-to-end these stages."
+    },
+    {
+      "title": "Autoregressive vs non-autoregressive TTS",
+      "difficulty": "core",
+      "prompt": "Contrast autoregressive TTS (Tacotron 2) with non-autoregressive (FastSpeech) on speed, stability, and the failure modes each has. Why does the live-voice-assistant latency budget (<300ms on CPU) push toward one of them?",
+      "hint": "AR generates mel frame-by-frame (slow, can loop/skip/attention-fail); NAR predicts all frames in parallel with a duration model (fast, stable).",
+      "solution": "- **Autoregressive (Tacotron 2):** generates the mel spectrogram **frame-by-frame**, each conditioned on the last, using attention to align text→audio. Natural prosody, but **slow** (sequential) and prone to **attention failures**: word skipping, repetition/looping, or babbling on hard inputs — a single bad attention step derails the rest.\n- **Non-autoregressive (FastSpeech):** a **duration predictor** decides how many mel frames each token gets, then **all frames are generated in parallel**. Much **faster** and far more **stable** (no autoregressive loop to derail, no skips/repeats), at some cost to prosodic naturalness (mitigated by pitch/energy predictors in FastSpeech 2).\n\n**The <300ms-on-CPU budget favors non-autoregressive.** A live assistant can't afford sequential frame-by-frame generation or the risk of a looping/babbling failure mid-response. NAR's parallel generation hits the latency target and its stability means it won't randomly skip a word in production. This is why lightweight real-time TTS (Kokoro) leans non-autoregressive; AR/diffusion models are used where latency is relaxed and top naturalness matters."
+    },
+    {
+      "title": "Evaluating TTS quality",
+      "difficulty": "stretch",
+      "prompt": "Explain why TTS is hard to evaluate automatically, the role of MOS (Mean Opinion Score), and two automatic proxies used in 2026 (e.g. an ASR round-trip for intelligibility, speaker-similarity for cloning). What does each catch that the other misses?",
+      "hint": "Naturalness is subjective → MOS via human raters. Automatic: WER of an ASR transcribing the TTS output (intelligibility); speaker-embedding cosine (similarity to target voice).",
+      "solution": "**Why it's hard:** TTS quality is fundamentally about **perceived naturalness and intelligibility**, which are subjective — there's no single 'correct' waveform to diff against (many natural renderings exist). So the gold standard is **MOS**: human raters score samples 1–5 on naturalness, averaged. MOS is reliable but **slow, expensive, and not reproducible** at iteration speed.\n\n**Two automatic proxies (2026):**\n1. **ASR round-trip (intelligibility):** run a strong ASR (Whisper) on the synthesized speech and compute **WER against the input text**. Catches *intelligibility* failures — mispronunciations, dropped/garbled words, wrong numbers — that make speech hard to understand. Misses *naturalness* (a robotic but clear voice scores great WER).\n2. **Speaker-similarity (for cloning):** cosine similarity between a **speaker embedding** of the output and the target reference voice. Catches whether a cloned voice actually *sounds like the target*. Misses intelligibility and prosody (it only measures timbre/identity match).\n\nThey're **complementary**: ASR-WER measures 'can you understand it?', speaker-similarity measures 'is it the right voice?', and neither captures 'does it sound natural/expressive?' — which still needs MOS (or learned MOS predictors like UTMOS as a cheap stand-in). Production TTS eval uses all three: automatic proxies for fast iteration, periodic human MOS for ground truth."
+    }
+  ]
+}
