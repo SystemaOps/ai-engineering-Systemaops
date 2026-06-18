@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Label the three NLI relations",
+      "difficulty": "warmup",
+      "prompt": "For premise 'A man is playing a guitar on stage', label each hypothesis as entailment, contradiction, or neutral: (a) 'A person is performing music', (b) 'The man is asleep at home', (c) 'The man is playing an expensive guitar'.",
+      "hint": "Entailment = must be true given premise; contradiction = must be false; neutral = could be either.",
+      "solution": "- **(a) 'A person is performing music' → entailment.** A man playing guitar on stage *must* mean a person is performing music — it follows necessarily.\n- **(b) 'The man is asleep at home' → contradiction.** Can't be playing guitar on stage *and* asleep at home — the premise makes this false.\n- **(c) 'The man is playing an expensive guitar' → neutral.** The premise neither confirms nor denies the guitar's price — it *could* be true but isn't established.\n\nNLI asks: given premise `t`, is hypothesis `h` necessarily true (entailment), necessarily false (contradiction), or undetermined (neutral)? The neutral case is the subtle one — 'plausible but unsupported' is exactly what separates grounded answers from hallucinations downstream."
+    },
+    {
+      "title": "NLI as a hallucination detector",
+      "difficulty": "core",
+      "prompt": "Show how to reframe 'is this summary sentence faithful to the source?' as an NLI problem, and what each NLI label means for faithfulness. Why is this better than n-gram overlap?",
+      "hint": "Premise = source text; hypothesis = generated sentence. Entailment = faithful; contradiction/neutral = unsupported (potential hallucination).",
+      "solution": "Reframe faithfulness checking as NLI with **premise = the source document (or retrieved context)** and **hypothesis = each generated sentence**:\n- **Entailment** → the claim is *supported* by the source → faithful. ✓\n- **Contradiction** → the claim conflicts with the source → hallucination/error. ✗\n- **Neutral** → the source neither supports nor refutes it → *unsupported* → also a hallucination risk (the model asserted something not in the source). ✗\n\n```python\n# for each generated sentence:\n#   label = nli(premise=source, hypothesis=sentence)\n#   flag if label != 'entailment'\n```\n\n**Why better than n-gram overlap (ROUGE/BLEU):** overlap metrics reward *using the same words*, not *being supported by meaning*. A summary can copy phrases yet state something false (high overlap, unfaithful), or paraphrase faithfully with different words (low overlap, faithful). NLI judges **semantic entailment** — does the claim actually follow from the source — which is exactly the faithfulness question. This is the engine behind production groundedness checks for summarization, RAG answers, and the CMER-style hallucination metrics from earlier lessons."
+    },
+    {
+      "title": "Zero-shot classification via NLI",
+      "difficulty": "stretch",
+      "prompt": "Explain how a pretrained NLI model performs zero-shot text classification with no task training, using a candidate-label-as-hypothesis trick. What are its limits versus a fine-tuned classifier?",
+      "hint": "Premise = the text; hypothesis = 'This text is about {label}'. The entailment probability per label gives a score; argmax = predicted class.",
+      "solution": "**The trick:** turn each candidate class into a hypothesis and let the NLI model score entailment.\n```python\ntext = 'The new GPU doubled our training throughput.'\nlabels = ['technology', 'sports', 'cooking']\n# for each label, run NLI:\n#   premise = text\n#   hypothesis = f'This text is about {label}.'\n#   score = P(entailment)\n# predict argmax over labels\n```\nThe class whose hypothesis is most *entailed* by the text wins ('technology' here). No labeled training data and no task-specific head needed — the model reuses its general entailment ability, so you can classify into *arbitrary* label sets chosen at runtime (open vocabulary).\n\n**Limits vs a fine-tuned classifier:**\n- **Accuracy:** a classifier fine-tuned on in-domain labeled data almost always beats zero-shot NLI on that specific task.\n- **Label phrasing sensitivity:** results depend on the hypothesis template and label wording ('about {label}' vs '{label}-related') — brittle, like prompt engineering.\n- **Cost:** it runs the NLI model **once per candidate label**, so many labels = many forward passes (slow for large label sets).\n- **Calibration:** entailment scores aren't true class probabilities.\n\nSo zero-shot NLI is the right tool when you have **no labels, changing label sets, or a quick baseline**; switch to a fine-tuned classifier when you have data and need top accuracy/throughput on a fixed taxonomy. This is why NLI is 'boring on the surface, load-bearing in production' — it powers faithfulness checks *and* label-free classification."
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Linking vs recognition",
+      "difficulty": "warmup",
+      "prompt": "Distinguish named-entity recognition from entity linking using 'Jordan beat the press.' What does NER produce, what does linking add, and why is a knowledge base required?",
+      "hint": "NER: span + type (Jordan = PERSON). Linking: map the mention to a unique KB id (Michael Jordan the athlete vs Michael I. Jordan the professor).",
+      "solution": "- **NER** outputs the **span and type**: 'Jordan' → PERSON. It says *there's a person here*, nothing about *which* one.\n- **Entity linking** maps that mention to a **unique entity id in a knowledge base** — e.g. Wikidata Q41421 (Michael Jordan, basketball) vs Q3308285 (Michael I. Jordan, ML professor) vs Q810 (Jordan, the country, if it were tagged GPE).\n\n**Why a KB is required:** disambiguation only makes sense against a *catalog of candidate entities* — you need the set of things 'Jordan' could refer to, plus descriptions/aliases/popularity to choose among them. The KB (Wikidata, a product catalog, an internal entity registry) supplies the candidates and the metadata used to score them. Without it you can detect and type entities but never resolve them to canonical, deduplicated identities — which is what downstream knowledge graphs, search, and analytics actually need."
+    },
+    {
+      "title": "Candidate generation + ranking",
+      "difficulty": "core",
+      "prompt": "Describe the two-stage entity-linking pipeline (candidate generation then disambiguation ranking) and the signals used to rank. Why split it into two stages instead of scoring the whole KB?",
+      "hint": "Stage 1: alias/lexical lookup → small candidate set. Stage 2: rank by context similarity + prior popularity + coherence with other linked entities.",
+      "solution": "**Two stages:**\n1. **Candidate generation:** for a mention, fetch a small set of plausible KB entities via **alias/lexical lookup** (an alias table mapping surface forms → entity ids: 'Jordan', 'Michael Jordan', 'MJ' → candidate set). Fast, high-recall, narrows millions of KB entries to ~tens.\n2. **Disambiguation ranking:** score each candidate using:\n   - **Local context similarity** — does the sentence ('beat the press', 'NBA') match the candidate's description/embedding?\n   - **Prior popularity** — Michael Jordan the athlete is far more common than obscure namesakes (a strong base rate).\n   - **Global coherence** — do other entities linked in the same document fit this candidate? (If 'Bulls' and 'Chicago' are nearby, the athlete coheres.)\n\n**Why two stages:** scoring the *entire* KB (millions of entities) against every mention with an expensive context model is computationally impossible at query time — the same recall-then-precision pattern as IR (bi-encoder retrieve → cross-encoder rerank). Cheap lexical candidate generation gives high recall over a tiny set; the expensive contextual ranker then runs only on those candidates. Split = scalable."
+    },
+    {
+      "title": "Coherence and the NIL problem",
+      "difficulty": "stretch",
+      "prompt": "Explain collective (document-level) disambiguation and why it beats linking each mention independently, plus the NIL problem (mention not in the KB). How should a production linker handle NIL?",
+      "hint": "Entities in a document are mutually consistent; jointly linking uses that. NIL = emerging/unknown entity with no KB id — must be detected, not force-linked.",
+      "solution": "**Collective disambiguation:** link all mentions in a document **jointly** so the choices are mutually coherent, rather than greedily per-mention. Example: 'Jordan', 'Pippen', and 'the Bulls' in one article should resolve to a *consistent world* — once 'Pippen' and 'Bulls' point to basketball, 'Jordan' = Michael Jordan the athlete becomes near-certain. Independent linking would miss this cross-mention signal and might pick a popular-but-wrong candidate for an ambiguous mention. Coherence turns the document's other entities into disambiguation evidence.\n\n**The NIL problem:** many real mentions have **no entity in the KB** — a startup founded last week, a private-company employee, an emerging product. A linker that *always* picks the best KB candidate will **force-link** these to a wrong existing entity (a silent, dangerous error: facts get attributed to the wrong real person/company).\n\n**Production handling:** the linker must **predict NIL** (a 'none of the candidates' option) when the best candidate's confidence/context-match is below threshold, rather than forcing a link. NIL mentions are then either (a) clustered across documents (same unknown entity mentioned repeatedly → a candidate new KB entry) and surfaced for KB expansion, or (b) flagged for human review in high-stakes pipelines. The principle mirrors constrained-decoding's lesson: allow the system to say 'unknown' instead of fabricating an answer — abstention is a feature, not a failure."
+    }
+  ]
+}

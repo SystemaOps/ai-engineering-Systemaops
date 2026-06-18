@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Tokenize with edge cases",
+      "difficulty": "warmup",
+      "prompt": "Write a simple word tokenizer and test it on \"Don't run — the cats' toys cost $3.50!\". List which cases (contractions, possessives, currency, punctuation) a naive split() gets wrong.",
+      "hint": "A bare str.split() splits on whitespace only, so punctuation sticks to words. Use a regex to separate words, contractions, and numbers.",
+      "solution": "```python\nimport re\ndef tokenize(text):\n    return re.findall(r\"\\d+\\.\\d+|\\w+'\\w+|\\w+|[^\\w\\s]\", text.lower())\nprint(tokenize(\"Don't run — the cats' toys cost $3.50!\"))\n# [\"don't\", 'run', '—', 'the', 'cats', \"'\", 'toys', 'cost', '$', '3.50', '!']\n```\n\nNaive `split()` produces `[\"don't\", 'run', '—', 'the', \"cats'\", 'toys', 'cost', '$3.50!']` — punctuation glued to words, so `$3.50!` and `cats'` become unique tokens that fragment the vocabulary. Consistent tokenization matters because the model learns per-token statistics; if `don't` and `do n't` both appear, the training signal splits between them."
+    },
+    {
+      "title": "Stemming vs lemmatization",
+      "difficulty": "core",
+      "prompt": "Demonstrate the difference between stemming and lemmatization on the words ['running','ran','better','organization']. Explain when each is the right choice and the failure each can cause.",
+      "hint": "Stemming chops suffixes by rules (fast, crude). Lemmatization maps to dictionary root using POS (accurate, slower). 'better'→'good' needs a lemmatizer + adjective POS.",
+      "solution": "```python\nfrom nltk.stem import PorterStemmer, WordNetLemmatizer\nps=PorterStemmer(); wl=WordNetLemmatizer()\nfor w in ['running','ran','better','organization']:\n    print(w, '| stem:', ps.stem(w), '| lemma:', wl.lemmatize(w, 'v' if w in ('running','ran') else 'a' if w=='better' else 'n'))\n# running | stem: run    | lemma: run\n# ran     | stem: ran    | lemma: run      (stemmer can't, lemma can)\n# better  | stem: better | lemma: good     (needs adjective POS)\n# organization | stem: organ | lemma: organization\n```\n\n**Stemming** is fast rule-based suffix chopping — good enough for search/IR where recall matters and exactness doesn't, but it over-collapses (`organization`→`organ`) and can't handle irregulars (`ran`↛`run`). **Lemmatization** returns real dictionary roots using POS context — needed when meaning matters (topic modeling, where `organ`≠`organization` is critical). The classic bug: lemmatizing without passing POS, so verbs default to nouns and `running` stays `running`."
+    },
+    {
+      "title": "Why POS context matters for lemmas",
+      "difficulty": "stretch",
+      "prompt": "Show that the same surface word lemmatizes differently depending on its part of speech, using a word like 'saw' (verb 'see' vs noun 'saw'). Explain why this couples preprocessing to POS tagging and what breaks if you skip it.",
+      "hint": "'saw' as a verb → 'see'; as a noun → 'saw'. The lemmatizer needs the POS tag, which means you must POS-tag before lemmatizing.",
+      "solution": "```python\nfrom nltk.stem import WordNetLemmatizer\nwl=WordNetLemmatizer()\nprint(wl.lemmatize('saw', 'v'))   # 'see'  (verb)\nprint(wl.lemmatize('saw', 'n'))   # 'saw'  (noun)\nprint(wl.lemmatize('saw'))        # 'saw'  (defaults to noun -> wrong for the verb)\n```\n\nThe word `saw` is genuinely ambiguous: 'I saw a film' (verb→see) vs 'a power saw' (noun→saw). The lemmatizer **cannot resolve this without the POS tag**, so a correct pipeline must **POS-tag first, then lemmatize** with that tag. Skip it and `WordNetLemmatizer` defaults every word to noun — so all your verbs stay in surface form, `running` never becomes `run`, and downstream features (counts, topic clusters) silently fragment. This is why lesson 07 (POS tagging) is a prerequisite for clean preprocessing, not an afterthought."
+    }
+  ]
+}

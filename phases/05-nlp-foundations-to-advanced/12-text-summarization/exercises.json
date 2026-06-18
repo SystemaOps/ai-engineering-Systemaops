@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Extractive vs abstractive",
+      "difficulty": "warmup",
+      "prompt": "Distinguish extractive and abstractive summarization by their output and the failure each owns. For a legal contract summary where every word must be faithful, which would you pick and why?",
+      "hint": "Extractive lifts sentences verbatim (always grammatical, may miss distributed info); abstractive generates new text (fluent, may hallucinate).",
+      "solution": "- **Extractive:** *select* the top-k most important sentences from the source, returned **verbatim**. Always grammatical and factually faithful (it's the original text), but can **miss content distributed across many sentences** and reads choppy.\n- **Abstractive:** *generate* new text conditioned on the source. Fluent and genuinely compressive, but can **hallucinate** facts not in the source — confident fabrication.\n\n**For a legal contract → extractive.** Faithfulness is non-negotiable: a hallucinated clause or a paraphrase that subtly changes a term is a legal liability. Extractive guarantees every word came from the source, so it can't invent obligations. You trade some fluency/compression for the certainty that the summary says exactly what the document says — the right trade when fabrication is unacceptable."
+    },
+    {
+      "title": "Extractive scoring",
+      "difficulty": "core",
+      "prompt": "Implement a simple extractive summarizer: score each sentence by the sum of TF-IDF weights of its words (a cheap importance proxy) and return the top sentences. Explain a better graph-based alternative and what it captures.",
+      "hint": "Score(sentence) = sum of word TF-IDF. TextRank scores sentences by centrality in a similarity graph (PageRank over sentences).",
+      "solution": "```python\ndef extractive(sentences, tfidf_weight, k=2):\n    scored=[(sum(tfidf_weight.get(w,0) for w in s.split()), s) for s in sentences]\n    return [s for _, s in sorted(scored, reverse=True)[:k]]\n```\n\nSumming TF-IDF weights ranks sentences by how many rare, informative words they contain — a fast importance proxy, but it over-rewards long sentences and ignores redundancy (it may pick two sentences that say the same thing).\n\n**TextRank** is the better classic approach: build a graph where nodes are sentences and edges are pairwise similarity, then run **PageRank** to find the most *central* sentences — the ones most representative of the whole document. This captures **centrality/consensus** (a sentence many others are similar to is likely the main point) rather than just rare-word density, and naturally surfaces the document's core. Add a redundancy penalty (e.g. MMR) so the selected set is diverse, not repetitive."
+    },
+    {
+      "title": "Measuring abstractive faithfulness",
+      "difficulty": "stretch",
+      "prompt": "Explain why ROUGE is insufficient to catch hallucination in abstractive summaries, and describe how you'd actually measure faithfulness in production. What's the core asymmetry between fluency and faithfulness?",
+      "hint": "ROUGE measures n-gram overlap with a reference, not whether claims are supported by the source. Faithfulness needs entailment/NLI checking against the source.",
+      "solution": "**Why ROUGE is insufficient:** ROUGE measures **n-gram overlap between the summary and a reference summary** — it rewards using the same words, not whether the summary's claims are *true given the source*. A hallucinated summary can share plenty of n-grams with the reference and score well; a faithful paraphrase using different words can score poorly. ROUGE has no notion of factual support.\n\n**Measuring faithfulness in production:** check each summary claim for **entailment against the source document** — run an NLI/entailment model (or an LLM judge) asking 'does the source support this statement?' for each generated sentence; the fraction unsupported is your hallucination rate (akin to the CMER idea for VLMs). Complementary checks: verify all **numbers and named entities** in the summary appear in the source (cheap, catches the highest-stakes errors), and use QA-based metrics (questions answerable from the summary should have the same answers from the source).\n\n**The core asymmetry:** **fluency is easy to measure and easy to achieve; faithfulness is what actually matters and is hard to measure.** A model optimized for fluent, overlap-y output (which ROUGE rewards) can be confidently wrong. Production summarization must gate on faithfulness, not fluency — fluent fabrication is the failure abstractive summarization owns."
+    }
+  ]
+}

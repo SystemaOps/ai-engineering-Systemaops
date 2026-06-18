@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "LDA's generative story",
+      "difficulty": "warmup",
+      "prompt": "State LDA's two core assumptions (documents as mixtures of topics, topics as distributions over words) and what LDA outputs per document and per topic. Why is 'mixed membership' useful?",
+      "hint": "Each doc = distribution over topics; each topic = distribution over words. A doc can be 60% sports, 40% business.",
+      "solution": "LDA assumes: (1) each **document is a mixture of topics** (a probability distribution over K latent topics), and (2) each **topic is a distribution over words**. Inference (Bayesian) recovers both from the corpus.\n\n**Outputs:** per document → a topic distribution (e.g. doc = 0.6 'sports', 0.3 'business', 0.1 'politics'); per topic → its top words (topic 'sports' = {game, team, score, player, …}).\n\n**Why mixed membership is useful:** real documents genuinely span multiple themes — a news article about an athlete's contract is part sports, part business. LDA captures that a single document **belongs to several topics in proportion**, rather than forcing one label. That's valuable for long-form content, recommendation, and any analysis where you need *how much* of each theme a document contains, with explainable per-word probabilities."
+    },
+    {
+      "title": "LDA vs BERTopic",
+      "difficulty": "core",
+      "prompt": "Compare LDA and BERTopic by their pipeline and on which data each wins. Why does BERTopic handle short social-media text better, and what's its key limitation versus LDA?",
+      "hint": "BERTopic = embed (BERT) → reduce (UMAP) → cluster (HDBSCAN) → c-TF-IDF topic words. Semantic, but one topic per doc.",
+      "solution": "- **LDA:** works on **bag-of-words counts** with a Bayesian generative model. Wins on **long documents** where word co-occurrence statistics are rich, and where you need **mixed-membership** assignments and explainable per-word topic probabilities.\n- **BERTopic:** a pipeline — **embed** documents with BERT (semantic vectors) → **reduce** dimensionality with UMAP → **cluster** with HDBSCAN → extract topic words via **class-based TF-IDF**. Wins on **short text** (tweets, support tickets, reviews) and anything where **semantic similarity** matters more than literal word overlap.\n\n**Why BERTopic handles short text better:** LDA relies on enough word co-occurrences within a document to infer topic mixtures — a 10-word tweet has too few words, so its statistics are noisy and LDA struggles. BERTopic embeds the *meaning* of the whole short text (synonyms and paraphrase land together), so it clusters reliably even when documents share no words.\n\n**Key limitation:** BERTopic assigns **one topic per document** (hard clustering) — it can't represent a document that's a *mix* of topics, which LDA does naturally. So for long, multi-theme documents LDA's mixed membership is more faithful; for short, semantically-driven text BERTopic's clustering wins."
+    },
+    {
+      "title": "Choosing and evaluating the number of topics",
+      "difficulty": "stretch",
+      "prompt": "Topic models need a topic count (or produce one). Explain how you'd choose/validate K for LDA and how BERTopic differs, and why topic coherence beats perplexity as an evaluation metric. Note the human-in-the-loop reality.",
+      "hint": "LDA: try several K, evaluate coherence (and perplexity). BERTopic auto-discovers cluster count via HDBSCAN. Coherence ~ do top words co-occur and make sense to humans.",
+      "solution": "- **LDA:** K is a **hyperparameter** you must set. Standard practice: fit models across a range of K and pick the one maximizing **topic coherence** (and sanity-check perplexity), then inspect topics. Too few K → topics blur together; too many → topics fragment and repeat.\n- **BERTopic:** **auto-discovers** the number of topics because HDBSCAN finds clusters of varying density without a preset count (and labels low-density points as outliers) — though you can merge/reduce topics afterward.\n\n**Why coherence beats perplexity:** **perplexity** measures how well the model predicts held-out words — but lower perplexity often correlates with topics humans find *less* interpretable (a known, counterintuitive result). **Topic coherence** instead measures whether a topic's top words actually **co-occur and form a semantically sensible group** (e.g. via normalized PMI), which tracks human judgment of 'is this a real topic?' far better. Since topic modeling is unsupervised and the goal is *human understanding* of a corpus, you optimize for what humans recognize as coherent.\n\n**Human-in-the-loop reality:** there's no ground truth, so final topic quality is judged by a person reading the top words and example documents, naming the topics, and merging/dropping junk ones. Metrics narrow the search; humans make the call."
+    }
+  ]
+}

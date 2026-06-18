@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "The BIO tagging scheme",
+      "difficulty": "warmup",
+      "prompt": "Tag the tokens of 'Tim Cook visited New York' with BIO labels for PERSON and GPE entities. Explain what B-, I-, and O mean and why multi-token entities need this scheme.",
+      "hint": "B- = beginning of entity, I- = inside (continuation), O = outside. 'New York' spans two tokens.",
+      "solution": "```\nTim     -> B-PER\nCook    -> I-PER\nvisited -> O\nNew     -> B-GPE\nYork    -> I-GPE\n```\n\n**BIO** turns entity extraction into per-token classification: **B-**X marks the first token of an entity of type X, **I-**X marks continuation tokens, **O** marks non-entities. The scheme is necessary because entities span multiple tokens — without B vs I you couldn't tell 'New York' (one entity) from two adjacent GPE tokens, or know where one entity ends and the next begins (e.g. 'New York Boston' → B-GPE I-GPE B-GPE). It's the standard target format for every sequence-labeling NER model."
+    },
+    {
+      "title": "Why a CRF on top of token scores",
+      "difficulty": "core",
+      "prompt": "Explain why classifying each token independently produces invalid BIO sequences, and how a CRF layer fixes it by modeling label transitions. Give an example of an illegal transition it prevents.",
+      "hint": "Independent argmax can output I-PER right after O. A CRF scores whole label sequences, learning that some transitions (O→I-PER) are forbidden.",
+      "solution": "Classifying each token independently (softmax + argmax per token) can emit **locally plausible but globally invalid** sequences, because nothing couples adjacent decisions. Classic illegal output:\n```\nO  I-PER  I-PER   <- 'I-PER' with no preceding 'B-PER': impossible\nB-PER  I-GPE      <- entity type switches mid-span: impossible\n```\n\nA **CRF** layer sits on top of the per-token scores and scores the **entire label sequence**, adding a learned **transition matrix** between labels. During training it learns that transitions like `O → I-PER` or `B-PER → I-GPE` should have very low (effectively forbidden) scores, and decoding (Viterbi) finds the highest-scoring *valid* path. So the CRF enforces BIO grammar and lets neighboring labels inform each other — which is why BiLSTM-CRF was the NER workhorse before transformers, and why even transformer NER often keeps a CRF head."
+    },
+    {
+      "title": "The hard cases NER still fights",
+      "difficulty": "stretch",
+      "prompt": "Explain three structural difficulties in NER — ambiguous boundaries, nested entities, and domain/sense ambiguity — with an example each, and how modern transformer NER handles (or still struggles with) them.",
+      "hint": "Boundaries: where does an entity start/end? Nested: 'Bank of America' contains 'America'. Sense: 'Apple' fruit vs company; needs context.",
+      "solution": "- **Ambiguous boundaries:** is 'search deal' an entity? Is 'University of California, Berkeley' one ORG or two? Span limits are genuinely fuzzy. Transformers help via context but annotation guidelines, not the model, ultimately decide — boundary disagreements cap achievable F1.\n- **Nested entities:** 'Bank of America' is an ORG that *contains* the GPE 'America'; 'the University of Tokyo' contains 'Tokyo'. Flat BIO can only assign one label per token, so it **cannot represent nesting** — you need span-based or layered models (e.g. span-enumeration / nested-NER architectures) to extract both.\n- **Domain / sense ambiguity:** 'Apple' (fruit vs company), 'Washington' (person/place/org), 'Amazon' (river/company). Resolving these needs **context**, which is exactly the strength of contextual transformer embeddings — 'Apple sued Google' makes ORG obvious. They still struggle on domain jargon unseen in pretraining (biomedical, legal), where fine-tuning or domain models (BioBERT) are required.\n\nModern transformer NER pushed F1 high on standard benchmarks by using context, but nested entities and domain shift remain open — which is why span-based models and domain-specific pretraining exist."
+    }
+  ]
+}

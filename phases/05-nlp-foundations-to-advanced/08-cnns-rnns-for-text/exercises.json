@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "A conv filter is an n-gram detector",
+      "difficulty": "warmup",
+      "prompt": "Explain why a 1D convolution of width 3 over word embeddings acts as a learnable trigram detector, and why TextCNN stacks multiple filter widths (2,3,4,5). What does max-pooling over time give you?",
+      "hint": "A width-3 filter sees 3 consecutive word vectors and outputs one score; different widths catch different phrase lengths; max-pool picks the strongest activation regardless of position.",
+      "solution": "A width-3 1D conv slides over three consecutive word embeddings at a time and outputs a single score — it has learned to fire on a particular *trigram pattern* (e.g. 'not very good'). Because phrases that carry signal have different lengths, **TextCNN runs several filter widths in parallel** (2/3/4/5-grams) to detect multi-scale patterns. **Max-pooling over time** then takes, per filter, the maximum activation across all positions — yielding a fixed-size vector and an answer to 'did this pattern appear *anywhere* in the text?', which makes the representation length-invariant and position-robust. Flat, fully parallel, fast — ideal on constrained hardware."
+    },
+    {
+      "title": "Why LSTM gates beat a vanilla RNN",
+      "difficulty": "core",
+      "prompt": "Explain the vanishing-gradient problem in vanilla RNNs over long sequences and how the LSTM's gated cell state addresses it. What's the key structural difference?",
+      "hint": "Vanilla RNN multiplies gradients through many steps (decay/explode). LSTM has an additive cell-state path with gates controlling what to keep/forget.",
+      "solution": "A vanilla RNN updates its hidden state by repeated **multiplication** (`h_t = tanh(W·[h_{t-1}, x_t])`), so backprop multiplies many Jacobians through time — gradients shrink toward 0 (vanish) or blow up (explode) over long sequences, and the network can't learn dependencies more than ~10 steps apart.\n\nThe **LSTM** adds a separate **cell state** with an (approximately) **additive** update path and three gates:\n- **forget gate:** how much of the old cell state to keep,\n- **input gate:** how much new information to write,\n- **output gate:** how much of the cell state to expose as the hidden state.\n\nBecause information flows along the cell state through gated *addition* rather than repeated multiplication, gradients can travel many steps without vanishing — the gates learn to preserve relevant signal and drop noise. That's why LSTM/GRU dominated sequence modeling 2014–2017 (until attention removed the sequential dependency entirely)."
+    },
+    {
+      "title": "RNN vs CNN vs attention — pick by constraint",
+      "difficulty": "stretch",
+      "prompt": "Given that attention superseded both, justify when you'd still pick a TextCNN or an LSTM in 2026. Compare them on parallelism, long-range dependencies, and inference cost on constrained hardware.",
+      "hint": "TextCNN: parallel, cheap, local patterns only. LSTM: sequential, streaming/low-memory, decent medium-range. Attention: best quality, O(N²), heavy.",
+      "solution": "- **TextCNN:** fully **parallel** (no time recurrence), tiny and fast, great for short-text classification where **local n-gram patterns** are the signal (spam, intent, sentiment). Weakness: no real long-range modeling. Pick it for high-throughput, low-latency classification on cheap hardware.\n- **LSTM:** **sequential** but **streaming and constant-memory** — it processes tokens one at a time without storing the whole sequence, so it shines for **online/streaming** inference and tight-memory edge devices (keyword spotting, on-device typing). Handles medium-range dependencies; struggles with very long ones.\n- **Attention/transformers:** best quality and true long-range modeling, but **O(N²)** compute/memory and large parameter counts — heavy for edge.\n\n**2026 rule:** default to a transformer for quality; reach for **TextCNN** when you need maximum throughput on a simple classification task, and **LSTM** when you need streaming, low-memory, constant-per-token inference (microcontrollers, real-time). They're not obsolete — they're the right tool when the hardware budget can't afford attention."
+    }
+  ]
+}

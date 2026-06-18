@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Zero-shot cross-lingual transfer",
+      "difficulty": "warmup",
+      "prompt": "Explain how a multilingual model fine-tuned on English sentiment can predict sentiment in Urdu it was never fine-tuned on. What makes the transfer possible?",
+      "hint": "Pretraining on many languages builds a shared representation where equivalent meanings align across languages; the task head learns on top of that shared space.",
+      "solution": "During pretraining on text from 100+ languages (with a shared subword vocabulary), the model learns a **shared multilingual representation** — sentences with the same meaning in different languages map to nearby points in embedding space ('this is great' ≈ 'یہ بہت اچھا ہے'). When you **fine-tune a task head on English sentiment**, the head learns to read *that shared space* ('positive region' → positive), not English specifically. So at inference, an Urdu sentence lands in the same region and the head classifies it correctly — **zero-shot cross-lingual transfer**, no Urdu labels ever seen. The miracle is that the cross-lingual alignment was learned for free from multilingual pretraining; the task supervision in one language transfers to all of them."
+    },
+    {
+      "title": "Pick the source language",
+      "difficulty": "core",
+      "prompt": "A team needs a task in 30 languages but has labeled data in several high-resource ones. Explain the decision of which source language(s) to fine-tune on for best transfer, and why English isn't always the right choice.",
+      "hint": "Transfer is best to languages typologically/script-similar to the source and well-represented in pretraining; multi-source fine-tuning often beats English-only.",
+      "solution": "The instinct is 'fine-tune on English, it has the most data' — but the **best source depends on the target languages**:\n- **Typological / script similarity:** transfer is strongest between related languages. Fine-tuning on Hindi may transfer better to Urdu, Nepali, or Marathi than English does (shared structure, and for Hindi↔Urdu near-identical grammar). For Romance targets, Spanish/French sources help.\n- **Pretraining representation:** the source must be well-represented in the model's pretraining; transferring *from* a poorly-pretrained language is weak even if you have labels.\n- **Multi-source fine-tuning usually wins:** fine-tuning on *several* high-resource languages (not just English) gives a more language-agnostic task head and improves zero-shot transfer to the long tail — at the cost of needing multi-lingual labeled data.\n\n**Why not always English:** English's data abundance is real, but its typological distance from many targets and the model's per-language pretraining quality matter more for *transfer*. The trap teams fall into is defaulting to English-only and getting mediocre results on Indic/African/low-resource targets that a closer source (or multi-source mix) would serve far better. Decide by 'what's closest to and best-pretrained for my actual target languages', not 'what has the most labels.'"
+    },
+    {
+      "title": "The multilingual tradeoffs",
+      "difficulty": "stretch",
+      "prompt": "Explain the 'curse of multilinguality' and the high-resource vs low-resource tension in a single shared model. When would you choose a monolingual model over a multilingual one despite losing transfer?",
+      "hint": "Fixed capacity split across many languages dilutes per-language quality; adding languages eventually hurts high-resource performance. Monolingual wins on a single high-resource language.",
+      "solution": "**The curse of multilinguality:** a model has **fixed capacity**, and cramming more languages into it eventually *reduces* per-language quality. Up to a point, languages help each other (transfer); past it, they **compete for parameters** and the model gets worse at each — especially the high-resource languages, which 'subsidize' the low-resource ones. So there's an inherent tension: a 100-language model serves the long tail but is typically **weaker on English than a same-size English-only model**.\n\n**High- vs low-resource tension:** low-resource languages benefit enormously from sharing (they'd have almost no data alone), while high-resource languages pay a tax. Vocabulary allocation, data sampling (you often up-sample low-resource languages), and capacity all involve trading one group's quality against the other's.\n\n**When to choose monolingual:** if your product serves **one high-resource language** and you don't need cross-lingual transfer, a **monolingual model wins** — all its capacity goes to that language, giving better accuracy, often smaller size, and faster inference than a diluted multilingual model. You'd only accept the multilingual model's per-language hit when you genuinely need broad coverage or zero-shot transfer to languages you can't label. Match the model's language footprint to the product's actual language footprint."
+    }
+  ]
+}

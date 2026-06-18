@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Four chatbot eras",
+      "difficulty": "warmup",
+      "prompt": "Name the four chatbot paradigms in order (rule-based, intent-based, neural generative, LLM-agent) and the worst failure each one was introduced to fix.",
+      "hint": "ELIZA patterns → DialogFlow intents → seq2seq/GPT generation → tool-using verifying agents.",
+      "solution": "1. **Rule-based (ELIZA):** hand-written pattern→response rules. Failure it had: brittle, can't handle anything unanticipated.\n2. **Intent-based (DialogFlow/Rasa):** classify the utterance into a fixed set of intents + slots, then act. Introduced to fix rule brittleness — generalizes within known intents — but **fails on out-of-scope/novel requests** and needs labeled intents.\n3. **Neural generative (seq2seq, GPT):** generate free-form replies from learned weights. Introduced to fix the closed intent set (open-ended conversation) — but **hallucinates, can't act on the world, and drifts off-task**.\n4. **LLM agents (Claude-style):** an LLM that **calls tools and verifies** results. Introduced to fix generative models' inability to act and their unreliability — grounding answers in tool calls and checks.\n\nEach era was introduced because the previous one **failed too visibly**; 2026 production is a hybrid of the last two (LLM generation + intents/tools + verification)."
+    },
+    {
+      "title": "Why intent classification hits a wall",
+      "difficulty": "core",
+      "prompt": "Explain the structural limitation of intent-based chatbots that LLMs removed, using a multi-turn flight-change example with a mid-conversation topic switch. What did the intent paradigm require that doesn't scale?",
+      "hint": "Intent systems need an enumerated intent+slot schema and explicit dialogue-flow handling; novel phrasings and context switches break the finite state machine.",
+      "solution": "An intent-based bot models conversation as a **finite set of intents + slots driving a dialogue flow** (essentially a state machine). For 'I want to change my flight' it matches the `change_flight` intent, collects slots (flight, new date). But when the user pivots — 'wait, what if I cancel instead?' — the system must have a `cancel_flight` intent, a transition wired between the two flows, and logic to preserve the already-collected context. Every new request type, every phrasing, and every cross-task transition must be **anticipated and authored in advance**.\n\n**What doesn't scale:** real conversation is open-ended and combinatorial — you can't enumerate every intent, every slot, and every transition between them; novel phrasings fall outside the schema and break. LLMs removed this because a single model **understands open-ended input and tracks multi-turn context implicitly** — no hand-built intent list or flow graph. The topic switch 'just works' because the model reads the whole conversation. (The catch traded in: you lose the explicit, auditable control the state machine gave you — which is why production hybrids re-add structure via tools, guardrails, and constrained outputs.)"
+    },
+    {
+      "title": "The 2026 hybrid agent",
+      "difficulty": "stretch",
+      "prompt": "Describe how a production LLM chatbot in 2026 combines generation with retrieval, tools, and verification to fix the pure-generative model's failures (hallucination, can't act, no grounding). Why is verification a separate step?",
+      "hint": "LLM plans + generates; retrieval grounds facts; tools take real actions; a verification step checks outputs before they reach the user/world.",
+      "solution": "A 2026 production chatbot is a **hybrid loop**, not a single model:\n- **Generation (LLM):** understands the open-ended request and plans a response — fixes the closed intent-set problem.\n- **Retrieval (RAG):** for factual questions, pull authoritative passages and answer *from them* with citations — fixes hallucination by grounding claims in sources.\n- **Tools / function calling:** to *act on the world* (change a flight, charge a card), the LLM emits a structured tool call that real code executes — fixes the pure-generative model's inability to do anything beyond talk.\n- **Verification:** before an answer or action reaches the user/world, a separate step checks it — validate the tool-call arguments and schema, confirm the answer is supported by retrieved context (NLI/groundedness), require confirmation for irreversible actions.\n\n**Why verification is separate:** the model that generated the output is the same one that might be confidently wrong — you can't trust it to grade itself in-line. A **distinct check** (a validator, a second model, a rule, or a human confirmation for high-stakes actions) provides an independent gate, so a hallucinated fact or a malformed/irreversible tool call is caught *before* it charges a card or misinforms a user. It's the chatbot version of 'never let the generator be its own safety net' — the principle that turns a fluent demo into a shippable product."
+    }
+  ]
+}

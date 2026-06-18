@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "FastText handles OOV words",
+      "difficulty": "warmup",
+      "prompt": "Explain how FastText can produce an embedding for a word it never saw in training (e.g. 'dogecoin'), where Word2Vec cannot. Show the character n-gram decomposition.",
+      "hint": "FastText embeds character n-grams; a word's vector = sum of its n-gram vectors, so unseen words still have known sub-pieces.",
+      "solution": "```python\ndef char_ngrams(word, n=3):\n    w='<'+word+'>'          # boundary markers\n    return [w[i:i+n] for i in range(len(w)-n+1)]\nprint(char_ngrams('dogecoin'))\n# ['<do','dog','oge','gec','eco','coi','oin','in>']\n```\n\nWord2Vec has **one vector per whole word** in a fixed vocabulary, so an unseen word like `dogecoin` has *no* vector — it's out-of-vocabulary, period. FastText instead represents a word as the **sum of its character n-gram embeddings**. Even for a brand-new word, the n-grams (`dog`, `coin`, …) were seen in other words, so it composes a sensible vector. This makes FastText robust to rare terms, typos, morphologically rich languages, and freshly coined words — the OOV gap Word2Vec couldn't close."
+    },
+    {
+      "title": "GloVe vs Word2Vec",
+      "difficulty": "core",
+      "prompt": "Contrast how GloVe and Word2Vec learn embeddings (matrix factorization of global co-occurrence vs online local-context prediction). What did GloVe settle about which approach is fundamentally better?",
+      "hint": "Word2Vec: iterative skip-gram on local windows. GloVe: weighted least-squares on the global word-word co-occurrence counts. They end up comparable.",
+      "solution": "- **Word2Vec** makes **online, local** updates: slide a window over text and nudge embeddings to predict each context pair (skip-gram). It never builds a global count table.\n- **GloVe** first builds the **global co-occurrence matrix** X (how often word i appears near word j across the whole corpus), then fits embeddings by **weighted least squares** so that `wᵢ·wⱼ ≈ log X_ij`. It's matrix factorization with a loss that down-weights very frequent pairs.\n\n**What GloVe settled:** the long debate was whether Word2Vec's iterative prediction was *fundamentally* superior to the older count/factorization methods (LSA, HAL) or just better at handling counts. GloVe showed that **count-based factorization with a thoughtful loss matches or beats Word2Vec** — and trains cheaper (factor a fixed matrix once vs streaming billions of pairs). So the two paradigms are essentially equivalent in quality; the earlier gap was an artifact of how counts were weighted, not a deep advantage of prediction over counting."
+    },
+    {
+      "title": "BPE: the bridge to transformers",
+      "difficulty": "stretch",
+      "prompt": "Explain why word-level vocabularies don't scale to real language and how byte-pair encoding (BPE) solves it. Walk through one merge step of the BPE training algorithm on a tiny corpus.",
+      "hint": "Word vocabs cap ~1M and still miss words; BPE learns frequent subword merges so a finite vocab covers everything (down to bytes). Merge = most frequent adjacent pair.",
+      "solution": "Word-level vocabularies are capped (a million entries) yet language is open — new words, inflections, names, code, and every other language overflow it, and the leftovers become a single useless `<UNK>` token. **BPE** learns a finite vocabulary of frequent **subword units** that can compose *any* string (falling back to bytes), so there's no true OOV.\n\n**One BPE merge step** (start from characters, repeatedly merge the most frequent adjacent pair):\n```\ncorpus counts: 'low'×5, 'lower'×2, 'newest'×6, 'widest'×3\nas symbols:    l o w / l o w e r / n e w e s t / w i d e s t\nmost frequent adjacent pair: 'e','s' -> appears in newest+widest = 9 times\nmerge -> new symbol 'es'; vocab gains 'es'\nnext pass might merge 'es','t' -> 'est', etc.\n```\nAfter K merges you have a vocab of frequent pieces (`est`, `low`, `er`…). Common words become single tokens; rare/unseen words split into known subwords. **Every modern LLM tokenizer is a subword tokenizer** (BPE or relatives like WordPiece/Unigram) — this is the representation bridge from classical embeddings to transformers."
+    }
+  ]
+}

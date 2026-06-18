@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Skip-gram context pairs",
+      "difficulty": "warmup",
+      "prompt": "Given the sentence 'the quick brown fox' and a context window of 1, generate the (center, context) training pairs a skip-gram model would learn from. Explain what the model is being trained to predict.",
+      "hint": "For each center word, pair it with each word within ±window. Window=1 means immediate neighbors.",
+      "solution": "```python\ndef skipgram_pairs(words, window=1):\n    pairs=[]\n    for i, center in enumerate(words):\n        for j in range(max(0,i-window), min(len(words),i+window+1)):\n            if j!=i: pairs.append((center, words[j]))\n    return pairs\nprint(skipgram_pairs('the quick brown fox'.split()))\n# (the,quick),(quick,the),(quick,brown),(brown,quick),(brown,fox),(fox,brown)\n```\n\nSkip-gram trains the model to **predict context words from a center word**. Each pair says 'when you see `quick`, words like `the` and `brown` tend to appear nearby.' Over a huge corpus, words that share contexts get pushed to similar embeddings — encoding the distributional hypothesis ('a word is the company it keeps') directly into geometry."
+    },
+    {
+      "title": "Why negative sampling",
+      "difficulty": "core",
+      "prompt": "Explain why the naive skip-gram softmax over a 1M-word vocabulary is computationally infeasible, and how negative sampling replaces it. What does each training step become?",
+      "hint": "Full softmax normalizes over all V words every step (O(V)). Negative sampling turns it into binary classification: real context (positive) vs k random words (negatives).",
+      "solution": "The naive objective applies a softmax over the **entire vocabulary** to predict the context word — every single training step computes a denominator summed over all V words (a million dot products + a million exp). With trillions of (center, context) pairs that's hopeless.\n\n**Negative sampling** reframes it as **binary classification**: for each true (center, context) pair, label it positive (1), then draw `k` random words (typically 5–20) as negatives labeled 0, and train a logistic classifier to tell real context from noise:\n```\nloss = -log σ(v_center · v_context) - Σ_{neg} log σ(-v_center · v_neg)\n```\nEach step now touches only `k+1` words instead of V, turning an O(V) update into O(k). It's an approximation, but it scales Word2Vec to billion-word corpora and is why the architecture is 'embarrassingly simple' yet trainable at scale. (Negatives are sampled ∝ frequency^0.75 to balance common vs rare words.)"
+    },
+    {
+      "title": "Analogies in embedding space",
+      "difficulty": "stretch",
+      "prompt": "Explain why 'king − man + woman ≈ queen' works in Word2Vec space, how you'd compute the answer, and one well-known limitation of these vector analogies.",
+      "hint": "Embeddings encode linear directions for attributes (gender, royalty). Compute the target vector, find nearest neighbor by cosine, excluding the input words.",
+      "solution": "```python\ndef analogy(emb, a, b, c, topn=1):\n    import numpy as np\n    target = emb[b] - emb[a] + emb[c]   # king - man + woman\n    target /= np.linalg.norm(target)\n    sims = {w: float(v@target/ (np.linalg.norm(v)+1e-9)) for w,v in emb.items()\n            if w not in (a,b,c)}\n    return sorted(sims, key=sims.get, reverse=True)[:topn]\n# analogy(emb,'man','king','woman') -> ['queen']\n```\n\nIt works because training places consistent **linear directions** for attributes: the vector from `man`→`king` (add 'royalty') is roughly parallel to `woman`→`queen`. So `king − man` isolates 'royalty', adding it to `woman` lands near `queen`; you then take the nearest word by cosine (excluding the inputs). \n\n**Limitation:** the analogies are fragile and partly an artifact of the nearest-neighbor search (excluding input words is doing real work), they fail on rare words and many relation types, and crucially these embeddings are **static** — one vector per word regardless of context, so `bank` (river vs money) gets a single blurred vector. That last flaw is what contextual embeddings (ELMo, then transformers) fixed."
+    }
+  ]
+}

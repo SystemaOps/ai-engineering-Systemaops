@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "BLEU intuition",
+      "difficulty": "warmup",
+      "prompt": "Explain at a high level what BLEU measures and why it includes a brevity penalty. Compute a rough sense of why a one-word translation 'good' for reference 'the food was very good' scores low.",
+      "hint": "BLEU = modified n-gram precision vs reference(s), times a brevity penalty for too-short output.",
+      "solution": "BLEU scores a candidate translation by its **modified n-gram precision** against one or more references — what fraction of the candidate's unigrams, bigrams, trigrams, 4-grams also appear in the reference (capped by reference counts so repeats don't game it), geometric-mean combined. \n\nThe **brevity penalty** exists because precision alone rewards being short: a candidate of just 'good' has unigram precision 1/1 (it appears in the reference) — perfect precision while saying almost nothing. The brevity penalty multiplies the score down when the candidate is shorter than the reference, so 'good' (length 1 vs reference length 5) gets heavily penalized and scores low. BLEU thus balances 'did you use the right words/phrases' against 'did you say enough'. It's corpus-level and imperfect (ignores meaning/synonyms) — which is why chrF and learned metrics supplement it."
+    },
+    {
+      "title": "The 2026 MT pipeline",
+      "difficulty": "core",
+      "prompt": "Describe the working machine-translation pipeline in 2026 — pretrained multilingual encoder-decoder, subword tokenization, beam search, evaluation — and why subword tokenization is essential for translation specifically.",
+      "hint": "NLLB-200 / mBART backbone; BPE/SentencePiece handles open vocab + morphology across languages; beam search decodes; BLEU+chrF evaluate.",
+      "solution": "**Pipeline:** start from a **pretrained multilingual encoder-decoder** (NLLB-200, mBART) rather than training from scratch; tokenize source and target with a shared **subword** vocabulary; encode the source, **beam-search decode** the target; evaluate with **BLEU and chrF** (plus human or learned metrics for production).\n\n**Why subword tokenization is essential for MT specifically:**\n- **Open vocabulary across many languages:** a single shared subword vocab covers dozens of languages and scripts without a million-word table per language, and lets the model share sub-units across related languages.\n- **Morphologically rich targets:** languages like Turkish, Finnish, or German build long inflected/compound words; word-level vocab would treat each form as a separate `<UNK>`. Subwords compose them from pieces, so rare inflections and compounds are translatable.\n- **No catastrophic OOV:** names, numbers, and novel terms fall back to known subwords/bytes instead of being dropped.\n\nSubword units are what make one model handle 200 languages with one finite vocabulary — the backbone of multilingual MT."
+    },
+    {
+      "title": "Failure modes that ship uncaught",
+      "difficulty": "stretch",
+      "prompt": "Name failure modes of neural MT that a high BLEU score can hide and that reach production uncaught, and explain why automatic metrics miss them. Give a mitigation for one.",
+      "hint": "Hallucinated content, number/named-entity errors, gender/formality errors, omission, and confident fluency masking meaning errors. BLEU rewards fluent n-gram overlap, not faithfulness.",
+      "solution": "**Failure modes BLEU can hide:**\n- **Hallucination:** the model emits a fluent sentence unsupported by the source (common on noisy/short input). It can still share n-grams with the reference and score okay.\n- **Number / named-entity errors:** '$1.5M' → '$15M', or a wrong name/date — catastrophic in finance/medical/legal, but a one-token slip barely moves BLEU.\n- **Gender, formality, politeness register errors:** wrong grammatical gender or tu/vous formality — meaning-relevant, near-invisible to n-gram overlap.\n- **Omission:** silently dropping a clause; the output is fluent and partially overlaps the reference.\n- **Confident fluency:** output reads perfectly while meaning is subtly wrong — the most dangerous, because reviewers trust fluent text.\n\n**Why metrics miss them:** BLEU/chrF reward **surface n-gram overlap and fluency**, not **faithfulness** to source meaning — a fluent, mostly-overlapping wrong translation scores well, and a correct paraphrase using synonyms scores poorly.\n\n**Mitigation (numbers/entities):** post-hoc **constraint checking** — extract numbers and named entities from source and target and assert they match (or use constrained/forced decoding to copy them verbatim), flagging mismatches for human review. More broadly, supplement BLEU with learned faithfulness metrics (COMET) and targeted test suites for gender/formality/entities."
+    }
+  ]
+}

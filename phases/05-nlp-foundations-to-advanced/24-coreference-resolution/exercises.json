@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Build the coreference clusters",
+      "difficulty": "warmup",
+      "prompt": "For 'Tim Cook visited Berlin. He praised the city. Apple's CEO loved its architecture.', group the mentions into coreference clusters. List each cluster and its mentions.",
+      "hint": "Cluster every expression referring to the same real-world entity, including pronouns and descriptions.",
+      "solution": "```\nCluster 1 (Tim Cook):  'Tim Cook', 'He', \"Apple's CEO\"\nCluster 2 (Berlin):    'Berlin', 'the city', 'its'\n```\n\nCoreference resolution links **every expression that refers to the same entity** into one cluster — proper names ('Tim Cook'), pronouns ('He', 'its'), and descriptions (\"Apple's CEO\", 'the city'). Note the cross-sentence and varied-form references: a system that only matched the string 'Tim Cook' would miss 'He' and \"Apple's CEO\" entirely. Resolving these is what lets downstream NER/IE count all mentions of an entity rather than just the literal-name ones."
+    },
+    {
+      "title": "Why NER alone misses most mentions",
+      "difficulty": "core",
+      "prompt": "Explain why running NER without coreference resolution misses 60-80% of entity mentions, and how that breaks a downstream task like 'count how many times Apple is discussed' or sentiment-per-entity.",
+      "hint": "NER tags explicit names; most mentions are pronouns/descriptions ('the company', 'they', 'its CEO'). Those are entity mentions NER doesn't connect.",
+      "solution": "NER detects **explicit named spans** ('Apple', 'Tim Cook') but the *majority* of references in real text are **pronouns and descriptions** — 'the company', 'they', 'it', 'the Cupertino giant', 'its CEO'. NER either doesn't tag those as the entity or tags them without linking them back, so it captures only a fraction (often 20–40%) of the actual mentions of an entity.\n\n**How that breaks downstream tasks:**\n- **Mention counting / salience:** 'how much is Apple discussed?' under-counts massively if every 'the company'/'they' is invisible — a long article that names Apple once but refers to it 15 times via pronouns looks like a minor mention.\n- **Entity-level sentiment:** 'Apple released a great product, but they botched the rollout' — NER ties the positive clause to 'Apple' but misses that 'they' (the negative clause) is *also* Apple, so per-entity sentiment is wrong.\n- **Knowledge-graph / IE:** facts attached to 'the CEO' or 'he' never get linked to the named entity, so relations are dropped.\n\nCoreference is the **glue** between surface NLP (NER/parsing) and semantics (IE, QA, summarization): resolve mentions to clusters first, *then* attribute counts, sentiment, and facts to the canonical entity. Skipping it silently halves your recall on anything entity-centric."
+    },
+    {
+      "title": "The hard cases: ambiguity and the Winograd challenge",
+      "difficulty": "stretch",
+      "prompt": "Explain why pronoun resolution sometimes requires world knowledge, using a Winograd-style sentence, and what this implies about evaluating coreference systems. Give an example where flipping one word flips the answer.",
+      "hint": "'The trophy didn't fit in the suitcase because it was too big' — 'it' = trophy; change 'big'→'small' and 'it' = suitcase. Needs commonsense, not grammar.",
+      "solution": "Some coreference is unresolvable by syntax alone and needs **world knowledge**. The Winograd Schema example:\n\n- 'The trophy didn't fit in the suitcase because **it** was too **big**.' → 'it' = the **trophy** (the trophy's bigness causes the non-fit).\n- 'The trophy didn't fit in the suitcase because **it** was too **small**.' → 'it' = the **suitcase** (the suitcase's smallness causes the non-fit).\n\n**One word ('big'→'small') flips the referent**, even though the grammar is identical. No parser or gender/number agreement helps — you must *understand* that big things don't fit in small containers. This is why coreference is a classic probe of commonsense reasoning (Winograd Schema Challenge).\n\n**Implication for evaluation:** a coref system that scores well on easy, syntax-resolvable cases (matching gender/number/proximity) can still fail the cases that *require* reasoning — so aggregate metrics (MUC, B³, CEAF, averaged as CoNLL F1) can overstate real understanding. You should evaluate on **hard, knowledge-dependent subsets** (Winograd-style, ambiguous pronouns) separately, because those are exactly the cases that break downstream IE/QA and that a benchmark dominated by easy mentions hides. LLMs do better here than older rule/statistical systems precisely because they encode commonsense — but they still err on adversarial Winograd pairs."
+    }
+  ]
+}

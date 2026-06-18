@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Track the slot-value state",
+      "difficulty": "warmup",
+      "prompt": "For the turns 'I want a cheap restaurant in the north' → 'actually make it moderate' → 'and add Italian', show the dialogue state (slot-value dict) after each turn. What operation does each turn perform?",
+      "hint": "State is a dict; turns add, update, or remove slots. 'actually make it moderate' updates price.",
+      "solution": "```\nTurn 1: {area: north, price: cheap}                         # add area, add price\nTurn 2: {area: north, price: moderate}                      # UPDATE price (cheap -> moderate)\nTurn 3: {area: north, price: moderate, cuisine: italian}    # add cuisine\n```\n\nDialogue state tracking maintains a running **slot-value dictionary** representing the user's goal. Each turn performs an operation on it: turn 1 **adds** two slots, turn 2 **updates** an existing slot ('actually make it moderate' overwrites `cheap`), turn 3 **adds** another. The state must reflect the *cumulative* intent, not just the latest utterance — the system books against this dict, so it has to carry `area: north` forward even though turns 2 and 3 never mention it again."
+    },
+    {
+      "title": "Why DST is hard across turns",
+      "difficulty": "core",
+      "prompt": "Explain why dialogue state tracking can't just parse the latest utterance in isolation, and the specific phenomena that make it hard: carryover, correction/overwrite, coreference, and removal. Give an example of each.",
+      "hint": "State is cumulative and editable across the whole conversation; later turns reference or revise earlier ones.",
+      "solution": "DST must read the **whole conversation**, because the current state is the *accumulated, edited* result of all turns — the latest utterance alone is insufficient:\n- **Carryover:** slots set earlier persist unless changed. 'add Italian' doesn't restate `area: north`, but it's still in effect — parse-the-latest-turn would drop it.\n- **Correction / overwrite:** 'actually make it moderate' must *replace* the prior `price: cheap`, not add a second price. Detecting that a turn revises an existing slot (often signaled by 'actually', 'no', 'instead') is non-trivial.\n- **Coreference:** 'make *it* cheaper' or 'somewhere like *that one*' refers back to earlier entities/values — you must resolve the reference to know which slot to edit.\n- **Removal / negation:** 'never mind the cuisine' or 'I don't care about price' must *delete* or null a slot, not set it to a literal value.\n\nEach phenomenon means a turn can add, change, resolve-a-reference-for, or delete state — so DST is a stateful, full-history task. Getting one slot wrong books the wrong restaurant/flight, which is why it's 'the hinge between what the user said and what the backend executes.'"
+    },
+    {
+      "title": "Why deterministic DST survives in the LLM era",
+      "difficulty": "stretch",
+      "prompt": "LLMs can hold conversation context implicitly, so why do compliance-sensitive domains still use explicit dialogue state tracking? Explain the architecture that combines an LLM with a structured state, and why structured outputs matter here.",
+      "hint": "Backends need deterministic, auditable slot values, not free-form text; explicit state enables validation, confirmation, and recovery. Use the LLM to extract, but commit to a validated dict.",
+      "solution": "An LLM *can* track context implicitly, but **compliance-sensitive domains (banking, healthcare, airline booking) require a deterministic, auditable slot-value state**, not vibes buried in a chat history. The reasons:\n- **The backend needs exact values.** An API call books `{flight: BA123, date: 2026-07-01}` — it can't consume 'the user probably wants the morning one.' You need a concrete, validated dict.\n- **Auditability/compliance.** You must be able to show *exactly* what state drove an action (and let the user confirm it) — 'I trusted the LLM's memory' isn't acceptable when money or health is involved.\n- **Validation & recovery.** Explicit slots can be checked against constraints (valid date? in-service route?), enabling confirmation prompts ('booking moderate Italian in the north — correct?') and clean correction.\n\n**The hybrid architecture:** use the **LLM as the extractor/updater** — at each turn, prompt it to output the *updated state* — but force it through **structured/constrained decoding** against the slot schema (from the structured-outputs lesson) so it emits a valid `{slot: value}` dict, not prose. Then **validate** the dict (types, allowed values), **persist** it as the source of truth, **confirm** high-stakes changes with the user, and only then call the backend. So the LLM handles the hard language understanding (carryover, correction, coreference) while the **explicit, validated state machine** provides the determinism, auditability, and safety the domain demands. It's the same recurring pattern: powerful generator for understanding + structured, verifiable state for reliable action."
+    }
+  ]
+}

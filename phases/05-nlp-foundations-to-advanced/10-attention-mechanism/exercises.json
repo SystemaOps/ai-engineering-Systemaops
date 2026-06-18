@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Attention as a weighted average",
+      "difficulty": "warmup",
+      "prompt": "Implement the core attention computation: given decoder query scores over encoder positions, softmax them into weights and produce the context vector as their weighted sum of encoder states. Confirm the weights sum to 1.",
+      "hint": "weights = softmax(scores); context = Σ weight_i · encoder_state_i.",
+      "solution": "```python\nimport numpy as np\ndef attention(scores, enc_states):\n    w = np.exp(scores - scores.max()); w /= w.sum()   # softmax\n    context = (w[:, None] * enc_states).sum(axis=0)    # weighted avg\n    return context, w\nenc = np.array([[1.,0.],[0.,1.],[1.,1.]])\nctx, w = attention(np.array([2.0, 0.5, 1.0]), enc)\nprint(w.round(3), w.sum())   # weights sum to 1.0\n```\n\nAttention computes a **per-step weighted average of all encoder states**, where the weights (a softmax over relevance scores) say 'how much should the decoder look at position i right now?'. Because it's a softmax, the weights are non-negative and sum to 1 — a soft selection. Crucially the context **changes at every decoder step**, so the decoder can focus on the source word it currently needs, instead of squinting at one frozen summary."
+    },
+    {
+      "title": "How attention breaks the bottleneck",
+      "difficulty": "core",
+      "prompt": "Explain why adding attention restores accuracy on long sequences where the fixed-context seq2seq collapsed, in terms of information access. What do the attention weights let you visualize?",
+      "hint": "Decoder reads all encoder states directly (no compression), so length no longer overflows a single vector. Weights show soft alignment.",
+      "solution": "The fixed-context model failed because *all* source information had to fit in one vector. **Attention removes that constraint**: every encoder state is kept, and at each decoder step the model reads a fresh weighted combination of *all* of them. There's no compression to a single bottleneck, so a 1000-token source is just as accessible as a 5-token one — accuracy stops decaying with length because information access no longer depends on cramming everything into fixed capacity.\n\nAs a bonus, the **attention weight matrix is interpretable**: plotting weights[decoder_step, encoder_pos] shows a soft **alignment** between target and source words — e.g. when translating, the French output word lights up over the English source word(s) it corresponds to. This made attention both a quality fix and a debugging/interpretability tool. Self-attention (apply it within one sequence), multi-head attention (run it in parallel), and the full transformer are all engineering extensions of this 2014 idea."
+    },
+    {
+      "title": "From cross-attention to self-attention",
+      "difficulty": "stretch",
+      "prompt": "Distinguish the encoder-decoder (cross) attention introduced here from the self-attention used in transformers, in terms of where queries, keys, and values come from. Why was self-attention the conceptual leap to transformers?",
+      "hint": "Cross-attention: queries from decoder, keys/values from encoder. Self-attention: Q,K,V all from the same sequence, letting every token attend to every other.",
+      "solution": "- **Cross-attention (this lesson):** the **query** comes from the *decoder* state, while **keys and values** come from the *encoder* states. It connects two different sequences (target ↔ source) — 'which source words does this target word need?'\n- **Self-attention (transformers):** **Q, K, and V all come from the *same* sequence**. Every token computes a query and attends over every other token's keys/values *within its own sequence*, building a context-aware representation of each position.\n\n**Why it was the leap:** classic attention was bolted onto RNNs — it still processed tokens sequentially through the recurrence. Self-attention let a model relate *all positions to all positions in one parallel operation*, with **no recurrence at all**. That (a) removed the sequential bottleneck so the whole sequence is processed in parallel (huge speedup on GPUs), and (b) gave every token direct access to every other regardless of distance (no decay). 'Attention is all you need' = drop the RNN entirely and keep only (self-)attention. Everything after 2014's cross-attention — multi-head, positional encodings, the transformer block — is engineering on top of this conceptual shift."
+    }
+  ]
+}

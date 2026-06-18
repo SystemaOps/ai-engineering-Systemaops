@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Encoder-decoder shapes",
+      "difficulty": "warmup",
+      "prompt": "Describe the data flow of a basic RNN seq2seq model: what the encoder outputs, what the decoder consumes, and how generation starts and stops. Why can input and output lengths differ freely?",
+      "hint": "Encoder → single context vector (final hidden state). Decoder is seeded with it + a <SOS> token, generates until <EOS>.",
+      "solution": "**Flow:** the **encoder** RNN reads the source tokens and compresses them into a single fixed-size **context vector** (its final hidden state). The **decoder** RNN is initialized with that context, fed a start token `<SOS>`, and generates one target token at a time — each step's output token becomes the next step's input — until it emits `<EOS>`.\n\nInput and output lengths can differ freely because the encoder and decoder are **decoupled**: the encoder collapses *any* source length into one vector, and the decoder generates *until it decides to stop* (`<EOS>`), independent of source length. That's what lets a 5-word English sentence become a 7-word French one. The cost of this design is the single context vector — the bottleneck the next lesson fixes."
+    },
+    {
+      "title": "Teacher forcing",
+      "difficulty": "core",
+      "prompt": "Explain teacher forcing in seq2seq training and the train/inference mismatch (exposure bias) it creates. What is scheduled sampling, and why does beam search help at inference?",
+      "hint": "Teacher forcing feeds the ground-truth previous token during training; at inference the model must feed its own (possibly wrong) prediction. Beam search keeps multiple hypotheses.",
+      "solution": "**Teacher forcing:** during training, the decoder is fed the **ground-truth** previous target token (not its own prediction) at each step. This stabilizes and speeds training — without it, early-training garbage predictions would compound and the model would never learn.\n\n**Exposure bias:** at **inference** there is no ground truth, so the decoder must consume **its own previous output**. If it makes one mistake, that wrong token becomes the next input, and errors cascade — a distribution the model never saw in training.\n\n**Scheduled sampling** mitigates this by *gradually* mixing in the model's own predictions during training (start mostly teacher-forced, anneal toward self-generated), narrowing the train/inference gap.\n\n**Beam search** helps at inference by keeping the top-`k` partial hypotheses at each step instead of greedily committing to the single best token — so a locally suboptimal token that leads to a better overall sequence can still win. Greedy decoding can't recover from an early bad choice; beam search hedges. These three techniques (teacher forcing, scheduled sampling, beam search) still apply to every modern generation system, including LLM decoding."
+    },
+    {
+      "title": "The context-vector bottleneck",
+      "difficulty": "stretch",
+      "prompt": "Explain precisely why a fixed-size context vector causes seq2seq quality to collapse on long inputs (e.g. 89% accuracy at length 5 → near-chance at length 80), and why this failure motivates attention.",
+      "hint": "All source information must fit in one vector regardless of length; long sequences overflow its capacity. Attention lets the decoder see all encoder states.",
+      "solution": "The encoder must cram **everything about the source** into a **single fixed-size vector**, and the decoder sees *nothing else*. For a 5-token input that's easy — the vector has plenty of capacity per token. For an 80-token input, the same-size vector must represent 16× more information, so early tokens get overwritten/blurred and fine detail is lost. Accuracy degrades structurally with length (89% at len 5 → near-chance at len 80) — it's not a training bug, it's an **information-capacity** limit.\n\nThis is the most pedagogically useful failure in NLP because the fix is obvious once named: **don't compress to one vector — keep all encoder states and let the decoder look at the relevant ones at each step.** That's exactly **attention** (next lesson): a per-decoder-step weighted average over *all* encoder states, so a 1000-token source is just as accessible as a 5-token one. The context-vector bottleneck is the reason attention — and ultimately transformers — exist."
+    }
+  ]
+}

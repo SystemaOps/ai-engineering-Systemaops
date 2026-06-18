@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Fixed-size chunking with overlap",
+      "difficulty": "warmup",
+      "prompt": "Implement token-window chunking with overlap: split a token list into ~N-token chunks that overlap by k tokens. Explain why overlap matters for retrieval.",
+      "hint": "Stride = N − k. Each chunk = tokens[i : i+N]; advance i by stride.",
+      "solution": "```python\ndef chunk(tokens, size=512, overlap=64):\n    stride=size-overlap; out=[]\n    for i in range(0, len(tokens), stride):\n        out.append(tokens[i:i+size])\n        if i+size >= len(tokens): break\n    return out\nprint([len(c) for c in chunk(list(range(1200)), 512, 64)])  # [512,512,...]\n```\n\n**Overlap matters** because the answer to a query often straddles a chunk boundary. Without overlap, a sentence split across two chunks appears in neither *completely*, so the chunk with the key fact may lack the surrounding context that ties it to the query — and retrieval misses it. Overlapping by ~10–15% ensures any local span appears intact in at least one chunk. The cost is some duplication in the index; the benefit is not losing answers at the seams."
+    },
+    {
+      "title": "Chunk size is a real hyperparameter",
+      "difficulty": "core",
+      "prompt": "Explain why chunk size influences retrieval quality as much as the embedding model, and the tradeoff between small and large chunks. Why did recursive 512-token chunking beat fancy 'semantic' chunking in the 2025 benchmark?",
+      "hint": "Small chunks: precise match, lose context. Large chunks: more context, diluted embedding (the key sentence is averaged away). Simple recursive splitting respects structure cheaply.",
+      "solution": "**The size tradeoff:**\n- **Small chunks** embed a tight piece of text, so the vector is *sharp* and matches focused queries precisely — but they **lose surrounding context** (a pronoun or clause whose referent is in the previous chunk), and the answer may need neighboring text.\n- **Large chunks** carry more context, but a single embedding must summarize all of it, so the **one key sentence gets averaged away** — the chunk's vector drifts toward its dominant topic and stops matching a query about a minor detail buried inside.\n\nThat dilution is why chunk size rivals the embedding model in impact: too big and the right passage is *retrievable in principle but invisible to the index*.\n\n**Why recursive 512 beat semantic chunking (Vectara 2025):** 'semantic' chunking (split where embedding similarity drops) sounds smarter but is fragile — it produces uneven, sometimes tiny or huge chunks and its split points are noisy. **Recursive character/token splitting** (split on paragraphs → sentences → tokens to a target ~512) respects document structure, gives consistent sizes matched to how embedding models were trained, and is cheap and deterministic. The benchmark (69% vs 54%) showed the simple, structure-aware default outperforms the clever heuristic — a recurring RAG lesson: tune the boring knob (size/overlap) before reaching for sophistication."
+    },
+    {
+      "title": "Context-enriched chunking",
+      "difficulty": "stretch",
+      "prompt": "Describe two techniques that fix the 'precise small chunk but lost context' dilemma — adding a document/section summary prefix to each chunk, and small-to-big (retrieve small, return large) retrieval. When does each help?",
+      "hint": "Prefix each chunk with title/section/summary so its embedding carries global context; or index small chunks but feed the surrounding parent chunk to the LLM.",
+      "solution": "Both techniques let you keep **small, precise chunks for matching** while restoring the **context needed to answer** — solving the core dilemma.\n\n1. **Context-prefixing (contextual chunking):** prepend each chunk with metadata/summary — document title, section heading, and/or a one-line LLM-generated summary of what this chunk is about given the whole doc. Now the chunk's embedding encodes *where it sits* ('Termination — Section 12 of the Acme MSA: ...'), so a query about 'termination clause' matches even if the raw chunk text lacks those words. Helps when chunks are individually ambiguous without document context (contracts, technical manuals, anything with cross-references).\n2. **Small-to-big (parent-document retrieval):** **index small chunks** (sharp matching) but, on a hit, **return the larger parent chunk/section** to the LLM. You get precise retrieval *and* full context for generation. Helps when the matching unit and the answering unit should differ — e.g. match on a precise sentence, but the LLM needs the whole paragraph/clause to answer correctly.\n\nUse **context-prefixing** when embeddings miss because chunks lack global signal; use **small-to-big** when retrieval is fine but the LLM needs more surrounding text than the matched chunk contains. Both beat simply enlarging chunks, which would dilute the embedding. The meta-point: chunking isn't just splitting — it's deciding what context travels with each retrievable unit."
+    }
+  ]
+}

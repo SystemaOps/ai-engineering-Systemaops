@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Naive Bayes sentiment baseline",
+      "difficulty": "warmup",
+      "prompt": "Outline how a Naive Bayes sentiment classifier scores a sentence, and why working in log-space with Laplace smoothing is essential. What does an unseen word do without smoothing?",
+      "hint": "Score class = log P(class) + Σ log P(word|class). A zero probability (unseen word) makes the whole product zero; smoothing adds a pseudocount.",
+      "solution": "Naive Bayes picks the class maximizing `log P(class) + Σ_w log P(w | class)`, where `P(w|class)` is estimated from training counts. Two practical necessities:\n- **Log-space:** multiplying hundreds of small probabilities underflows to 0.0 in floating point; summing their logs is numerically stable.\n- **Laplace (add-1) smoothing:** `P(w|class) = (count + 1) / (total + V)`. Without it, any word never seen in the positive class has `P(w|pos)=0`, which zeroes the *entire* product — one unseen word vetoes the whole sentence. Smoothing reserves a little probability mass for unseen words so they don't annihilate the score.\n\n```python\nimport math\nscore = math.log(prior) + sum(math.log((cnt[w]+1)/(total+V)) for w in tokens)\n```\n\nIt's a strong, fast baseline precisely because word presence carries most sentiment signal — but it assumes word independence, which sets up the failure modes."
+    },
+    {
+      "title": "Negation breaks bag-of-words",
+      "difficulty": "core",
+      "prompt": "Show why a bag-of-words sentiment model misclassifies 'the food was not great', and implement the classic negation-scope trick that fixes simple cases. State its limit.",
+      "hint": "BoW sees 'great' (positive) and ignores 'not'. Trick: tag tokens after a negation word with a NOT_ prefix until punctuation.",
+      "solution": "```python\nimport re\ndef negate(tokens):\n    out=[]; neg=False\n    for t in tokens:\n        if t in ('not','no','never',\"n't\"): neg=True; out.append(t); continue\n        if t in '.,!?;': neg=False\n        out.append('NOT_'+t if neg else t)\n    return out\nprint(negate(\"the food was not great\".split()))\n# ['the','food','was','not','NOT_great']\n```\n\nPlain BoW treats 'not great' as the *positive* word 'great' plus a near-meaningless 'not', so it predicts positive — exactly wrong. The negation-scope trick rewrites words after a negator (`great` → `NOT_great`), creating a distinct feature the classifier learns as negative. **Its limit:** it's a blunt heuristic — it mishandles negation that ends mid-clause, double negatives ('not bad at all' → positive), sarcasm, and long-range scope. These residual failures are exactly why the field moved to sequence models (RNNs/transformers) that learn negation and context from data rather than rules."
+    },
+    {
+      "title": "Why production sentiment is hard",
+      "difficulty": "stretch",
+      "prompt": "List the failure modes that make production sentiment 'compliance-grade' hard (beyond negation), and explain why high benchmark accuracy can still mean a model unsafe to deploy. Give a concrete domain-shift example.",
+      "hint": "Sarcasm, domain-specific vocabulary, emojis, aspect-level sentiment, code-switching, demographic bias. Benchmark ≠ your data distribution.",
+      "solution": "**Failure modes beyond negation:**\n- **Sarcasm/irony:** 'Oh great, another crash' is negative with positive words.\n- **Domain vocabulary:** 'tight' is praise in a music review, criticism in fashion; 'sick' flips by community.\n- **Emojis/emphasis:** often carry more signal than the text, and aren't in classical vocabularies.\n- **Aspect-level:** 'great screen, terrible battery' has no single sentiment — you need per-aspect labels.\n- **Code-switching / multilingual** input the model never trained on.\n- **Demographic/dialect bias:** the model may score dialects or identity terms as more negative — a compliance and fairness risk.\n\n**Why high benchmark accuracy isn't enough:** benchmarks (e.g. movie reviews) are a *fixed distribution*; your production traffic (support tickets, financial filings, medical notes) is a different one, so a model at 94% on IMDB can collapse on your data — classic **domain shift**. And aggregate accuracy hides the harmful tail: it can be 94% overall while systematically mislabeling a minority dialect or a critical aspect. 'Compliance-grade' means you must evaluate on *your* distribution, audit per-subgroup, and handle the tail — not trust a leaderboard number."
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Train BPE merges",
+      "difficulty": "warmup",
+      "prompt": "Run two iterations of BPE training on a tiny corpus by hand-in-code: start from characters, repeatedly merge the most frequent adjacent pair. Show the vocabulary growing.",
+      "hint": "Count adjacent symbol pairs across all words (with frequencies), merge the top pair into one symbol, repeat.",
+      "solution": "```python\nfrom collections import Counter\ndef best_pair(words):\n    pairs=Counter()\n    for w,freq in words.items():\n        syms=w.split()\n        for a,b in zip(syms,syms[1:]): pairs[(a,b)]+=freq\n    return pairs.most_common(1)[0][0]\ndef merge(words, pair):\n    bigram=' '.join(pair); joined=''.join(pair)\n    return {w.replace(bigram, joined):f for w,f in words.items()}\nwords={'l o w':5,'l o w e r':2,'n e w e s t':6,'w i d e s t':3}\nfor _ in range(2):\n    p=best_pair(words); words=merge(words,p); print('merged',p)\n# merges 'e','s' (9x) then 'es','t' (9x) -> 'est' becomes a token\n```\n\nBPE starts from single characters and **greedily merges the most frequent adjacent pair** into a new symbol, repeating K times. Frequent sequences ('est', 'low') become single tokens; the vocab grows from characters toward whole words. After training, common words are one token and rare words split into known pieces — covering any string with a finite vocab."
+    },
+    {
+      "title": "BPE vs WordPiece vs Unigram",
+      "difficulty": "core",
+      "prompt": "Compare the three subword algorithms (BPE, WordPiece, Unigram) by how they build/select the vocabulary, and name which models/libraries use each.",
+      "hint": "BPE: greedy frequency merges (GPT/tiktoken). WordPiece: merges by likelihood gain (BERT). Unigram: start big, prune by probability (SentencePiece/T5, many multilingual).",
+      "solution": "- **BPE:** bottom-up, **greedily merge the most frequent adjacent pair** repeatedly. Simple and fast. Used by GPT-family (tiktoken), RoBERTa, many LLMs.\n- **WordPiece:** like BPE but chooses each merge to **maximize the likelihood** of the training corpus under a unigram LM (merge the pair whose combination most increases data probability), not raw frequency. Used by BERT/DistilBERT. (It also uses the `##` continuation marker.)\n- **Unigram (SentencePiece):** **top-down** — start with a large candidate vocabulary and **iteratively prune** the tokens whose removal least hurts a unigram language-model likelihood, keeping a probabilistic model that can tokenize a string multiple ways and pick the most likely. Used by T5, ALBERT, XLNet, and most multilingual models.\n\nAll three produce subword vocabularies that eliminate true OOV; they differ in the *objective* used to choose pieces (frequency vs likelihood-gain vs likelihood-pruning). The library trio: **tiktoken** (BPE), **HF Tokenizers** (all three), **SentencePiece** (Unigram/BPE, language-agnostic via raw bytes)."
+    },
+    {
+      "title": "Tokenization gotchas that bite in production",
+      "difficulty": "stretch",
+      "prompt": "Explain three subtle tokenization issues that cause real bugs: the leading-space/word-boundary issue, why token counts ≠ word counts (cost/context budgeting), and why numbers and code tokenize badly. Give a practical consequence of each.",
+      "hint": "BPE tokenizers encode leading spaces into tokens (' the' ≠ 'the'); pricing/context are per-token; digits and code split inconsistently inflating tokens.",
+      "solution": "1. **Leading-space / word-boundary encoding.** Most BPE tokenizers fold the preceding space into the token, so `' the'` and `'the'` (start of string) are **different tokens**. Consequence: prompts assembled by string-concatenation can tokenize differently than expected, few-shot examples may not match, and stop-sequences/regex over tokens behave surprisingly. Always test how *your exact strings* tokenize.\n2. **Tokens ≠ words.** Pricing, rate limits, and the context window are all measured in **tokens**, and one English word is ~1.3 tokens on average (far more for rare words, other languages, or code). Consequence: budgeting context or cost by word count under-counts badly — a '4,000-word' document can blow a token budget, and non-English text costs more tokens per word, inflating bills and truncating prompts.\n3. **Numbers and code tokenize badly.** Digit runs and source code split inconsistently ('12345' might be one token or several; indentation/braces fragment), and the model sees no clean numeric structure. Consequence: arithmetic errors (the model never sees '1','2','3' cleanly), and code/JSON generation costs more tokens and is more error-prone — part of why structured-output constraints (next lesson) and dedicated code tokenizers exist.\n\nThe meta-lesson: the tokenizer is an invisible layer that silently shapes cost, context, and accuracy — inspect it, don't assume words."
+    }
+  ]
+}

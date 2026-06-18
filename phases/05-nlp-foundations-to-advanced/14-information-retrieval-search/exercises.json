@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "BM25 vs dense retrieval",
+      "difficulty": "warmup",
+      "prompt": "Contrast lexical (BM25) and dense (embedding) retrieval by the failure each owns. Give a query that BM25 nails but dense misses, and one where dense wins.",
+      "hint": "BM25 = exact term match (great for keywords/codes, blind to synonyms). Dense = semantic match (great for paraphrase, weak on exact rare tokens).",
+      "solution": "- **BM25 (lexical):** ranks by exact term overlap with TF/IDF-style weighting and length normalization. **Owns:** exact keyword/identifier matches. *Nails* a query like 'error code TS-4091' or 'Section 420 IPC' — the rare token must match exactly. **Misses:** synonyms/paraphrase (no shared words → no match).\n- **Dense (embeddings):** ranks by cosine similarity in embedding space. **Owns:** semantic/paraphrase matching. *Wins* on 'what happens if someone lies to get money' → the fraud statute, even with zero shared vocabulary. **Misses:** exact rare tokens (a model embedding may smear 'TS-4091' into nearby codes), and anything outside its training domain (legal/medical jargon it never saw).\n\nThe failures are **complementary**: lexical is precise but vocabulary-brittle; dense is fuzzy but meaning-aware. Neither alone is enough for real search."
+    },
+    {
+      "title": "Hybrid retrieval + fusion",
+      "difficulty": "core",
+      "prompt": "Explain why hybrid (BM25 + dense) is the 2026 default and implement Reciprocal Rank Fusion to combine two ranked lists. Why fuse by rank rather than by raw score?",
+      "hint": "RRF: score(doc) = Σ 1/(k + rank_in_list). Raw scores from BM25 and cosine aren't comparable; ranks are.",
+      "solution": "```python\ndef rrf(rankings, k=60):\n    scores={}\n    for ranking in rankings:                 # each is a list of doc ids, best first\n        for rank, doc in enumerate(ranking):\n            scores[doc] = scores.get(doc, 0) + 1/(k + rank)\n    return sorted(scores, key=scores.get, reverse=True)\nprint(rrf([['a','b','c'], ['b','d','a']]))   # fuses both rankings\n```\n\n**Hybrid is the default** because BM25 and dense catch each other's failures (exact-token queries vs paraphrase), so fusing them recovers far more relevant results than either alone — then a reranker can refine the top-k.\n\n**Fuse by rank, not raw score**, because BM25 scores (unbounded TF-IDF sums) and cosine similarities (−1..1) live on **incomparable scales** — naively adding or normalizing them is fragile and dataset-dependent. **Reciprocal Rank Fusion** ignores the raw magnitudes and uses only each list's *rank ordering* (`1/(k+rank)`), which is robust, parameter-light, and works across any mix of retrievers. A document ranked high by *both* methods rises to the top; one ranked high by only one still gets a boost. It's the simple, sturdy default for combining heterogeneous rankers."
+    },
+    {
+      "title": "The full IR chain + reranking",
+      "difficulty": "stretch",
+      "prompt": "Describe the production retrieval chain (retrieve → fuse → rerank) and explain the recall/precision division of labor between a bi-encoder retriever and a cross-encoder reranker. Why not just use the cross-encoder for everything?",
+      "hint": "Bi-encoder: fast, embeds query+docs separately, high recall over millions. Cross-encoder: slow, joint query-doc attention, high precision, only feasible on top-k.",
+      "solution": "**The chain:** (1) **retrieve** a few hundred candidates cheaply with BM25 and a **bi-encoder** dense retriever, (2) **fuse** the lists (RRF), (3) **rerank** the top ~100 with a **cross-encoder** to produce the final order.\n\n**Division of labor:**\n- **Bi-encoder (retriever):** encodes the query and each document *independently* into vectors, so document embeddings are **precomputed and indexed** (ANN search over millions in milliseconds). Optimized for **recall** — don't miss any relevant doc — but its independence limits precision (it never sees query and doc together).\n- **Cross-encoder (reranker):** feeds **query + document jointly** through a transformer with full cross-attention, scoring their interaction directly. Far more **precise**, but it must run the model **per (query, doc) pair** — no precomputation possible.\n\n**Why not cross-encoder for everything:** scoring every (query, doc) pair against millions of documents at query time is computationally impossible — you'd run the full transformer millions of times per query. So you let the cheap bi-encoder/BM25 cast a wide, high-recall net to ~100 candidates, then spend the expensive cross-encoder only on those. It's the classic **two-stage recall-then-precision** pattern: cheap-and-broad first, expensive-and-accurate last."
+    }
+  ]
+}

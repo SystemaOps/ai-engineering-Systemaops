@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Bag of words from scratch",
+      "difficulty": "warmup",
+      "prompt": "Build a bag-of-words vectorizer: from a small corpus, learn the vocabulary and turn each document into a count vector. Confirm two documents with the same words in different order get the same vector.",
+      "hint": "Vocabulary = sorted set of all tokens; vector[i] = count of vocab word i in the doc.",
+      "solution": "```python\ndef fit_vocab(corpus):\n    vocab=sorted({w for doc in corpus for w in doc.split()})\n    return {w:i for i,w in enumerate(vocab)}\ndef vectorize(doc, vocab):\n    v=[0]*len(vocab)\n    for w in doc.split():\n        if w in vocab: v[vocab[w]]+=1\n    return v\ncorpus=['the cat sat','sat the cat']\nvocab=fit_vocab(corpus)\nprint(vectorize(corpus[0],vocab)==vectorize(corpus[1],vocab))   # True\n```\n\nBoW discards word order entirely — 'the cat sat' and 'sat the cat' map to the *same* vector. That's its strength (fast, fixed-size, interpretable) and its weakness (no notion of order or meaning). It's still the first thing to reach for on narrow classification where word *presence* is the signal."
+    },
+    {
+      "title": "TF-IDF weighting",
+      "difficulty": "core",
+      "prompt": "Implement TF-IDF on top of bag-of-words and show that a word appearing in every document gets downweighted toward zero while a rare, document-specific word gets boosted. State the IDF formula you used.",
+      "hint": "tf = count in doc; idf = log(N / df) (df = #docs containing the term). A term in all docs → idf=log(1)=0.",
+      "solution": "```python\nimport math\ndef tfidf(corpus):\n    docs=[d.split() for d in corpus]; N=len(docs)\n    vocab=sorted({w for d in docs for w in d})\n    df={w:sum(w in set(d) for d in docs) for w in vocab}\n    out=[]\n    for d in docs:\n        out.append({w: d.count(w)*math.log(N/df[w]) for w in set(d)})\n    return out\nfor row in tfidf(['the cat sat','the dog ran','the cat ran']):\n    print({w:round(s,3) for w,s in row.items()})\n# 'the' -> 0.0 everywhere (in all docs); 'cat','dog' -> positive\n```\n\nIDF = `log(N/df)` downweights terms that appear in many documents: 'the' is in every doc so `df=N`, `idf=log(1)=0`, killing its weight entirely. Rare, discriminative words ('dog', 'sat') survive. This is why TF-IDF beats raw counts for classification and search — it automatically suppresses uninformative common words without a stopword list, and still rivals 400M-param embedding models when word presence is what matters."
+    },
+    {
+      "title": "When BoW/TF-IDF fails",
+      "difficulty": "stretch",
+      "prompt": "Construct two sentences that mean nearly the same thing but share almost no words, and show their TF-IDF cosine similarity is near zero. Explain what this failure mode is and what representation fixes it.",
+      "hint": "'The film was excellent' vs 'A superb movie' — synonyms, no shared content words. BoW has no notion of meaning; embeddings do.",
+      "solution": "```python\nimport math\ndef cos(a, b):\n    keys=set(a)|set(b)\n    dot=sum(a.get(k,0)*b.get(k,0) for k in keys)\n    na=math.sqrt(sum(v*v for v in a.values())); nb=math.sqrt(sum(v*v for v in b.values()))\n    return dot/(na*nb) if na and nb else 0.0\n# tf-idf-ish vectors share only 'a'/'the' (idf~0) -> effectively no overlap\nA={'film':1.0,'excellent':1.2}\nB={'superb':1.2,'movie':1.0}\nprint(cos(A,B))   # 0.0 — judged unrelated despite same meaning\n```\n\nBoW/TF-IDF measures **lexical overlap**, not meaning. 'The film was excellent' and 'A superb movie' are near-synonyms but share no content words, so their cosine similarity is ~0 — the model thinks they're unrelated. This is the **vocabulary-mismatch / synonymy** failure: a classifier trained on 'film' gets no signal from 'movie', and search misses paraphrased queries. The fix is **dense embeddings** (Word2Vec, then contextual/sentence embeddings), where synonyms land near each other in vector space — which is exactly why the next lessons move to embeddings."
+    }
+  ]
+}

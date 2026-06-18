@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Build a bigram model",
+      "difficulty": "warmup",
+      "prompt": "Build a bigram language model from a tiny corpus: count (prev, next) pairs and normalize to P(next | prev). Use it to score which of two next-words is more likely after a given word.",
+      "hint": "P(next|prev) = count(prev,next) / count(prev). Build a nested dict of counts.",
+      "solution": "```python\nfrom collections import defaultdict, Counter\ndef bigram(corpus):\n    counts=defaultdict(Counter)\n    for sent in corpus:\n        toks=sent.split()\n        for a,b in zip(toks, toks[1:]): counts[a][b]+=1\n    return counts\ndef p(counts, prev, nxt):\n    tot=sum(counts[prev].values())\n    return counts[prev][nxt]/tot if tot else 0.0\nc=bigram(['the cat sat','the cat ran','the dog sat'])\nprint(round(p(c,'cat','sat'),3), round(p(c,'cat','ran'),3))  # 0.5 0.5\n```\n\nAn n-gram model predicts the next word purely by **counting how often it followed the previous n−1 words**. Simple, fast, fully interpretable — it ran speech recognizers, spell-checkers, and phrase-based MT from 1980–2015 and still serves cheap on-device language modeling. Its blind spot: it only sees a fixed short window of context."
+    },
+    {
+      "title": "Perplexity and the zero-probability problem",
+      "difficulty": "core",
+      "prompt": "Define perplexity as an evaluation metric and explain why an unsmoothed n-gram model can assign a test sentence infinite perplexity. What does smoothing do about it?",
+      "hint": "Perplexity = exp(average negative log-likelihood). One unseen n-gram → probability 0 → log(0) = −inf → infinite perplexity.",
+      "solution": "**Perplexity** = `exp(−(1/N) Σ log P(word_i | context))` — the exponentiated average per-word negative log-likelihood. Intuitively it's the **effective number of equally-likely choices** the model is deciding among at each step; lower is better (a perplexity of 50 ≈ 'as unsure as picking among 50 words').\n\n**The zero-probability catastrophe:** a raw count model assigns `P = 0` to any n-gram it never saw in training. Real sentences are long and almost always contain at least one unseen sequence, so `P(sentence)` becomes 0, `log(0) = −∞`, and **perplexity blows up to infinity** — the model declares a perfectly normal sentence impossible.\n\n**Smoothing** reserves a little probability mass for unseen n-grams so nothing is exactly zero. Add-1 (Laplace) is the crude version; **Kneser-Ney** is the refined standard — it backs off to lower-order n-grams and weights by how many *distinct* contexts a word appears in. Fifty years of smoothing research culminated there, and modern deep learning inherited its empirical, held-out-tuned tradition (the same instinct behind label smoothing and regularization)."
+    },
+    {
+      "title": "Why n-grams gave way to neural LMs",
+      "difficulty": "stretch",
+      "prompt": "Explain the two fundamental limits of n-gram language models (sparsity/curse of dimensionality and no generalization across similar words) and how neural LMs overcame each.",
+      "hint": "n-grams: counts get sparse as n grows (exponential contexts), and 'cat' shares nothing with 'dog'. Neural LMs use embeddings + a learned function over a longer context.",
+      "solution": "**Two fundamental limits:**\n1. **Sparsity / curse of dimensionality.** To capture longer context you increase n, but the number of possible n-grams grows **exponentially** with n, so counts become hopelessly sparse — most 5-grams are never seen even in huge corpora. n-grams are therefore stuck with tiny context windows (n=3–5), unable to model long-range dependencies.\n2. **No generalization across similar words.** n-grams treat words as **atomic symbols**: 'the cat sat' tells the model nothing about 'the dog sat' because `cat` and `dog` are unrelated tokens. Knowledge learned about one word doesn't transfer to a synonym.\n\n**How neural LMs fixed each:** they replace word symbols with **dense embeddings** (so 'cat' and 'dog' are nearby and share statistical strength — fixing generalization), and replace count tables with a **learned function** (RNN/transformer) that maps a context to a next-word distribution. The function generalizes to unseen contexts via the embeddings instead of needing the exact n-gram in a table, and architectures like LSTMs/transformers extend the usable context far beyond n=5. Same goal — predict the next token — but learned, dense, and context-rich rather than counted, sparse, and symbolic."
+    }
+  ]
+}

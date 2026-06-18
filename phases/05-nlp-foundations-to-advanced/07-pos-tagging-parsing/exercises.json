@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "POS tagging resolves ambiguity",
+      "difficulty": "warmup",
+      "prompt": "The word 'book' can be a noun or a verb. Give two sentences where it differs, and explain why even a simple most-frequent-tag baseline needs context to get one of them right.",
+      "hint": "'I read a book' (noun) vs 'Book a flight' (verb). Most-frequent-tag picks one always; context is needed for the other.",
+      "solution": "- 'I read a **book**.' → NOUN\n- '**Book** a flight.' → VERB\n\nA **most-frequent-tag baseline** assigns each word its single most common tag from training — for 'book' that's probably NOUN, so it nails the first sentence and *fails* the imperative second one. This baseline already gets ~90% accuracy because most words are unambiguous, but the remaining errors are exactly the **context-dependent** cases ('book', 'run', 'saw', 'that'). Resolving them requires looking at neighbors — a determiner before 'book' suggests noun, sentence-initial position suggests verb — which is what HMM/CRF taggers and transformers learn. POS tags then feed lemmatization, parsing, and structured-extraction validation."
+    },
+    {
+      "title": "Read a dependency parse",
+      "difficulty": "core",
+      "prompt": "For 'The cat chased the mouse', give the dependency relations (root, subject, object, determiners). Explain what a dependency tree captures that a flat POS-tag sequence doesn't.",
+      "hint": "Root = chased (verb); nsubj = cat; dobj = mouse; det = the→cat, the→mouse.",
+      "solution": "```\nchased   -> ROOT (main verb)\ncat      -> nsubj of chased   (who did it)\nmouse    -> dobj  of chased   (what it was done to)\nThe      -> det of cat\nthe      -> det of mouse\n```\n\nA flat POS sequence tells you each word's *category* (DET NOUN VERB DET NOUN) but **not how words relate**. The dependency tree captures **head→dependent grammatical relations**: that `cat` is the *subject* of `chased` and `mouse` is its *object* — i.e. who did what to whom. That structure is what lets you answer 'what did the cat chase?' programmatically, decompose complex queries in QA, check that an extracted (subject, verb, object) triple is grammatically valid, or align parse trees when evaluating translation. Order alone ('cat chased mouse' vs 'mouse chased cat') would be invisible to a bag of POS tags."
+    },
+    {
+      "title": "Why grammar came back for LLM pipelines",
+      "difficulty": "stretch",
+      "prompt": "Explain why classical POS/parsing fell out of research fashion yet remains essential in applied LLM pipelines. Give two concrete places a dependency parse or POS tag is used to make LLM output reliable.",
+      "hint": "Deep learning collapsed POS/parsing into a solved sub-task; but structured-extraction validation, query decomposition, and grounding still need explicit structure.",
+      "solution": "**Why it left research:** deep learning turned POS tagging and parsing into near-solved token-classification tasks on top of a pretrained transformer (high accuracy, little novelty), so the research frontier moved on to generation and reasoning. They're 'done', not 'useless.'\n\n**Why applied pipelines still need them** — explicit grammatical structure is the cheap, deterministic check that catches LLM unreliability:\n1. **Validating structured extraction:** when an LLM emits JSON/triples like (subject, relation, object), a dependency parse of the source sentence verifies the subject really governs that relation — catching hallucinated relations the LLM asserted but the grammar doesn't support.\n2. **Query decomposition in QA/RAG:** parse a complex question into its head predicate and arguments to split it into sub-queries, or to identify the focus entity to retrieve on.\n\nOther uses: POS-constrained or grammar-constrained decoding (force valid output forms), and parse-tree alignment for evaluating translation/summarization faithfulness. The pattern: LLMs are fluent but ungrounded, and a fast, rule-based parse gives you a *verifiable* structural signal to validate or steer them — which is why spaCy still ships in production stacks next to a frontier model."
+    }
+  ]
+}

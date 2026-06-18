@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Advertised vs usable context",
+      "difficulty": "warmup",
+      "prompt": "Explain the gap between a model's advertised context window (e.g. 1M–10M tokens) and its usable capacity, using the contract-termination-clause example. What's the rule of thumb for effective capacity?",
+      "hint": "Models attend well only to part of the window; effective ≈ 60-70% of advertised, and it depends on the task.",
+      "solution": "A model can *accept* 1M tokens but doesn't *attend* equally across all of them. Paste a 200-page contract and ask 'what is the termination clause?'; if the clause sits at 120k tokens deep, the model may answer from the **cover page** because its attention degrades past a certain depth — it physically read the clause but effectively ignored it.\n\n**Rule of thumb:** **effective capacity ≈ 60–70% of advertised**, and it's **task-dependent**: simple single-fact retrieval holds up near the max on frontier models, but multi-hop and reasoning fail far earlier. The spec sheet number is a *maximum input size*, not a *guarantee of comprehension*. You must measure the model's real usable depth for *your* task before trusting it on long documents — which is what long-context benchmarks do."
+    },
+    {
+      "title": "NIAH vs RULER vs MRCR",
+      "difficulty": "core",
+      "prompt": "Distinguish the long-context benchmark families — needle-in-a-haystack (NIAH), RULER, multi-needle/MRCR — by what capability each stresses, and why a model can ace NIAH yet fail real long-document tasks.",
+      "hint": "NIAH: single fact retrieval. RULER: configurable multi-hop/aggregation. MRCR: multiple needles + reasoning. Single-needle is the easiest case.",
+      "solution": "- **NIAH (needle-in-a-haystack):** insert one random fact ('the needle') into a long filler context and ask for it. Tests pure **single-fact retrieval** at depth. Frontier models near-saturate this up to the advertised max — it's the *easiest* long-context skill.\n- **RULER:** a configurable suite that scales difficulty — **multiple needles, variable tracking, aggregation, and multi-hop** queries — giving a more honest capacity curve than NIAH.\n- **MRCR (multi-round / multi-needle co-reference retrieval):** requires finding and **reasoning over several dispersed facts together**. This is where models collapse — e.g. Gemini 3 Pro at 1M tokens drops to ~26% on 8-needle MRCR despite acing single-needle.\n\n**Why NIAH passes but real tasks fail:** real documents need **aggregation and reasoning over many dispersed facts**, not retrieval of one verbatim string. Single-needle retrieval is a lookup the model can do even with degraded attention; the moment a task requires *combining* facts spread across 100k+ tokens (compare clauses, sum figures, track an entity across a contract), performance falls off a cliff. A model 'passing 1M context' on NIAH can be near-useless for genuine long-document QA — so you must evaluate on multi-needle/reasoning benchmarks that match your task, not the flattering single-needle number."
+    },
+    {
+      "title": "Long context vs RAG — the engineering decision",
+      "difficulty": "stretch",
+      "prompt": "Given the advertised-vs-usable gap, explain when to stuff everything into a long context window vs use RAG to retrieve relevant chunks. Cover cost, latency, accuracy, and the failure modes of each.",
+      "hint": "Long context: simple, no retrieval infra, but quadratic cost, slow, and degrades on dispersed-fact reasoning. RAG: cheaper/faster, scales beyond any window, but adds retrieval failure modes.",
+      "solution": "**Long-context (stuff it all in):**\n- *Pros:* no retrieval infrastructure, the model sees the whole document so no chunking/retrieval can lose information, simplest pipeline.\n- *Cons:* attention is roughly **quadratic** in tokens → high **cost and latency** at 100k+ tokens; **effective capacity is only ~60–70%** so deep/dispersed facts get missed; **multi-hop reasoning degrades sharply** past ~128k; and you're capped by the window (a 2M-token corpus won't fit at all).\n\n**RAG (retrieve relevant chunks):**\n- *Pros:* feeds the model only a few relevant passages → far **cheaper and faster**, **scales beyond any context window** (index millions of docs), and the model attends well to a small, focused context.\n- *Cons:* adds the **retrieval failure chain** (recall miss, irrelevant chunks, chunk-boundary loss) and pipeline complexity.\n\n**Decision:** use **long-context** when the document is moderate-sized, the task needs *global* reasoning over the whole thing, and cost/latency are acceptable (e.g. 'summarize this 50-page report'). Use **RAG** when the corpus exceeds the *usable* window, when most of the context is irrelevant to any given query, or when cost/latency/scale matter (e.g. 'answer questions over 100k documents'). Hybrid is common: RAG to narrow to the relevant sections, then a long-context model to reason over them. The key input to this decision is the *measured* usable capacity for your task — not the advertised number."
+    }
+  ]
+}

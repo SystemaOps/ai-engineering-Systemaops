@@ -1,0 +1,25 @@
+{
+  "exercises": [
+    {
+      "title": "Three QA architectures",
+      "difficulty": "warmup",
+      "prompt": "Distinguish extractive, open-domain (retrieval-augmented), and closed-book generative QA by what input they assume and where the answer comes from. Which is most prone to confidently wrong facts?",
+      "hint": "Extractive: passage given, find span. Open-domain: retrieve then answer. Closed-book: LLM from parametric memory only.",
+      "solution": "- **Extractive QA:** you're *given* a passage known to contain the answer; the model predicts the **start/end span** of the answer text within it (SQuAD-style). Answer comes from the provided passage.\n- **Open-domain (retrieval-augmented):** no passage given — first **retrieve** relevant documents, then extract or generate the answer grounded in them. The basis of every RAG system.\n- **Closed-book generative:** an LLM answers **from its parametric memory** with no retrieval. Fastest, but the answer comes from weights, not a verifiable source.\n\n**Most prone to confident wrong facts → closed-book generative.** With no grounding document, it generates from compressed training memory, so it can produce a fluent, authoritative, *wrong* answer (and can't cite a source). Extractive is the most factually safe (answer is literally in the given passage); open-domain sits between, grounded but dependent on retrieval quality. Modern assistants blend all three."
+    },
+    {
+      "title": "Extractive span prediction",
+      "difficulty": "core",
+      "prompt": "Explain how an extractive QA model predicts an answer span over a passage (start/end logits) and how you extract the best valid span at inference. What constraint makes a span valid?",
+      "hint": "Two heads output start-logit and end-logit per token; pick start≤end maximizing start_logit+end_logit within a max length.",
+      "solution": "The model puts two classification heads over the passage tokens: a **start-logit** and an **end-logit** per token (probability that the answer begins / ends there). At inference you find the span maximizing `start_logit[i] + end_logit[j]` subject to validity constraints:\n\n```python\nbest = max(\n    ((i, j, s[i]+e[j]) for i in range(n) for j in range(i, min(i+max_len, n))),\n    key=lambda t: t[2])\nanswer_tokens = passage[best[0]: best[1]+1]\n```\n\n**Valid span constraints:** `start ≤ end` (can't end before it begins), the span must lie within the passage (not in the question), and its length must be ≤ a max (reject absurd 500-token 'answers'). You also compare the best span's score against the 'no-answer' score (the [CLS] span) so the model can abstain when the passage doesn't contain the answer (SQuAD 2.0). This span formulation keeps the answer **verbatim from the source** — the reason extractive QA is the faithful baseline RAG builds on."
+    },
+    {
+      "title": "Why retrieval grounds generation",
+      "difficulty": "stretch",
+      "prompt": "Explain why retrieval-augmented QA (RAG) reduces hallucination compared to closed-book QA, and the new failure modes RAG introduces. What's the end-to-end failure chain you must monitor?",
+      "hint": "Grounding answers in retrieved text constrains the model to sources; but retrieval can miss, return irrelevant docs, or the generator can ignore the context.",
+      "solution": "**Why RAG reduces hallucination:** instead of answering from opaque parametric memory, the model is given **retrieved source passages** and asked to answer *from them* (often with citations). This grounds the answer in checkable text, lets you show provenance, and keeps knowledge **updatable** (swap the corpus, no retraining). The model's job shifts from 'recall a fact' to 'read and synthesize given evidence' — much harder to fabricate.\n\n**New failure modes RAG introduces:**\n1. **Retrieval miss:** the relevant document isn't retrieved → the model has no grounding and falls back to guessing (or should abstain).\n2. **Irrelevant/distractor passages:** retrieval returns plausible-but-wrong docs → the model grounds in the wrong source.\n3. **Generator ignores context:** even with the right passage retrieved, the LLM may override it with its prior (a 'context-unfaithful' answer).\n4. **Stale/contradictory corpus:** sources disagree or are outdated.\n\n**End-to-end chain to monitor:** *query understanding → retrieval recall@k → passage relevance → answer faithfulness to retrieved context → citation correctness.* A failure at any link breaks the answer, so you instrument each: measure retrieval recall (is the gold doc in top-k?), context relevance, and **groundedness** (does the answer's claims follow from the retrieved text via NLI/LLM-judge?). RAG moves the hallucination problem from the generator to the *whole pipeline* — you trade one hard problem for several measurable ones."
+    }
+  ]
+}
