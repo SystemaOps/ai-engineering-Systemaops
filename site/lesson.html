@@ -2728,10 +2728,18 @@
         return text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
       }
 
+      var __codeBlockSeq = 0;
       function renderCodeBlock(code, lang) {
         var highlighted = highlightSyntax(escapeHtml(code), lang);
         var langLabel = lang ? '<span class="code-lang">' + escapeHtml(lang) + '</span>' : '';
-        return '<pre>' + langLabel + '<button class="code-copy" data-code="' + escapeAttr(code) + '">Copy</button><code>' + highlighted + '</code></pre>';
+        var isPy = (lang === 'python' || lang === 'py');
+        var runBtn = '', outBlock = '';
+        if (isPy) {
+          var outId = 'codeout-' + (++__codeBlockSeq);
+          runBtn = '<button class="code-run" data-code="' + escapeAttr(code) + '" data-out="' + outId + '">&#9654; Run</button>';
+          outBlock = '<div class="code-output" id="' + outId + '" hidden></div>';
+        }
+        return '<pre>' + langLabel + runBtn + '<button class="code-copy" data-code="' + escapeAttr(code) + '">Copy</button><code>' + highlighted + '</code></pre>' + outBlock;
       }
 
       function highlightSyntax(code, lang) {
@@ -2776,6 +2784,7 @@
 
       function initCodeCopy() {
         document.querySelectorAll('.code-copy').forEach(function (btn) {
+          if (btn.dataset.bound) return; btn.dataset.bound = '1';
           btn.addEventListener('click', function () {
             var code = btn.getAttribute('data-code');
             navigator.clipboard.writeText(code).then(function () {
@@ -2784,7 +2793,128 @@
             });
           });
         });
+        initCodeRun();
       }
+
+      // ─── In-browser Python execution (Pyodide, self-hosted) ──────────────
+      // Run buttons execute the code block in the browser; Check graders run
+      // an exercise's hidden tests against the learner's attempt. Pyodide is
+      // lazy-loaded on first use from the vendored copy in vendor/pyodide/,
+      // with a CDN fallback if the vendored assets are absent.
+      var __pyodidePromise = null;
+      var PYODIDE_LOCAL = 'vendor/pyodide/';
+      var PYODIDE_CDN = 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/';
+      function ensurePyodide() {
+        if (__pyodidePromise) return __pyodidePromise;
+        __pyodidePromise = new Promise(function (resolve, reject) {
+          function boot(base) {
+            var s = document.createElement('script');
+            s.src = base + 'pyodide.js';
+            s.onload = function () { loadPyodide({ indexURL: base }).then(resolve, reject); };
+            s.onerror = function () {
+              if (base === PYODIDE_LOCAL) boot(PYODIDE_CDN);  // fallback to CDN
+              else reject(new Error('Could not load Pyodide'));
+            };
+            document.head.appendChild(s);
+          }
+          boot(PYODIDE_LOCAL);
+        });
+        return __pyodidePromise;
+      }
+      // Run a snippet, capturing stdout. Source is passed as a variable (no
+      // re-indenting) so triple-quoted strings and indentation survive intact.
+      async function pyRun(src) {
+        var py = await ensurePyodide();
+        py.globals.set('_USERSRC', src);
+        await py.runPythonAsync(
+          'import sys, io, traceback\n' +
+          '_buf = io.StringIO(); _old = sys.stdout; sys.stdout = _buf; _err = ""\n' +
+          'try:\n    exec(_USERSRC, {})\n' +
+          'except Exception:\n    _err = traceback.format_exc()\n' +
+          'finally:\n    sys.stdout = _old\n' +
+          '_result = (_buf.getvalue(), _err)\n');
+        var r = py.globals.get('_result').toJs();
+        return { stdout: r[0], error: r[1] };
+      }
+      // Run the learner's attempt, then evaluate each test expression in its
+      // namespace. Returns { setupError, results:[bool] }.
+      async function pyCheck(attemptSrc, testExprs) {
+        var py = await ensurePyodide();
+        py.globals.set('_ATTEMPT', attemptSrc);
+        py.globals.set('_TESTS', testExprs);
+        await py.runPythonAsync(
+          'import traceback\n' +
+          '_ns = {}\n' +
+          'def _raises(fn, exc=Exception):\n' +
+          '    try:\n        fn(); return False\n    except exc:\n        return True\n    except Exception:\n        return False\n' +
+          '_ns["_raises"] = _raises\n' +
+          '_setup_err = ""\n' +
+          'try:\n    exec(_ATTEMPT, _ns)\n' +
+          'except Exception:\n    _setup_err = traceback.format_exc()\n' +
+          '_test_results = []\n' +
+          'if not _setup_err:\n' +
+          '    for _expr in _TESTS:\n' +
+          '        try:\n            _test_results.append(bool(eval(_expr, _ns)))\n        except Exception:\n            _test_results.append(False)\n' +
+          '_check = (_setup_err, _test_results)\n');
+        var c = py.globals.get('_check').toJs();
+        return { setupError: c[0], results: c[1] };
+      }
+      function pyEscape(s) {
+        return String(s).replace(/[<>&]/g, function (ch) {
+          return { '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch];
+        });
+      }
+      function initCodeRun() {
+        document.querySelectorAll('.code-run').forEach(function (btn) {
+          if (btn.dataset.bound) return; btn.dataset.bound = '1';
+          btn.addEventListener('click', async function () {
+            var out = document.getElementById(btn.getAttribute('data-out'));
+            if (!out) return;
+            out.hidden = false; out.className = 'code-output running';
+            out.textContent = 'Loading Python… (first run downloads the runtime once)';
+            btn.disabled = true;
+            try {
+              var r = await pyRun(btn.getAttribute('data-code'));
+              if (r.error) { out.className = 'code-output err'; out.textContent = r.error; }
+              else {
+                out.className = 'code-output';
+                out.textContent = r.stdout && r.stdout.length ? r.stdout : '(no output)';
+              }
+            } catch (e) {
+              out.className = 'code-output err'; out.textContent = 'Run failed: ' + e;
+            } finally { btn.disabled = false; }
+          });
+        });
+      }
+      // Inject runner styles once.
+      (function injectRunnerStyles() {
+        var css =
+          '.code-run{margin-right:6px;background:#2563eb;color:#fff;border:none;border-radius:5px;' +
+          'padding:2px 9px;font-size:12px;font-weight:600;cursor:pointer}' +
+          '.code-run:disabled{opacity:.6;cursor:wait}' +
+          '.code-output{font-family:var(--mono,monospace);font-size:12.5px;white-space:pre-wrap;' +
+          'word-break:break-word;background:#0f172a;color:#cbd5e1;border:1px solid #1e293b;' +
+          'border-radius:8px;padding:11px 13px;margin:-6px 0 14px}' +
+          '.code-output.running{color:#94a3b8;font-style:italic}' +
+          '.code-output.err{color:#fca5a5}' +
+          '.exercise-try{margin:14px 0 4px;border-top:1px dashed var(--line,#e5e2dc);padding-top:14px}' +
+          '.exercise-try-label{font-size:12px;font-weight:700;text-transform:uppercase;' +
+          'letter-spacing:.04em;color:var(--muted,#6b6b6b);margin-bottom:8px}' +
+          '.exercise-attempt{width:100%;min-height:130px;font-family:var(--mono,monospace);' +
+          'font-size:13px;line-height:1.5;background:#1e1e2e;color:#e6e6e6;border:1px solid #313244;' +
+          'border-radius:8px;padding:12px;resize:vertical;tab-size:4}' +
+          '.exercise-check{margin-top:10px;background:#047857;color:#fff;border:none;border-radius:7px;' +
+          'padding:8px 15px;font-size:13.5px;font-weight:600;cursor:pointer}' +
+          '.exercise-check:disabled{opacity:.6;cursor:wait}' +
+          '.exercise-check-result{margin-top:10px;font-size:13.5px}' +
+          '.exercise-check-result .ok{color:#15803d;font-weight:600}' +
+          '.exercise-check-result .bad{color:#b91c1c;font-weight:600}' +
+          '.exercise-check-result .tline{font-family:var(--mono,monospace);font-size:12px;padding:2px 0}' +
+          '.exercise-check-result .tline.pass::before{content:"\\2713 ";color:#15803d}' +
+          '.exercise-check-result .tline.fail::before{content:"\\2717 ";color:#b91c1c}';
+        var st = document.createElement('style'); st.textContent = css;
+        document.head.appendChild(st);
+      })();
 
       function renderMermaidBlocks() {
         var fontsReady = (document.fonts && document.fonts.load)
@@ -3064,6 +3194,14 @@
           inner += '<div class="exercise-prompt">' + parseMd(ex.prompt || '') + '</div>';
           if (ex.hint) inner += '<details class="exercise-reveal"><summary>Hint</summary><div class="exercise-reveal-body">' + parseMd(ex.hint) + '</div></details>';
           if (ex.solution) inner += '<details class="exercise-reveal"><summary>Show solution</summary><div class="exercise-reveal-body">' + parseMd(ex.solution) + '</div></details>';
+          if (ex.tests && ex.tests.length) {
+            inner += '<div class="exercise-try" data-ex="' + i + '">';
+            inner += '<div class="exercise-try-label">Your turn — write it, then check</div>';
+            inner += '<textarea class="exercise-attempt" spellcheck="false">' + escapeHtml(ex.starter_code || '') + '</textarea>';
+            inner += '<div><button class="exercise-check" data-ex="' + i + '">&#10003; Check answer</button></div>';
+            inner += '<div class="exercise-check-result"></div>';
+            inner += '</div>';
+          }
           inner += '</div>';
         });
 
@@ -3098,7 +3236,47 @@
         }
 
         initCodeCopy();
+        bindExerciseChecks(section, items);
         renderMermaidBlocks();
+      }
+
+      // Wire each exercise's Check button to run its hidden tests against the
+      // learner's attempt and render a per-test pass/fail verdict.
+      function bindExerciseChecks(section, items) {
+        section.querySelectorAll('.exercise-check').forEach(function (btn) {
+          if (btn.dataset.bound) return; btn.dataset.bound = '1';
+          var idx = parseInt(btn.getAttribute('data-ex'), 10);
+          var ex = items[idx];
+          if (!ex || !ex.tests) return;
+          var wrap = btn.closest('.exercise-try');
+          var attempt = wrap.querySelector('.exercise-attempt');
+          var resultBox = wrap.querySelector('.exercise-check-result');
+          btn.addEventListener('click', async function () {
+            resultBox.innerHTML = '<span class="tline">running tests…</span>';
+            btn.disabled = true;
+            try {
+              var exprs = ex.tests.map(function (t) { return t.expr; });
+              var res = await pyCheck(attempt.value, exprs);
+              if (res.setupError) {
+                resultBox.innerHTML = '<span class="bad">Your code raised an error:</span>' +
+                  '<div class="code-output err">' + pyEscape(res.setupError) + '</div>';
+                return;
+              }
+              var passed = 0;
+              var lines = ex.tests.map(function (t, k) {
+                var ok = !!res.results[k];
+                if (ok) passed++;
+                return '<div class="tline ' + (ok ? 'pass' : 'fail') + '">' + escapeHtml(t.desc) + '</div>';
+              }).join('');
+              var verdict = (passed === ex.tests.length)
+                ? '<span class="ok">All ' + ex.tests.length + ' tests passed — solved! ✓</span>'
+                : '<span class="bad">' + passed + '/' + ex.tests.length + ' passed — keep going.</span>';
+              resultBox.innerHTML = verdict + lines;
+            } catch (e) {
+              resultBox.innerHTML = '<span class="bad">Check failed: ' + pyEscape(e) + '</span>';
+            } finally { btn.disabled = false; }
+          });
+        });
       }
 
       function renderQuiz(data) {
