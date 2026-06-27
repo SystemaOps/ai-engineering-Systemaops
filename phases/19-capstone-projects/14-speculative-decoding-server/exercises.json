@@ -5,21 +5,66 @@
       "difficulty": "warmup",
       "prompt": "EAGLE-3 trains a draft head on the target model's hidden states; it proposes N tokens, the target verifies in one pass, accepted tokens are free. Write `throughput_multiplier(acceptance, draft_len)` giving the effective speedup, and tabulate it across acceptance rates. Show the 2.5-3x speedup at 60-80% acceptance.",
       "hint": "Effective tokens per target pass = 1 + sum(acceptance^i for i in 1..draft_len). Speedup vs 1 token/pass = that count (minus small draft overhead). Show speedup at acceptance 0.5, 0.6, 0.7, 0.8 for draft_len ~5 -> 2.5-3x at 60-80%.",
-      "solution": "EAGLE-3's speedup is a function of acceptance — at the 60-80% rates it achieves, that is 2.5-3x.\n\n```python\ndef throughput_multiplier(acceptance, draft_len=5, draft_overhead=0.1):\n    accepted = sum(acceptance ** i for i in range(1, draft_len + 1))\n    return (1 + accepted) / (1 + draft_overhead)\n\nfor a in (0.5, 0.6, 0.7, 0.8):\n    print(f\"acceptance {a}: {throughput_multiplier(a):.2f}x throughput\")\n```\n\nOutput (approximately):\n\n```\nacceptance 0.5: 1.71x throughput\nacceptance 0.6: 2.02x throughput\nacceptance 0.7: 2.42x throughput\nacceptance 0.8: 2.88x throughput\n```\n\n**Why EAGLE-3 hits 2.5-3x.** The draft head, trained on the *target's hidden states*, predicts the next few tokens; the target verifies all of them in one forward pass, and accepted tokens are free. The speedup is the expected accepted tokens per target pass — at EAGLE-3's 60-80% acceptance, that is 2-2.9x, the production figure (vLLM 0.7). The whole serving win rests on acceptance rate (Phase 17 Lesson 5), so measuring it is the first deliverable. The next exercises cover quantization and the tail-latency report."
+      "solution": "EAGLE-3's speedup is a function of acceptance — at the 60-80% rates it achieves, that is 2.5-3x.\n\n```python\ndef throughput_multiplier(acceptance, draft_len=5, draft_overhead=0.1):\n    accepted = sum(acceptance ** i for i in range(1, draft_len + 1))\n    return (1 + accepted) / (1 + draft_overhead)\n\nfor a in (0.5, 0.6, 0.7, 0.8):\n    print(f\"acceptance {a}: {throughput_multiplier(a):.2f}x throughput\")\n```\n\nOutput (approximately):\n\n```\nacceptance 0.5: 1.71x throughput\nacceptance 0.6: 2.02x throughput\nacceptance 0.7: 2.42x throughput\nacceptance 0.8: 2.88x throughput\n```\n\n**Why EAGLE-3 hits 2.5-3x.** The draft head, trained on the *target's hidden states*, predicts the next few tokens; the target verifies all of them in one forward pass, and accepted tokens are free. The speedup is the expected accepted tokens per target pass — at EAGLE-3's 60-80% acceptance, that is 2-2.9x, the production figure (vLLM 0.7). The whole serving win rests on acceptance rate (Phase 17 Lesson 5), so measuring it is the first deliverable. The next exercises cover quantization and the tail-latency report.",
+      "starter_code": "def throughput_multiplier(acceptance, draft_len=5, draft_overhead=0.1):\n    # accepted = sum(acceptance**i, i=1..draft_len); return (1+accepted)/\n    # (1+draft_overhead).\n    pass\n",
+      "tests": [
+        {
+          "desc": "higher acceptance gives more throughput",
+          "expr": "throughput_multiplier(0.8) > throughput_multiplier(0.5)"
+        },
+        {
+          "desc": "speculation beats 1x at good acceptance",
+          "expr": "throughput_multiplier(0.7) > 1.0"
+        },
+        {
+          "desc": "zero acceptance is the worst case",
+          "expr": "throughput_multiplier(0.0) < throughput_multiplier(0.5)"
+        }
+      ]
     },
     {
       "title": "Stack quantization with speculation",
       "difficulty": "core",
       "prompt": "The production stack combines speculative decoding with FP8/INT4 quantization (smaller = faster memory-bound decode). Build a throughput model that stacks the speculative multiplier with a quantization multiplier and computes effective tokens/sec, showing the combined stack beating either alone. Discuss the quality-check requirement on quantization.",
       "hint": "effective_tps = baseline_tps * spec_multiplier * quant_multiplier. quant: FP8 ~1.3x, INT4 ~1.6x (memory-bound decode faster with smaller weights). Show spec-only, quant-only, both. Caveat: quantization needs a quality check (per-block validation for aggressive formats).",
-      "solution": "Speculative decoding and quantization stack multiplicatively — the production server uses both.\n\n```python\ndef effective_tps(baseline, spec_mult, quant_mult):\n    return baseline * spec_mult * quant_mult\n\nbaseline = 2000\nconfigs = {\n    'baseline':            (1.0, 1.0),\n    'speculative only':    (2.6, 1.0),\n    'quantization only':   (1.0, 1.6),\n    'speculative + INT4':  (2.6, 1.6),\n}\nfor name, (sm, qm) in configs.items():\n    print(f\"{name:>20}: {effective_tps(baseline, sm, qm):.0f} tok/s\")\nprint('\\ncaveat: aggressive quantization (INT4/NVFP4) needs per-block quality validation')\n```\n\nOutput:\n\n```\n            baseline: 2000 tok/s\n     speculative only: 5200 tok/s\n    quantization only: 3200 tok/s\n  speculative + INT4: 8320 tok/s\n```\n\n**Why stack them.** Speculative decoding reduces *target forward passes*; quantization reduces *memory traffic per pass* (smaller weights, faster memory-bound decode). They attack different bottlenecks, so they *multiply*: speculative+INT4 reaches 4.2x baseline. This is the vLLM/SGLang + EAGLE-family + FP8/INT4 production stack.\n\n**The quality caveat.** Aggressive quantization (INT4, NVFP4) can degrade quality and needs *per-block validation* (Phase 17 Lesson 9) — a throughput win that ships a worse model is not a win. So the deliverable measures throughput *and* verifies output quality holds. The final exercise produces the tail-latency report."
+      "solution": "Speculative decoding and quantization stack multiplicatively — the production server uses both.\n\n```python\ndef effective_tps(baseline, spec_mult, quant_mult):\n    return baseline * spec_mult * quant_mult\n\nbaseline = 2000\nconfigs = {\n    'baseline':            (1.0, 1.0),\n    'speculative only':    (2.6, 1.0),\n    'quantization only':   (1.0, 1.6),\n    'speculative + INT4':  (2.6, 1.6),\n}\nfor name, (sm, qm) in configs.items():\n    print(f\"{name:>20}: {effective_tps(baseline, sm, qm):.0f} tok/s\")\nprint('\\ncaveat: aggressive quantization (INT4/NVFP4) needs per-block quality validation')\n```\n\nOutput:\n\n```\n            baseline: 2000 tok/s\n     speculative only: 5200 tok/s\n    quantization only: 3200 tok/s\n  speculative + INT4: 8320 tok/s\n```\n\n**Why stack them.** Speculative decoding reduces *target forward passes*; quantization reduces *memory traffic per pass* (smaller weights, faster memory-bound decode). They attack different bottlenecks, so they *multiply*: speculative+INT4 reaches 4.2x baseline. This is the vLLM/SGLang + EAGLE-family + FP8/INT4 production stack.\n\n**The quality caveat.** Aggressive quantization (INT4, NVFP4) can degrade quality and needs *per-block validation* (Phase 17 Lesson 9) — a throughput win that ships a worse model is not a win. So the deliverable measures throughput *and* verifies output quality holds. The final exercise produces the tail-latency report.",
+      "starter_code": "def effective_tps(baseline, spec_mult, quant_mult):\n    # baseline * spec_mult * quant_mult.\n    pass\n",
+      "tests": [
+        {
+          "desc": "stacking speedups multiplies them",
+          "expr": "effective_tps(2000, 2.6, 1.6) > effective_tps(2000, 2.6, 1.0)"
+        },
+        {
+          "desc": "the baseline is unchanged at 1x/1x",
+          "expr": "effective_tps(2000, 1.0, 1.0) == 2000"
+        },
+        {
+          "desc": "the multipliers compose",
+          "expr": "effective_tps(2000, 2.0, 2.0) == 8000"
+        }
+      ]
     },
     {
       "title": "The tail-latency report and HPA on queue-wait",
       "difficulty": "stretch",
       "prompt": "The deliverable is 2.5x+ throughput with a full tail-latency report (P50/P90/P99), served with HPA scaling on queue-wait (not GPU util). Build a report that computes TTFT/TPOT percentiles under load and an autoscaler that scales on queue-wait time, and show the tail report plus the autoscaler reacting to a queue spike. Tie to Phase 17 metrics + autoscaling.",
       "hint": "Report P50/P90/P99 for TTFT and TPOT (always percentiles, not mean -- Phase 17 L8). HPA: scale when queue-wait exceeds target (not GPU util, which lies -- Phase 17 L3). Show the percentile report + autoscaler reacting to a queue spike.",
-      "solution": "The deliverable is throughput *plus* a tail-latency report and queue-wait-based autoscaling — the Phase 17 metrics and scaling disciplines applied.\n\n```python\ndef percentile(data, p):\n    s = sorted(data); return s[round(p/100*(len(s)-1))]\n\ndef tail_report(ttfts, tpots):\n    return {f'TTFT_P{p}': percentile(ttfts, p) for p in (50, 90, 99)} | \\\n           {f'TPOT_P{p}': percentile(tpots, p) for p in (50, 90, 99)}\n\ndef autoscale(queue_wait_ms, target_ms=200, replicas=2):\n    return replicas + 1 if queue_wait_ms > target_ms else replicas\n\nttfts = [150]*90 + [400]*7 + [900]*3\ntpots = [7]*90 + [12]*7 + [20]*3\nfor k, v in tail_report(ttfts, tpots).items():\n    print(f\"{k}: {v}\")\nprint('autoscaler on queue spike (350ms wait):', autoscale(350), 'replicas')\n```\n\nOutput:\n\n```\nTTFT_P50: 150\nTTFT_P90: 150\nTTFT_P99: 900\nTPOT_P50: 7\nTPOT_P90: 12\nTPOT_P99: 20\n```\n\n**Why percentiles and queue-wait.** A throughput number alone hides the tail — the P99 TTFT (900ms) is 6x the P50 (150ms), and users feel the tail (Phase 17 Lesson 8). The report *always* gives P50/P90/P99, never the mean. And the autoscaler scales on *queue-wait time*, not GPU utilization — because GPU util is a duty-cycle metric that saturates and lies (Phase 17 Lesson 3); queue-wait directly measures backlog, so a 350ms wait correctly triggers a scale-up.\n\n**The capstone synthesis.** A speculative-decoding server hits 2.5-3x via EAGLE-3 acceptance (Ex. 1), stacks quantization for more throughput with a quality check (Ex. 2), and ships a full tail-latency report with queue-wait autoscaling (Ex. 3). The deliverable — two open models at 2.5x+ baseline with a tail report — is the Phase 17 serving disciplines (speculative decoding, quantization, percentile metrics, correct autoscaling signal) assembled into one production server."
+      "solution": "The deliverable is throughput *plus* a tail-latency report and queue-wait-based autoscaling — the Phase 17 metrics and scaling disciplines applied.\n\n```python\ndef percentile(data, p):\n    s = sorted(data); return s[round(p/100*(len(s)-1))]\n\ndef tail_report(ttfts, tpots):\n    return {f'TTFT_P{p}': percentile(ttfts, p) for p in (50, 90, 99)} | \\\n           {f'TPOT_P{p}': percentile(tpots, p) for p in (50, 90, 99)}\n\ndef autoscale(queue_wait_ms, target_ms=200, replicas=2):\n    return replicas + 1 if queue_wait_ms > target_ms else replicas\n\nttfts = [150]*90 + [400]*7 + [900]*3\ntpots = [7]*90 + [12]*7 + [20]*3\nfor k, v in tail_report(ttfts, tpots).items():\n    print(f\"{k}: {v}\")\nprint('autoscaler on queue spike (350ms wait):', autoscale(350), 'replicas')\n```\n\nOutput:\n\n```\nTTFT_P50: 150\nTTFT_P90: 150\nTTFT_P99: 900\nTPOT_P50: 7\nTPOT_P90: 12\nTPOT_P99: 20\n```\n\n**Why percentiles and queue-wait.** A throughput number alone hides the tail — the P99 TTFT (900ms) is 6x the P50 (150ms), and users feel the tail (Phase 17 Lesson 8). The report *always* gives P50/P90/P99, never the mean. And the autoscaler scales on *queue-wait time*, not GPU utilization — because GPU util is a duty-cycle metric that saturates and lies (Phase 17 Lesson 3); queue-wait directly measures backlog, so a 350ms wait correctly triggers a scale-up.\n\n**The capstone synthesis.** A speculative-decoding server hits 2.5-3x via EAGLE-3 acceptance (Ex. 1), stacks quantization for more throughput with a quality check (Ex. 2), and ships a full tail-latency report with queue-wait autoscaling (Ex. 3). The deliverable — two open models at 2.5x+ baseline with a tail report — is the Phase 17 serving disciplines (speculative decoding, quantization, percentile metrics, correct autoscaling signal) assembled into one production server.",
+      "starter_code": "def percentile(data, p):\n    s = sorted(data); return s[round(p/100*(len(s)-1))]\n\ndef tail_report(ttfts, tpots):\n    # Return P50/P90/P99 for TTFT and TPOT (keys 'TTFT_P50' etc).\n    pass\n\ndef autoscale(queue_wait_ms, target_ms=200, replicas=2):\n    # Add a replica when queue wait exceeds the target.\n    pass\n",
+      "tests": [
+        {
+          "desc": "the tail report carries P99 TTFT",
+          "expr": "'TTFT_P99' in tail_report([1,2,3], [1,2,3])"
+        },
+        {
+          "desc": "a queue spike scales up",
+          "expr": "autoscale(350) == 3"
+        },
+        {
+          "desc": "a healthy queue holds steady",
+          "expr": "autoscale(100) == 2"
+        }
+      ]
     }
   ]
 }
