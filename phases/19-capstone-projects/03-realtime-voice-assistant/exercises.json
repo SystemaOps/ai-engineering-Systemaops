@@ -5,21 +5,74 @@
       "difficulty": "warmup",
       "prompt": "A voice agent feels right under ~800ms first-audio-out. The chain is ASR + turn-detection + LLM TTFT + TTS first-chunk + network. Write `latency_budget(stages)` that sums the per-hop budget and flags whether it clears 800ms, and show a passing and a failing budget. Identify the dominant hop.",
       "hint": "stages dict of ms per hop: asr_final, turn_detect, llm_ttft, tts_first_chunk, network. Sum; flag <=800. Find the max hop. Show one budget under 800 (pass) and one over (fail) with the bottleneck hop named.",
-      "solution": "Voice feel is a latency budget across hops; first-audio-out under ~800ms is the bar.\n\n```python\ndef latency_budget(stages, target=800):\n    total = sum(stages.values())\n    bottleneck = max(stages, key=stages.get)\n    return total, total <= target, bottleneck\n\ngood = {'asr_final': 120, 'turn_detect': 80, 'llm_ttft': 280, 'tts_first_chunk': 150, 'network': 100}\nbad  = {'asr_final': 200, 'turn_detect': 120, 'llm_ttft': 500, 'tts_first_chunk': 200, 'network': 150}\nfor name, b in [('good', good), ('bad', bad)]:\n    total, ok, hop = latency_budget(b)\n    print(f\"{name}: {total}ms -> {'PASS' if ok else 'FAIL'} (bottleneck: {hop})\")\n```\n\nOutput:\n\n```\ngood: 730ms -> PASS (bottleneck: llm_ttft)\nbad: 1170ms -> FAIL (bottleneck: llm_ttft)\n```\n\n**Why budget per hop.** Sub-800ms first-audio-out is achievable only if *every* hop has a budget — ASR finalization, turn detection, LLM time-to-first-token, TTS first chunk, and network all add up. The LLM TTFT is usually the dominant hop, which is why voice stacks use streaming LLMs and start TTS on the first sentence rather than waiting for the full response. Allocating a budget per hop (and measuring against it) is how you find which hop to optimize. The next exercises cover the interaction-feel problems beyond raw latency."
+      "solution": "Voice feel is a latency budget across hops; first-audio-out under ~800ms is the bar.\n\n```python\ndef latency_budget(stages, target=800):\n    total = sum(stages.values())\n    bottleneck = max(stages, key=stages.get)\n    return total, total <= target, bottleneck\n\ngood = {'asr_final': 120, 'turn_detect': 80, 'llm_ttft': 280, 'tts_first_chunk': 150, 'network': 100}\nbad  = {'asr_final': 200, 'turn_detect': 120, 'llm_ttft': 500, 'tts_first_chunk': 200, 'network': 150}\nfor name, b in [('good', good), ('bad', bad)]:\n    total, ok, hop = latency_budget(b)\n    print(f\"{name}: {total}ms -> {'PASS' if ok else 'FAIL'} (bottleneck: {hop})\")\n```\n\nOutput:\n\n```\ngood: 730ms -> PASS (bottleneck: llm_ttft)\nbad: 1170ms -> FAIL (bottleneck: llm_ttft)\n```\n\n**Why budget per hop.** Sub-800ms first-audio-out is achievable only if *every* hop has a budget — ASR finalization, turn detection, LLM time-to-first-token, TTS first chunk, and network all add up. The LLM TTFT is usually the dominant hop, which is why voice stacks use streaming LLMs and start TTS on the first sentence rather than waiting for the full response. Allocating a budget per hop (and measuring against it) is how you find which hop to optimize. The next exercises cover the interaction-feel problems beyond raw latency.",
+      "starter_code": "def latency_budget(stages, target=800):\n    # Return (total_ms, total <= target, slowest_stage_name).\n    pass\n",
+      "tests": [
+        {
+          "desc": "a fast chain passes the budget",
+          "expr": "latency_budget({'a':100,'b':200})[1] == True"
+        },
+        {
+          "desc": "a slow chain fails it",
+          "expr": "latency_budget({'a':500,'b':500})[1] == False"
+        },
+        {
+          "desc": "the bottleneck stage is named",
+          "expr": "latency_budget({'a':100,'b':500})[2] == 'b'"
+        },
+        {
+          "desc": "the total sums the stages",
+          "expr": "latency_budget({'a':100,'b':200})[0] == 300"
+        }
+      ]
     },
     {
       "title": "Turn detection and barge-in",
       "difficulty": "core",
       "prompt": "The feel of a voice agent depends on knowing when the user stopped (turn detection) and handling barge-in (user interrupts the agent's speech). Build a turn-detector with an endpointing timeout plus a barge-in handler that, on detecting user speech during TTS playback, stops the agent's audio immediately. Show a normal turn, a too-eager cutoff avoided, and a barge-in stopping playback.",
       "hint": "Turn detection: end turn after silence_ms of silence (endpointing). Avoid false cutoff: require silence_ms long enough that mid-sentence pauses don't trigger. Barge-in: if user speech detected while is_playing, stop TTS immediately. Show normal end, a 300ms pause NOT ending the turn, and barge-in stopping playback.",
-      "solution": "Latency is necessary but not sufficient — the *interaction feel* is turn-taking: not cutting the user off, and yielding when they interrupt.\n\n```python\nclass TurnManager:\n    def __init__(self, silence_ms=700):\n        self.silence_ms = silence_ms      # endpointing threshold\n        self.is_playing = False\n    def turn_ended(self, trailing_silence_ms):\n        # end the turn only after enough silence (avoid mid-sentence-pause false cutoff)\n        return trailing_silence_ms >= self.silence_ms\n    def on_user_speech(self):\n        if self.is_playing:\n            self.is_playing = False\n            return 'BARGE-IN: stop agent audio immediately'\n        return 'user speaking (agent silent)'\n\ntm = TurnManager(silence_ms=700)\nprint('300ms pause -> turn ended?', tm.turn_ended(300))   # False: mid-sentence pause\nprint('800ms silence -> turn ended?', tm.turn_ended(800)) # True: real endpoint\ntm.is_playing = True\nprint(tm.on_user_speech())                                 # barge-in\n```\n\nOutput:\n\n```\n300ms pause -> turn ended? False\n800ms silence -> turn ended? True\nbarge-in: stop agent audio immediately\n```\n\n**Why these two matter.** *False cutoff* (ending the turn during a mid-sentence pause) makes the agent feel like it is interrupting — so endpointing requires *enough* trailing silence (700ms) that a natural 300ms pause does not trigger it. *Barge-in* (the user starts talking while the agent is speaking) must *immediately stop* the agent's audio — an agent that talks over the user feels broken. These interaction behaviors, not raw latency, are what separate a voice agent that feels natural from one that feels robotic. The false-cutoff rate is a headline metric for this capstone. The final exercise stress-tests under network reality."
+      "solution": "Latency is necessary but not sufficient — the *interaction feel* is turn-taking: not cutting the user off, and yielding when they interrupt.\n\n```python\nclass TurnManager:\n    def __init__(self, silence_ms=700):\n        self.silence_ms = silence_ms      # endpointing threshold\n        self.is_playing = False\n    def turn_ended(self, trailing_silence_ms):\n        # end the turn only after enough silence (avoid mid-sentence-pause false cutoff)\n        return trailing_silence_ms >= self.silence_ms\n    def on_user_speech(self):\n        if self.is_playing:\n            self.is_playing = False\n            return 'BARGE-IN: stop agent audio immediately'\n        return 'user speaking (agent silent)'\n\ntm = TurnManager(silence_ms=700)\nprint('300ms pause -> turn ended?', tm.turn_ended(300))   # False: mid-sentence pause\nprint('800ms silence -> turn ended?', tm.turn_ended(800)) # True: real endpoint\ntm.is_playing = True\nprint(tm.on_user_speech())                                 # barge-in\n```\n\nOutput:\n\n```\n300ms pause -> turn ended? False\n800ms silence -> turn ended? True\nbarge-in: stop agent audio immediately\n```\n\n**Why these two matter.** *False cutoff* (ending the turn during a mid-sentence pause) makes the agent feel like it is interrupting — so endpointing requires *enough* trailing silence (700ms) that a natural 300ms pause does not trigger it. *Barge-in* (the user starts talking while the agent is speaking) must *immediately stop* the agent's audio — an agent that talks over the user feels broken. These interaction behaviors, not raw latency, are what separate a voice agent that feels natural from one that feels robotic. The false-cutoff rate is a headline metric for this capstone. The final exercise stress-tests under network reality.",
+      "starter_code": "class TurnManager:\n    def __init__(self, silence_ms=700):\n        self.silence_ms = silence_ms\n        self.is_playing = False\n    def turn_ended(self, trailing_silence_ms):\n        # End the turn only after enough trailing silence.\n        pass\n    def on_user_speech(self):\n        # If agent audio is playing, barge in (stop it); else note user speaking.\n        pass\n",
+      "tests": [
+        {
+          "desc": "a short pause is not a turn end",
+          "expr": "TurnManager(700).turn_ended(300) == False"
+        },
+        {
+          "desc": "enough silence ends the turn",
+          "expr": "TurnManager(700).turn_ended(800) == True"
+        },
+        {
+          "desc": "user speech during playback barges in",
+          "expr": "(lambda tm: (setattr(tm,'is_playing',True), tm.on_user_speech())[1])(TurnManager()).startswith('BARGE-IN')"
+        },
+        {
+          "desc": "speaking while the agent is silent does not barge in",
+          "expr": "TurnManager().on_user_speech() == 'user speaking (agent silent)'"
+        }
+      ]
     },
     {
       "title": "Survive packet loss without stalling audio",
       "difficulty": "stretch",
       "prompt": "Real mobile networks drop packets. Build a resilience layer for the audio path: a jitter buffer that absorbs reordering/loss up to a threshold and a graceful-degradation policy (on sustained loss, prioritize the audio stream over the data channel). Simulate a packet stream with loss and show the jitter buffer smoothing playback while measuring the loss rate at which quality degrades. Discuss the tool-call-without-stalling problem.",
       "hint": "Jitter buffer: hold N packets, play in order, tolerate loss < threshold by interpolation/skip. On loss > threshold: degrade (lower bitrate, prioritize audio). Simulate a stream with X% loss; show smooth playback below threshold, degradation above. Tool calls: run async so the audio stream never blocks on a tool call.",
-      "solution": "A voice agent must survive jittery mobile networks — a jitter buffer absorbs loss/reordering, and graceful degradation keeps audio flowing when the network gets bad.\n\n```python\ndef playback_quality(loss_rate, buffer_depth=3, loss_tolerance=0.05):\n    if loss_rate <= loss_tolerance:\n        return 'smooth (jitter buffer absorbs loss)'\n    if loss_rate <= 0.15:\n        return 'degraded gracefully (lower bitrate, audio prioritized)'\n    return 'choppy (loss exceeds recovery)'\n\nfor loss in (0.01, 0.05, 0.10, 0.25):\n    print(f\"loss {loss:.0%}: {playback_quality(loss)}\")\nprint('\\ntool calls run ASYNC so the audio stream never stalls waiting on a tool')\n```\n\nOutput:\n\n```\nloss 1%: smooth (jitter buffer absorbs loss)\nloss 5%: smooth (jitter buffer absorbs loss)\nloss 10%: degraded gracefully (lower bitrate, audio prioritized)\nloss 25%: choppy (loss exceeds recovery)\n```\n\n**The resilience layers.** A *jitter buffer* holds a few packets so out-of-order or briefly-lost packets can be recovered without a gap in playback (smooth up to ~5% loss). Beyond that, *graceful degradation* — drop to a lower bitrate, prioritize the audio stream over the data channel — keeps speech intelligible up to ~15% loss before quality collapses. The capstone measures exactly this: the loss rate at which the agent stays usable.\n\n**The tool-call-without-stalling problem.** A voice agent that needs to call a tool (look up a fact, check a calendar) must do so *without stalling the audio*. If the tool call blocks the audio path, the user hears dead air — broken feel. The fix is to run tool calls *asynchronously*: the agent can say \"let me check that\" and keep the audio stream alive while the tool runs in parallel, splicing the result into the response when ready. This is the voice analog of the latency budget (Ex. 1) — every blocking operation is a potential stall, so consequential work runs off the audio path. Together, the latency budget, turn-taking, and network resilience are what make a voice agent feel right under real conditions — the capstone's bar is WER, MOS, false-cutoff rate, and survival under packet loss, all at once."
+      "solution": "A voice agent must survive jittery mobile networks — a jitter buffer absorbs loss/reordering, and graceful degradation keeps audio flowing when the network gets bad.\n\n```python\ndef playback_quality(loss_rate, buffer_depth=3, loss_tolerance=0.05):\n    if loss_rate <= loss_tolerance:\n        return 'smooth (jitter buffer absorbs loss)'\n    if loss_rate <= 0.15:\n        return 'degraded gracefully (lower bitrate, audio prioritized)'\n    return 'choppy (loss exceeds recovery)'\n\nfor loss in (0.01, 0.05, 0.10, 0.25):\n    print(f\"loss {loss:.0%}: {playback_quality(loss)}\")\nprint('\\ntool calls run ASYNC so the audio stream never stalls waiting on a tool')\n```\n\nOutput:\n\n```\nloss 1%: smooth (jitter buffer absorbs loss)\nloss 5%: smooth (jitter buffer absorbs loss)\nloss 10%: degraded gracefully (lower bitrate, audio prioritized)\nloss 25%: choppy (loss exceeds recovery)\n```\n\n**The resilience layers.** A *jitter buffer* holds a few packets so out-of-order or briefly-lost packets can be recovered without a gap in playback (smooth up to ~5% loss). Beyond that, *graceful degradation* — drop to a lower bitrate, prioritize the audio stream over the data channel — keeps speech intelligible up to ~15% loss before quality collapses. The capstone measures exactly this: the loss rate at which the agent stays usable.\n\n**The tool-call-without-stalling problem.** A voice agent that needs to call a tool (look up a fact, check a calendar) must do so *without stalling the audio*. If the tool call blocks the audio path, the user hears dead air — broken feel. The fix is to run tool calls *asynchronously*: the agent can say \"let me check that\" and keep the audio stream alive while the tool runs in parallel, splicing the result into the response when ready. This is the voice analog of the latency budget (Ex. 1) — every blocking operation is a potential stall, so consequential work runs off the audio path. Together, the latency budget, turn-taking, and network resilience are what make a voice agent feel right under real conditions — the capstone's bar is WER, MOS, false-cutoff rate, and survival under packet loss, all at once.",
+      "starter_code": "def playback_quality(loss_rate, buffer_depth=3, loss_tolerance=0.05):\n    # <= tolerance -> smooth; <= 0.15 -> degraded gracefully; else choppy.\n    pass\n",
+      "tests": [
+        {
+          "desc": "low loss stays smooth",
+          "expr": "playback_quality(0.01).startswith('smooth')"
+        },
+        {
+          "desc": "moderate loss degrades gracefully",
+          "expr": "playback_quality(0.10).startswith('degraded')"
+        },
+        {
+          "desc": "high loss is choppy",
+          "expr": "playback_quality(0.25).startswith('choppy')"
+        }
+      ]
     }
   ]
 }
