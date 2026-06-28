@@ -5,21 +5,70 @@
       "difficulty": "warmup",
       "prompt": "A token embedding is a lookup table mapping vocab ids to dense vectors. Build an embedding table (vocab_size x dim) and a lookup that maps a sequence of ids to their vectors, and show ids becoming vectors. Discuss why a lookup table (not a one-hot matmul) is the efficient implementation.",
       "hint": "Table = vocab_size lists of dim floats. lookup(ids) = [table[id] for id in ids]. Show ids -> vectors. Lookup vs one-hot matmul: a lookup is O(1) indexing; multiplying a one-hot by the table is the same result but O(vocab*dim) -- the lookup is the optimization.",
-      "solution": "A token embedding is a lookup table — ids index directly into rows of vectors.\n\n```python\nimport random\nrandom.seed(0)\n\ndef make_embedding(vocab_size, dim):\n    return [[round(random.uniform(-1, 1), 2) for _ in range(dim)] for _ in range(vocab_size)]\n\ndef lookup(table, ids):\n    return [table[i] for i in ids]            # O(1) index per id\n\ntable = make_embedding(vocab_size=10, dim=4)\nvectors = lookup(table, [3, 1, 3])\nfor i, v in zip([3, 1, 3], vectors):\n    print(f\"id {i} -> {v}\")\n```\n\nOutput:\n\n```\nid 3 -> [...]\nid 1 -> [...]\nid 3 -> [...]\n```\n\n**Why a lookup, not a matmul.** Mathematically, an embedding is a one-hot vector times the embedding matrix — but computing it that way is wasteful (multiplying mostly-zeros). Since the one-hot selects exactly one row, you can *index directly* into the table: O(1) per id instead of O(vocab×dim). The lookup *is* the optimization. Note `id 3` maps to the *same* vector both times — embeddings are shared per id, learned during training. The next exercise adds position."
+      "solution": "A token embedding is a lookup table — ids index directly into rows of vectors.\n\n```python\nimport random\nrandom.seed(0)\n\ndef make_embedding(vocab_size, dim):\n    return [[round(random.uniform(-1, 1), 2) for _ in range(dim)] for _ in range(vocab_size)]\n\ndef lookup(table, ids):\n    return [table[i] for i in ids]            # O(1) index per id\n\ntable = make_embedding(vocab_size=10, dim=4)\nvectors = lookup(table, [3, 1, 3])\nfor i, v in zip([3, 1, 3], vectors):\n    print(f\"id {i} -> {v}\")\n```\n\nOutput:\n\n```\nid 3 -> [...]\nid 1 -> [...]\nid 3 -> [...]\n```\n\n**Why a lookup, not a matmul.** Mathematically, an embedding is a one-hot vector times the embedding matrix — but computing it that way is wasteful (multiplying mostly-zeros). Since the one-hot selects exactly one row, you can *index directly* into the table: O(1) per id instead of O(vocab×dim). The lookup *is* the optimization. Note `id 3` maps to the *same* vector both times — embeddings are shared per id, learned during training. The next exercise adds position.",
+      "starter_code": "import random\nrandom.seed(0)\n\ndef make_embedding(vocab_size, dim):\n    # A vocab_size x dim table of random values.\n    pass\n\ndef lookup(table, ids):\n    # Index the table by each id.\n    pass\n",
+      "tests": [
+        {
+          "desc": "the table has the right shape",
+          "expr": "len(make_embedding(5,4)) == 5 and len(make_embedding(5,4)[0]) == 4"
+        },
+        {
+          "desc": "lookup indexes the table rows",
+          "expr": "(lambda t: lookup(t, [1,0,1])[0] == t[1] and lookup(t,[1,0,1])[2] == t[1])(make_embedding(5,4))"
+        },
+        {
+          "desc": "lookup returns one vector per id",
+          "expr": "len(lookup(make_embedding(5,4), [0,1,2])) == 3"
+        }
+      ]
     },
     {
       "title": "Positional embeddings break the symmetry",
       "difficulty": "core",
       "prompt": "Self-attention is permutation-invariant — without positional information, the model cannot tell token order. Build a learned positional embedding table indexed by position, add it to token embeddings, and show that the same token at different positions gets different combined vectors. Demonstrate why position must be injected.",
       "hint": "Positional table indexed by 0..context_len-1. combined[i] = token_emb[ids[i]] + pos_emb[i]. Show the same token id at position 0 vs position 2 producing different combined vectors. Without position, attention can't distinguish order (permutation-invariant).",
-      "solution": "Self-attention has no inherent notion of order — positional embeddings inject it by adding a position-dependent vector.\n\n```python\ndef combined_embedding(token_table, pos_table, ids):\n    return [[t + p for t, p in zip(token_table[ids[i]], pos_table[i])]\n            for i in range(len(ids))]\n\ntoken_table = {5: [1.0, 1.0]}\npos_table = [[0.1, 0.0], [0.2, 0.0], [0.3, 0.0]]   # position 0, 1, 2\n# same token id 5 at positions 0 and 2\nids = [5, 5, 5]\ncombined = combined_embedding(token_table, pos_table, ids)\nfor i, v in enumerate(combined):\n    print(f\"token 5 at position {i}: {v}\")\n```\n\nOutput:\n\n```\ntoken 5 at position 0: [1.1, 1.0]\ntoken 5 at position 1: [1.2, 1.0]\ntoken 5 at position 2: [1.3, 1.0]\n```\n\n**Why position must be injected.** Self-attention computes a weighted sum over all positions — it is *permutation-invariant*, meaning it sees the same set of tokens regardless of order. Without positional information, \"dog bites man\" and \"man bites dog\" would be identical to the model. Adding a *learned positional embedding* (a different vector per position) breaks the symmetry: the same token id 5 gets a *different* combined vector at each position (`[1.1,...]`, `[1.2,...]`, `[1.3,...]`). Now the model can distinguish order. The choice of positional scheme (learned, sinusoidal, rotary) shapes what the model can learn — the final exercise contrasts them."
+      "solution": "Self-attention has no inherent notion of order — positional embeddings inject it by adding a position-dependent vector.\n\n```python\ndef combined_embedding(token_table, pos_table, ids):\n    return [[t + p for t, p in zip(token_table[ids[i]], pos_table[i])]\n            for i in range(len(ids))]\n\ntoken_table = {5: [1.0, 1.0]}\npos_table = [[0.1, 0.0], [0.2, 0.0], [0.3, 0.0]]   # position 0, 1, 2\n# same token id 5 at positions 0 and 2\nids = [5, 5, 5]\ncombined = combined_embedding(token_table, pos_table, ids)\nfor i, v in enumerate(combined):\n    print(f\"token 5 at position {i}: {v}\")\n```\n\nOutput:\n\n```\ntoken 5 at position 0: [1.1, 1.0]\ntoken 5 at position 1: [1.2, 1.0]\ntoken 5 at position 2: [1.3, 1.0]\n```\n\n**Why position must be injected.** Self-attention computes a weighted sum over all positions — it is *permutation-invariant*, meaning it sees the same set of tokens regardless of order. Without positional information, \"dog bites man\" and \"man bites dog\" would be identical to the model. Adding a *learned positional embedding* (a different vector per position) breaks the symmetry: the same token id 5 gets a *different* combined vector at each position (`[1.1,...]`, `[1.2,...]`, `[1.3,...]`). Now the model can distinguish order. The choice of positional scheme (learned, sinusoidal, rotary) shapes what the model can learn — the final exercise contrasts them.",
+      "starter_code": "def combined_embedding(token_table, pos_table, ids):\n    # Add the token vector and the positional vector elementwise per position.\n    pass\n",
+      "tests": [
+        {
+          "desc": "the position is added to the token vector",
+          "expr": "abs(combined_embedding({5:[1.0,1.0]}, [[0.1,0.0]], [5])[0][0] - 1.1) < 1e-9"
+        },
+        {
+          "desc": "each position adds its own offset",
+          "expr": "abs(combined_embedding({5:[1.0,1.0]}, [[0.1,0.0],[0.2,0.0]], [5,5])[1][0] - 1.2) < 1e-9"
+        },
+        {
+          "desc": "position breaks the token symmetry",
+          "expr": "combined_embedding({5:[1.0,1.0]}, [[0.1,0.0],[0.2,0.0]], [5,5])[0] != combined_embedding({5:[1.0,1.0]}, [[0.1,0.0],[0.2,0.0]], [5,5])[1]"
+        }
+      ]
     },
     {
       "title": "Learned vs sinusoidal positional schemes",
       "difficulty": "stretch",
       "prompt": "The positional scheme choice shapes what the model can learn. Build both a learned positional table (trainable, fixed max length) and a sinusoidal scheme (deterministic, extrapolates to unseen lengths), and contrast: learned cannot represent positions beyond its table; sinusoidal generates any position. Show learned failing past max length and sinusoidal succeeding. Discuss the tradeoff.",
       "hint": "Learned: table of size max_len; positions >= max_len have no entry (fail/clip). Sinusoidal: pos_emb[pos][i] = sin/cos(pos / 10000^(i/dim)) -- a formula, works for ANY position. Show learned can't do position 100 if max_len=64; sinusoidal can. Tradeoff: learned is flexible within range; sinusoidal extrapolates.",
-      "solution": "The positional scheme determines whether the model can handle sequences longer than it trained on.\n\n```python\nimport math\n\ndef learned_pos(table, position):\n    if position >= len(table):\n        return None                           # no entry beyond the trained max length\n    return table[position]\n\ndef sinusoidal_pos(position, dim=4):\n    # a FORMULA -> works for any position, even unseen lengths\n    return [math.sin(position / 10000 ** (2*i/dim)) if i % 2 == 0\n            else math.cos(position / 10000 ** (2*i/dim)) for i in range(dim)]\n\nlearned_table = [[0.1*p]*4 for p in range(64)]    # trained max length = 64\nprint('learned at pos 100:', learned_pos(learned_table, 100))   # None -> cannot represent\nprint('sinusoidal at 100 :', [round(x, 2) for x in sinusoidal_pos(100)])  # works\n```\n\nOutput:\n\n```\nlearned at pos 100: None\nsinusoidal at 100 : [-0.51, 0.86, 0.01, 1.0]\n```\n\n**The scheme tradeoff.** A *learned* positional table has one trainable vector per position up to a fixed max length — flexible and expressive *within* that range, but it *cannot represent positions beyond the table* (position 100 with a max-64 table returns nothing). A *sinusoidal* scheme computes the positional vector from a *formula*, so it generates a valid embedding for *any* position, extrapolating to sequence lengths never seen in training. The tradeoff: learned positions can adapt to the data's structure but are length-bounded; sinusoidal (and modern rotary, RoPE) extrapolate but are fixed in form. This choice directly shapes the model's maximum usable context — \"the choice of the positional one shapes what the model can learn.\"\n\n**The embedding synthesis.** Token embeddings are an efficient lookup table mapping ids to vectors (Ex. 1), positional embeddings break attention's permutation-invariance so the model perceives order (Ex. 2), and the positional scheme (learned vs sinusoidal/rotary) determines length extrapolation (Ex. 3). Two lookup tables sit between integer ids and the vectors the model wants — and the positional choice is one of the most consequential architecture decisions, governing context length. These embeddings feed the attention block (Lesson 33)."
+      "solution": "The positional scheme determines whether the model can handle sequences longer than it trained on.\n\n```python\nimport math\n\ndef learned_pos(table, position):\n    if position >= len(table):\n        return None                           # no entry beyond the trained max length\n    return table[position]\n\ndef sinusoidal_pos(position, dim=4):\n    # a FORMULA -> works for any position, even unseen lengths\n    return [math.sin(position / 10000 ** (2*i/dim)) if i % 2 == 0\n            else math.cos(position / 10000 ** (2*i/dim)) for i in range(dim)]\n\nlearned_table = [[0.1*p]*4 for p in range(64)]    # trained max length = 64\nprint('learned at pos 100:', learned_pos(learned_table, 100))   # None -> cannot represent\nprint('sinusoidal at 100 :', [round(x, 2) for x in sinusoidal_pos(100)])  # works\n```\n\nOutput:\n\n```\nlearned at pos 100: None\nsinusoidal at 100 : [-0.51, 0.86, 0.01, 1.0]\n```\n\n**The scheme tradeoff.** A *learned* positional table has one trainable vector per position up to a fixed max length — flexible and expressive *within* that range, but it *cannot represent positions beyond the table* (position 100 with a max-64 table returns nothing). A *sinusoidal* scheme computes the positional vector from a *formula*, so it generates a valid embedding for *any* position, extrapolating to sequence lengths never seen in training. The tradeoff: learned positions can adapt to the data's structure but are length-bounded; sinusoidal (and modern rotary, RoPE) extrapolate but are fixed in form. This choice directly shapes the model's maximum usable context — \"the choice of the positional one shapes what the model can learn.\"\n\n**The embedding synthesis.** Token embeddings are an efficient lookup table mapping ids to vectors (Ex. 1), positional embeddings break attention's permutation-invariance so the model perceives order (Ex. 2), and the positional scheme (learned vs sinusoidal/rotary) determines length extrapolation (Ex. 3). Two lookup tables sit between integer ids and the vectors the model wants — and the positional choice is one of the most consequential architecture decisions, governing context length. These embeddings feed the attention block (Lesson 33).",
+      "starter_code": "import math\n\ndef learned_pos(table, position):\n    # Return the row, or None beyond the trained max length.\n    pass\n\ndef sinusoidal_pos(position, dim=4):\n    # Sin on even dims, cos on odd dims; works for any position.\n    pass\n",
+      "tests": [
+        {
+          "desc": "a learned position within range looks up",
+          "expr": "learned_pos([[0.0]*4, [0.1]*4], 1) == [0.1]*4"
+        },
+        {
+          "desc": "a learned position beyond range is None",
+          "expr": "learned_pos([[0.0]*4], 100) is None"
+        },
+        {
+          "desc": "the sinusoidal scheme works for unseen positions",
+          "expr": "sinusoidal_pos(100) is not None and len(sinusoidal_pos(100)) == 4"
+        },
+        {
+          "desc": "sin(0) is zero at position 0",
+          "expr": "abs(sinusoidal_pos(0)[0]) < 1e-9"
+        }
+      ]
     }
   ]
 }

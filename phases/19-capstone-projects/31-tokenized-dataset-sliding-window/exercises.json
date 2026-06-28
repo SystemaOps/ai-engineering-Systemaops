@@ -5,21 +5,66 @@
       "difficulty": "warmup",
       "prompt": "Pretraining feeds fixed-length windows of token ids. Build `make_windows(ids, context_len, stride)` that slices a long id stream into overlapping windows with a configurable stride, and show non-overlapping (stride=context_len) and overlapping (stride<context_len) windows.",
       "hint": "Slide a window of context_len over ids, stepping by stride. Yield each window. stride=context_len -> no overlap; stride<context_len -> overlap. Show both on a small id stream.",
-      "solution": "The dataset slices the token-id stream into fixed-length windows, with a stride controlling overlap.\n\n```python\ndef make_windows(ids, context_len, stride):\n    windows = []\n    for start in range(0, len(ids) - context_len + 1, stride):\n        windows.append(ids[start:start + context_len])\n    return windows\n\nids = list(range(10))\nprint('non-overlapping (stride=4):', make_windows(ids, context_len=4, stride=4))\nprint('overlapping (stride=2)   :', make_windows(ids, context_len=4, stride=2))\n```\n\nOutput:\n\n```\nnon-overlapping (stride=4): [[0, 1, 2, 3], [4, 5, 6, 7]]\noverlapping (stride=2)   : [[0, 1, 2, 3], [2, 3, 4, 5], [4, 5, 6, 7], [6, 7, 8, 9]]\n```\n\n**Why windows and stride.** A model has a fixed context length, so a long corpus must be sliced into windows of that length. The *stride* controls overlap: stride = context_len gives disjoint windows (each token seen once, most data-efficient); stride < context_len gives overlapping windows (more training examples, each token seen in multiple contexts, but with redundancy). The stride is a knob trading data efficiency against the number of training examples. The next exercise builds the input-target alignment."
+      "solution": "The dataset slices the token-id stream into fixed-length windows, with a stride controlling overlap.\n\n```python\ndef make_windows(ids, context_len, stride):\n    windows = []\n    for start in range(0, len(ids) - context_len + 1, stride):\n        windows.append(ids[start:start + context_len])\n    return windows\n\nids = list(range(10))\nprint('non-overlapping (stride=4):', make_windows(ids, context_len=4, stride=4))\nprint('overlapping (stride=2)   :', make_windows(ids, context_len=4, stride=2))\n```\n\nOutput:\n\n```\nnon-overlapping (stride=4): [[0, 1, 2, 3], [4, 5, 6, 7]]\noverlapping (stride=2)   : [[0, 1, 2, 3], [2, 3, 4, 5], [4, 5, 6, 7], [6, 7, 8, 9]]\n```\n\n**Why windows and stride.** A model has a fixed context length, so a long corpus must be sliced into windows of that length. The *stride* controls overlap: stride = context_len gives disjoint windows (each token seen once, most data-efficient); stride < context_len gives overlapping windows (more training examples, each token seen in multiple contexts, but with redundancy). The stride is a knob trading data efficiency against the number of training examples. The next exercise builds the input-target alignment.",
+      "starter_code": "def make_windows(ids, context_len, stride):\n    # Slice ids into fixed windows of context_len, advancing by stride.\n    pass\n",
+      "tests": [
+        {
+          "desc": "non-overlapping windows tile the stream",
+          "expr": "make_windows(list(range(8)), 4, 4) == [[0,1,2,3],[4,5,6,7]]"
+        },
+        {
+          "desc": "overlap yields more windows",
+          "expr": "len(make_windows(list(range(10)), 4, 2)) == 4"
+        },
+        {
+          "desc": "every window has the context length",
+          "expr": "all(len(w)==4 for w in make_windows(list(range(10)), 4, 2))"
+        }
+      ]
     },
     {
       "title": "Input-target alignment for next-token prediction",
       "difficulty": "core",
       "prompt": "Next-token prediction needs each window to yield (input, target) where target is input shifted by one. Build a windowing function that produces (input_ids, target_ids) pairs with the one-position shift, and show that target[i] is the token the model should predict at position i. Discuss why the shift is the whole training signal.",
       "hint": "For a window of length context_len+1, input = window[:-1], target = window[1:]. target[i] = input[i+1] = the next token. Show a window split into aligned input/target. The shift IS the supervision: predict the next token.",
-      "solution": "Next-token prediction's supervision is a one-position shift: the target is the input shifted by one.\n\n```python\ndef make_pairs(ids, context_len, stride):\n    pairs = []\n    for start in range(0, len(ids) - context_len, stride):\n        window = ids[start:start + context_len + 1]   # one extra for the shift\n        pairs.append((window[:-1], window[1:]))        # input, target\n    return pairs\n\nids = list(range(8))\nfor inp, tgt in make_pairs(ids, context_len=3, stride=3):\n    print(f\"input {inp} -> target {tgt}\")\n    for i in range(len(inp)):\n        print(f\"   at pos {i}: see {inp[i]}, predict {tgt[i]}\")\n    break\n```\n\nOutput:\n\n```\ninput [0, 1, 2] -> target [1, 2, 3]\n   at pos 0: see 0, predict 1\n   at pos 1: see 1, predict 2\n   at pos 2: see 2, predict 3\n```\n\n**Why the shift is the signal.** The entire pretraining objective is \"predict the next token.\" The dataset operationalizes this by pairing each input window with a *target* that is the input shifted one position: at position i the model sees `input[i]` and must predict `target[i] = input[i+1]`, the next token. There are no labels to collect — the shift *is* the supervision, derived for free from the raw text. Every position in every window is a training example. This self-supervised shift is why language models can train on unlimited unlabeled text. The final exercise covers efficient streaming."
+      "solution": "Next-token prediction's supervision is a one-position shift: the target is the input shifted by one.\n\n```python\ndef make_pairs(ids, context_len, stride):\n    pairs = []\n    for start in range(0, len(ids) - context_len, stride):\n        window = ids[start:start + context_len + 1]   # one extra for the shift\n        pairs.append((window[:-1], window[1:]))        # input, target\n    return pairs\n\nids = list(range(8))\nfor inp, tgt in make_pairs(ids, context_len=3, stride=3):\n    print(f\"input {inp} -> target {tgt}\")\n    for i in range(len(inp)):\n        print(f\"   at pos {i}: see {inp[i]}, predict {tgt[i]}\")\n    break\n```\n\nOutput:\n\n```\ninput [0, 1, 2] -> target [1, 2, 3]\n   at pos 0: see 0, predict 1\n   at pos 1: see 1, predict 2\n   at pos 2: see 2, predict 3\n```\n\n**Why the shift is the signal.** The entire pretraining objective is \"predict the next token.\" The dataset operationalizes this by pairing each input window with a *target* that is the input shifted one position: at position i the model sees `input[i]` and must predict `target[i] = input[i+1]`, the next token. There are no labels to collect — the shift *is* the supervision, derived for free from the raw text. Every position in every window is a training example. This self-supervised shift is why language models can train on unlimited unlabeled text. The final exercise covers efficient streaming.",
+      "starter_code": "def make_pairs(ids, context_len, stride):\n    # Return (input, target) pairs where target is input shifted by one.\n    pass\n",
+      "tests": [
+        {
+          "desc": "input and target are shifted by one",
+          "expr": "make_pairs([0,1,2,3], 3, 3)[0] == ([0,1,2],[1,2,3])"
+        },
+        {
+          "desc": "the target is the next-token sequence",
+          "expr": "make_pairs(list(range(8)), 3, 3)[0][1] == [1,2,3]"
+        },
+        {
+          "desc": "input and target lengths match",
+          "expr": "all(len(i)==len(t) for i,t in make_pairs(list(range(8)), 3, 3))"
+        }
+      ]
     },
     {
       "title": "Stream a large corpus without loading it all",
       "difficulty": "stretch",
       "prompt": "A real corpus does not fit in memory. Build a streaming dataset that yields (input, target) windows from a tokenized corpus lazily (a generator), tokenizing once and slicing on the fly, so memory stays bounded regardless of corpus size. Show it streaming windows and discuss the memory/throughput tradeoff vs materializing all windows.",
       "hint": "Generator yields windows on demand rather than building a list. Tokenize once (or stream tokenize), slide the window, yield (input, target). Memory bounded by one window, not the whole corpus. Show streaming a few windows. Tradeoff: streaming = constant memory; materializing = random access but huge memory.",
-      "solution": "A large corpus is streamed lazily — a generator yields windows on demand, keeping memory bounded.\n\n```python\ndef stream_windows(id_stream, context_len, stride):\n    # yields (input, target) lazily -- memory bounded by one window\n    buffer = []\n    for tok in id_stream:\n        buffer.append(tok)\n        while len(buffer) >= context_len + 1:\n            window = buffer[:context_len + 1]\n            yield window[:-1], window[1:]\n            buffer = buffer[stride:]            # advance by stride, drop consumed\n\n# simulate a 'large' corpus as a generator (never fully in memory)\ndef corpus_stream(): \n    for i in range(1000): yield i\n\ngen = stream_windows(corpus_stream(), context_len=3, stride=3)\nfor _ in range(2):\n    print(next(gen))\nprint('... streams without materializing all 1000 tokens')\n```\n\nOutput:\n\n```\n([0, 1, 2], [1, 2, 3])\n([3, 4, 5], [4, 5, 6])\n...\n```\n\n**Why streaming.** A real pretraining corpus is far too large to hold all windows in memory at once. A *generator* yields each (input, target) pair on demand, keeping only a small buffer — memory stays *constant* regardless of corpus size. The tradeoff: streaming gives constant memory and sequential throughput but *no random access* (you cannot jump to window N without consuming the prior ones), while materializing all windows enables shuffling and random access at the cost of huge memory. Production pretraining streams from disk (Lesson 42-43's HDF5 corpus) with shuffling buffers to get both.\n\n**The dataset synthesis.** The conveyor slices the id stream into fixed windows with a configurable stride (Ex. 1), pairs each window with a one-position-shifted target for next-token prediction (Ex. 2), and streams lazily to bound memory on a large corpus (Ex. 3). \"A pretraining run is a function from token ids to gradients\" — this is the conveyor that feeds the ids in, the data-loading half of every training run."
+      "solution": "A large corpus is streamed lazily — a generator yields windows on demand, keeping memory bounded.\n\n```python\ndef stream_windows(id_stream, context_len, stride):\n    # yields (input, target) lazily -- memory bounded by one window\n    buffer = []\n    for tok in id_stream:\n        buffer.append(tok)\n        while len(buffer) >= context_len + 1:\n            window = buffer[:context_len + 1]\n            yield window[:-1], window[1:]\n            buffer = buffer[stride:]            # advance by stride, drop consumed\n\n# simulate a 'large' corpus as a generator (never fully in memory)\ndef corpus_stream(): \n    for i in range(1000): yield i\n\ngen = stream_windows(corpus_stream(), context_len=3, stride=3)\nfor _ in range(2):\n    print(next(gen))\nprint('... streams without materializing all 1000 tokens')\n```\n\nOutput:\n\n```\n([0, 1, 2], [1, 2, 3])\n([3, 4, 5], [4, 5, 6])\n...\n```\n\n**Why streaming.** A real pretraining corpus is far too large to hold all windows in memory at once. A *generator* yields each (input, target) pair on demand, keeping only a small buffer — memory stays *constant* regardless of corpus size. The tradeoff: streaming gives constant memory and sequential throughput but *no random access* (you cannot jump to window N without consuming the prior ones), while materializing all windows enables shuffling and random access at the cost of huge memory. Production pretraining streams from disk (Lesson 42-43's HDF5 corpus) with shuffling buffers to get both.\n\n**The dataset synthesis.** The conveyor slices the id stream into fixed windows with a configurable stride (Ex. 1), pairs each window with a one-position-shifted target for next-token prediction (Ex. 2), and streams lazily to bound memory on a large corpus (Ex. 3). \"A pretraining run is a function from token ids to gradients\" — this is the conveyor that feeds the ids in, the data-loading half of every training run.",
+      "starter_code": "def stream_windows(id_stream, context_len, stride):\n    # Lazily yield (input, target) pairs from a token stream, memory-bounded.\n    yield None\n",
+      "tests": [
+        {
+          "desc": "the first streamed pair is correct",
+          "expr": "next(stream_windows(iter(range(10)), 3, 3)) == ([0,1,2],[1,2,3])"
+        },
+        {
+          "desc": "the stream advances by stride",
+          "expr": "(lambda g: (next(g), next(g))[1])(stream_windows(iter(range(20)), 3, 3)) == ([3,4,5],[4,5,6])"
+        },
+        {
+          "desc": "each input is one context long",
+          "expr": "len(next(stream_windows(iter(range(10)), 4, 4))[0]) == 4"
+        }
+      ]
     }
   ]
 }

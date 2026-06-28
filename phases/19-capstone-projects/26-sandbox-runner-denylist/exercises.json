@@ -5,7 +5,26 @@
       "difficulty": "warmup",
       "prompt": "The sandbox refuses dangerous executables by name (denylist) AND dangerous argv shapes by structure (an argv inspector). Build a command guard that checks both, and show a denylisted executable refused, a dangerous argv shape refused (e.g. rm with -rf), and a safe command allowed. Discuss why both name and shape checks are needed.",
       "hint": "Denylist: refuse if argv[0] in {curl, wget, nc, ...}. Argv inspector: refuse structures like rm with -rf, or shell metachars. Show denylisted exe refused, rm -rf refused (by shape), ls allowed. Both needed: a safe-named exe can have a dangerous argv (rm is allowed for files but rm -rf / is not).",
-      "solution": "The sandbox refuses commands two ways: dangerous *executables* by name, and dangerous *argv shapes* by structure.\n\n```python\nDENYLIST = {'curl', 'wget', 'nc', 'ssh'}\n\ndef guard(argv):\n    if argv[0] in DENYLIST:\n        return f\"REFUSED: {argv[0]} on denylist\"\n    # argv-shape inspection: rm with recursive-force is dangerous even though rm is allowed\n    if argv[0] == 'rm' and any(a in ('-rf', '-fr', '-r') for a in argv[1:]):\n        return 'REFUSED: rm with recursive flag'\n    if any(meta in ' '.join(argv) for meta in (';', '|', '&&', '`')):\n        return 'REFUSED: shell metacharacters'\n    return 'allowed'\n\nfor argv in [['curl', 'evil.com'], ['rm', '-rf', '/'], ['rm', 'tmp.txt'], ['ls', '-la']]:\n    print(f\"{' '.join(argv):>16} -> {guard(argv)}\")\n```\n\nOutput:\n\n```\n   curl evil.com -> REFUSED: curl on denylist\n        rm -rf / -> REFUSED: rm with recursive flag\n     rm tmp.txt -> allowed\n         ls -la -> allowed\n```\n\n**Why both name and shape.** A *name* denylist catches whole executables that should never run (`curl`, `nc` — exfiltration tools). But name alone is insufficient: `rm` is *legitimate* for deleting a temp file, yet `rm -rf /` is catastrophic — same executable, dangerous *argv shape*. So the sandbox also inspects argv structure (recursive flags, shell metacharacters). The combination — refuse dangerous names *and* dangerous shapes of safe names — catches both classes. The next exercises add the path jail and the resource limits."
+      "solution": "The sandbox refuses commands two ways: dangerous *executables* by name, and dangerous *argv shapes* by structure.\n\n```python\nDENYLIST = {'curl', 'wget', 'nc', 'ssh'}\n\ndef guard(argv):\n    if argv[0] in DENYLIST:\n        return f\"REFUSED: {argv[0]} on denylist\"\n    # argv-shape inspection: rm with recursive-force is dangerous even though rm is allowed\n    if argv[0] == 'rm' and any(a in ('-rf', '-fr', '-r') for a in argv[1:]):\n        return 'REFUSED: rm with recursive flag'\n    if any(meta in ' '.join(argv) for meta in (';', '|', '&&', '`')):\n        return 'REFUSED: shell metacharacters'\n    return 'allowed'\n\nfor argv in [['curl', 'evil.com'], ['rm', '-rf', '/'], ['rm', 'tmp.txt'], ['ls', '-la']]:\n    print(f\"{' '.join(argv):>16} -> {guard(argv)}\")\n```\n\nOutput:\n\n```\n   curl evil.com -> REFUSED: curl on denylist\n        rm -rf / -> REFUSED: rm with recursive flag\n     rm tmp.txt -> allowed\n         ls -la -> allowed\n```\n\n**Why both name and shape.** A *name* denylist catches whole executables that should never run (`curl`, `nc` — exfiltration tools). But name alone is insufficient: `rm` is *legitimate* for deleting a temp file, yet `rm -rf /` is catastrophic — same executable, dangerous *argv shape*. So the sandbox also inspects argv structure (recursive flags, shell metacharacters). The combination — refuse dangerous names *and* dangerous shapes of safe names — catches both classes. The next exercises add the path jail and the resource limits.",
+      "starter_code": "DENYLIST = {'curl', 'wget', 'nc', 'ssh'}\n\ndef guard(argv):\n    # Refuse denylisted programs, 'rm' with a recursive flag, or any shell\n    # metacharacters (; | && `). Else 'allowed'.\n    pass\n",
+      "tests": [
+        {
+          "desc": "a denylisted program is refused",
+          "expr": "guard(['curl','evil.com']).startswith('REFUSED')"
+        },
+        {
+          "desc": "rm with a recursive flag is refused",
+          "expr": "guard(['rm','-rf','/']).startswith('REFUSED')"
+        },
+        {
+          "desc": "a safe command is allowed",
+          "expr": "guard(['ls','-la']) == 'allowed'"
+        },
+        {
+          "desc": "shell metacharacters are refused",
+          "expr": "guard(['echo',';rm']).startswith('REFUSED')"
+        }
+      ]
     },
     {
       "title": "Path jail to the project root",
@@ -19,7 +38,26 @@
       "difficulty": "stretch",
       "prompt": "The sandbox truncates oversized output and kills runaway processes on a wall-clock timeout. Build a runner that caps captured output to a max size and terminates a process exceeding a timeout, returning a typed result either way. Show a normal command, a chatty command truncated, and a runaway killed. Tie to the observation budget (Lesson 25) and the dispatcher timeout (Lesson 23).",
       "hint": "Run with a wall-clock timeout (kill on exceed). Capture output but truncate to max_bytes. Return typed result {status, output, truncated, timed_out}. Show normal, truncated (chatty), killed (runaway). Connects to obs budget (don't flood context) + dispatcher timeout (don't hang).",
-      "solution": "The sandbox bounds *output size* (truncate) and *wall-clock time* (kill runaways), returning a typed result either way.\n\n```python\ndef run(command, output_bytes, runtime_s, max_bytes=1024, timeout_s=5):\n    timed_out = runtime_s > timeout_s\n    if timed_out:\n        return {'status': 'killed', 'output': '', 'timed_out': True, 'reason': 'wall-clock timeout'}\n    truncated = output_bytes > max_bytes\n    shown = min(output_bytes, max_bytes)\n    return {'status': 'ok', 'output_bytes': shown, 'truncated': truncated, 'timed_out': False}\n\nprint('normal  :', run('ls', output_bytes=200, runtime_s=0.1))\nprint('chatty  :', run('cat big', output_bytes=50000, runtime_s=0.5))\nprint('runaway :', run('loop', output_bytes=0, runtime_s=30))\n```\n\nOutput:\n\n```\nnormal  : {'status': 'ok', 'output_bytes': 200, 'truncated': False, 'timed_out': False}\nchatty  : {'status': 'ok', 'output_bytes': 1024, 'truncated': True, 'timed_out': False}\nrunaway : {'status': 'killed', 'output': '', 'timed_out': True, 'reason': 'wall-clock timeout'}\n```\n\n**Why output and time limits.** *Output truncation* (chatty command cut to 1024 bytes) prevents a tool from flooding the context — the sandbox-layer counterpart to the observation budget (Lesson 25). The *wall-clock timeout* (runaway killed at 5s) prevents a process from hanging the loop forever — the sandbox-layer counterpart to the dispatcher timeout (Lesson 23). Both return a *typed result* the loop can act on (truncated flag, timed_out flag) rather than blocking or overflowing.\n\n**The sandbox synthesis.** The sandbox refuses dangerous executables and argv shapes (Ex. 1), jails all paths to the project root (Ex. 2), and truncates output while killing runaways on a timeout (Ex. 3). It is the *second* of two layers between the model and the OS: the verification gate (Lesson 25) decides *whether* a call should run; the sandbox decides *what happens when it does* — refusing dangerous commands, confining the filesystem, and bounding resources. Together they are the safety boundary that makes an autonomous coding agent safe to run unattended."
+      "solution": "The sandbox bounds *output size* (truncate) and *wall-clock time* (kill runaways), returning a typed result either way.\n\n```python\ndef run(command, output_bytes, runtime_s, max_bytes=1024, timeout_s=5):\n    timed_out = runtime_s > timeout_s\n    if timed_out:\n        return {'status': 'killed', 'output': '', 'timed_out': True, 'reason': 'wall-clock timeout'}\n    truncated = output_bytes > max_bytes\n    shown = min(output_bytes, max_bytes)\n    return {'status': 'ok', 'output_bytes': shown, 'truncated': truncated, 'timed_out': False}\n\nprint('normal  :', run('ls', output_bytes=200, runtime_s=0.1))\nprint('chatty  :', run('cat big', output_bytes=50000, runtime_s=0.5))\nprint('runaway :', run('loop', output_bytes=0, runtime_s=30))\n```\n\nOutput:\n\n```\nnormal  : {'status': 'ok', 'output_bytes': 200, 'truncated': False, 'timed_out': False}\nchatty  : {'status': 'ok', 'output_bytes': 1024, 'truncated': True, 'timed_out': False}\nrunaway : {'status': 'killed', 'output': '', 'timed_out': True, 'reason': 'wall-clock timeout'}\n```\n\n**Why output and time limits.** *Output truncation* (chatty command cut to 1024 bytes) prevents a tool from flooding the context — the sandbox-layer counterpart to the observation budget (Lesson 25). The *wall-clock timeout* (runaway killed at 5s) prevents a process from hanging the loop forever — the sandbox-layer counterpart to the dispatcher timeout (Lesson 23). Both return a *typed result* the loop can act on (truncated flag, timed_out flag) rather than blocking or overflowing.\n\n**The sandbox synthesis.** The sandbox refuses dangerous executables and argv shapes (Ex. 1), jails all paths to the project root (Ex. 2), and truncates output while killing runaways on a timeout (Ex. 3). It is the *second* of two layers between the model and the OS: the verification gate (Lesson 25) decides *whether* a call should run; the sandbox decides *what happens when it does* — refusing dangerous commands, confining the filesystem, and bounding resources. Together they are the safety boundary that makes an autonomous coding agent safe to run unattended.",
+      "starter_code": "def run(command, output_bytes, runtime_s, max_bytes=1024, timeout_s=5):\n    # Kill on wall-clock timeout (runtime > timeout_s). Else truncate output to\n    # max_bytes. Return a status dict.\n    pass\n",
+      "tests": [
+        {
+          "desc": "a normal run is ok",
+          "expr": "run('ls', 200, 0.1)['status'] == 'ok'"
+        },
+        {
+          "desc": "oversized output is truncated",
+          "expr": "run('cat', 50000, 0.5)['truncated'] == True"
+        },
+        {
+          "desc": "a runaway process is killed",
+          "expr": "run('loop', 0, 30)['status'] == 'killed'"
+        },
+        {
+          "desc": "the kill is flagged as a timeout",
+          "expr": "run('loop', 0, 30)['timed_out'] == True"
+        }
+      ]
     }
   ]
 }
