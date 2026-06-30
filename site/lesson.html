@@ -2821,10 +2821,48 @@
         });
         return __pyodidePromise;
       }
+      // On-demand package loading. The vendored core is offline, but package
+      // wheels (numpy, ...) are pulled from the CDN, resolved via the lockfile.
+      var __pkgLock = null, __loadedPkgs = {};
+      var SUPPORTED_PKGS = ['numpy'];
+      function neededPkgs(src) {
+        var found = [];
+        SUPPORTED_PKGS.forEach(function (p) {
+          if (new RegExp('(^|\\n)\\s*(import\\s+' + p + '\\b|from\\s+' + p + '\\b)', 'm').test(src))
+            found.push(p);
+        });
+        return found;
+      }
+      function loadPkgLock() {
+        if (__pkgLock) return __pkgLock;
+        __pkgLock = fetch(PYODIDE_LOCAL + 'pyodide-lock.json')
+          .then(function (r) { return r.ok ? r.json() : fetch(PYODIDE_CDN + 'pyodide-lock.json').then(function (r2) { return r2.json(); }); })
+          .then(function (lock) { return lock.packages || {}; })
+          .catch(function () { return {}; });
+        return __pkgLock;
+      }
+      async function ensurePkgs(py, src) {
+        var names = neededPkgs(src).filter(function (n) { return !__loadedPkgs[n]; });
+        if (!names.length) return;
+        var pkgs = await loadPkgLock();
+        var urls = [], seen = {};
+        function resolve(n) {
+          if (seen[n] || !pkgs[n]) return;
+          seen[n] = 1;
+          (pkgs[n].depends || []).forEach(resolve);
+          urls.push(PYODIDE_CDN + pkgs[n].file_name);
+        }
+        names.forEach(resolve);
+        try {
+          await py.loadPackage(urls);
+          names.forEach(function (n) { __loadedPkgs[n] = 1; });
+        } catch (e) { /* leave unloaded; the import will surface a clear error */ }
+      }
       // Run a snippet, capturing stdout. Source is passed as a variable (no
       // re-indenting) so triple-quoted strings and indentation survive intact.
       async function pyRun(src) {
         var py = await ensurePyodide();
+        await ensurePkgs(py, src);
         py.globals.set('_USERSRC', src);
         await py.runPythonAsync(
           'import sys, io, traceback\n' +
@@ -2840,6 +2878,7 @@
       // namespace. Returns { setupError, results:[bool] }.
       async function pyCheck(attemptSrc, testExprs) {
         var py = await ensurePyodide();
+        await ensurePkgs(py, attemptSrc);
         py.globals.set('_ATTEMPT', attemptSrc);
         py.globals.set('_TESTS', testExprs);
         await py.runPythonAsync(
